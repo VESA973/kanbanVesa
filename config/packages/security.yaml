@@ -36,6 +36,7 @@ security:
     # Only the first matching rule is applied.
     access_control:
         - { path: ^/(login|register|verify|reset-password), roles: PUBLIC_ACCESS }
+        - { path: '^/invitations/[a-f0-9]{64}$', roles: PUBLIC_ACCESS }
         - { path: ^/, roles: ROLE_USER }
 
 when@test:

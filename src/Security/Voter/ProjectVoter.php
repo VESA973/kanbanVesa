@@ -21,8 +21,9 @@ final class ProjectVoter extends Voter
     public const string DELETE = 'PROJECT_DELETE';
     public const string MANAGE_COLUMNS = 'PROJECT_MANAGE_COLUMNS';
     public const string CREATE_TASK = 'PROJECT_CREATE_TASK';
+    public const string MANAGE_MEMBERS = 'PROJECT_MANAGE_MEMBERS';
 
-    private const array ATTRIBUTES = [self::VIEW, self::EDIT, self::DELETE, self::MANAGE_COLUMNS, self::CREATE_TASK];
+    private const array ATTRIBUTES = [self::VIEW, self::EDIT, self::DELETE, self::MANAGE_COLUMNS, self::CREATE_TASK, self::MANAGE_MEMBERS];
 
     protected function supports(string $attribute, mixed $subject): bool
     {
@@ -46,7 +47,7 @@ final class ProjectVoter extends Voter
 
         return match ($attribute) {
             self::VIEW => true,
-            self::EDIT, self::DELETE => ProjectRole::OWNER === $role,
+            self::EDIT, self::DELETE, self::MANAGE_MEMBERS => ProjectRole::OWNER === $role,
             self::MANAGE_COLUMNS, self::CREATE_TASK => ProjectRole::VIEWER !== $role,
             default => false,
         };

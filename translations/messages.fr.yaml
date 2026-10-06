@@ -79,6 +79,34 @@ project:
         confirm: Supprimer définitivement ce projet ?
         submit: Supprimer le projet
 
+member:
+    title: Membres
+    back_to_board: Retour au tableau %project%
+    role_of: Rôle de %name%
+    remove: Retirer
+    remove_confirm: Retirer %name% du projet ? Ses tâches ne lui seront plus assignées.
+
+invitation:
+    title: Inviter une personne
+    email: Adresse e-mail
+    role: Rôle
+    submit: Envoyer l'invitation
+    pending: Invitations en attente
+    expires_on: expire le %date%
+    revoke: Annuler
+    page_title: Invitation
+    intro: "%inviter% vous invite à rejoindre le projet « %project% » en tant que %role%."
+    accept: Rejoindre le projet
+    login_first: Connectez-vous ou créez un compte avec l'adresse %email% pour accepter l'invitation.
+    wrong_account: Déconnectez-vous puis reconnectez-vous avec l'adresse %email%.
+    back_home: Retour à l'accueil
+    error:
+        not_found: Cette invitation n'existe pas ou a été annulée.
+        already_used: Cette invitation a déjà été utilisée.
+        expired: Cette invitation a expiré. Demandez au propriétaire du projet de vous en renvoyer une.
+        email_mismatch: Cette invitation a été envoyée à une autre adresse e-mail que celle de votre compte.
+        already_member: Cette personne est déjà membre du projet.
+
 user:
     email: Adresse e-mail
     first_name: Prénom
@@ -119,6 +147,13 @@ verify_email:
     resend: Renvoyer l'e-mail
 
 flash:
+    invitation:
+        sent: L'invitation a été envoyée.
+        revoked: L'invitation a été annulée.
+        accepted: Bienvenue dans le projet !
+    member:
+        role_changed: Le rôle a été modifié.
+        removed: Le membre a été retiré du projet.
     column:
         deleted: La colonne a été supprimée.
     task:
@@ -144,6 +179,11 @@ email:
         subject: Confirmez votre adresse e-mail
         intro: Merci pour votre inscription sur TaskBoard. Confirmez votre adresse e-mail en cliquant sur le bouton ci-dessous.
         button: Confirmer mon adresse
+    invitation:
+        subject: Invitation au projet « %project% »
+        intro: "%inviter% vous invite à rejoindre le projet « %project% » sur TaskBoard en tant que %role%."
+        button: Voir l'invitation
+        expires: Cette invitation expire le %date%.
     reset_password:
         subject: Réinitialisation de votre mot de passe
         intro: Vous avez demandé à changer votre mot de passe. Cliquez sur le bouton ci-dessous pour en choisir un nouveau.

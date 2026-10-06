@@ -52,6 +52,13 @@ class Project
     #[ORM\OrderBy(['position' => 'ASC'])]
     private Collection $columns;
 
+    /**
+     * @var Collection<int, Invitation>
+     */
+    #[ORM\OneToMany(targetEntity: Invitation::class, mappedBy: 'project', orphanRemoval: true)]
+    #[ORM\OrderBy(['createdAt' => 'DESC'])]
+    private Collection $invitations;
+
     public function __construct(string $name, User $owner, ProjectColor $color = ProjectColor::INDIGO, ?string $description = null)
     {
         $this->name = $name;
@@ -61,6 +68,7 @@ class Project
         $this->createdAt = new \DateTimeImmutable();
         $this->members = new ArrayCollection();
         $this->columns = new ArrayCollection();
+        $this->invitations = new ArrayCollection();
         $this->addMember($owner, ProjectRole::OWNER);
     }
 
@@ -147,15 +155,37 @@ class Project
         return $column;
     }
 
-    public function getRoleOf(User $user): ?ProjectRole
+    /**
+     * @return Collection<int, Invitation>
+     */
+    public function getInvitations(): Collection
+    {
+        return $this->invitations;
+    }
+
+    public function getMemberOf(User $user): ?ProjectMember
     {
         foreach ($this->members as $member) {
             if ($member->isFor($user)) {
-                return $member->getRole();
+                return $member;
             }
         }
 
         return null;
+    }
+
+    public function removeMember(ProjectMember $member): void
+    {
+        if (ProjectRole::OWNER === $member->getRole()) {
+            throw new \LogicException('The owner cannot be removed from the project.');
+        }
+
+        $this->members->removeElement($member);
+    }
+
+    public function getRoleOf(User $user): ?ProjectRole
+    {
+        return $this->getMemberOf($user)?->getRole();
     }
 
     private function normalizeDescription(?string $description): ?string

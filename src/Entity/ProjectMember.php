@@ -63,6 +63,15 @@ class ProjectMember
         return $this->role;
     }
 
+    public function changeRole(ProjectRole $role): void
+    {
+        if (ProjectRole::OWNER === $this->role || ProjectRole::OWNER === $role) {
+            throw new \LogicException('Ownership cannot be given or taken through a role change.');
+        }
+
+        $this->role = $role;
+    }
+
     public function getJoinedAt(): \DateTimeImmutable
     {
         return $this->joinedAt;

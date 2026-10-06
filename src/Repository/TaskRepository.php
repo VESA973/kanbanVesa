@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use App\Entity\Project;
 use App\Entity\Task;
+use App\Entity\User;
 use App\Service\PositionList;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -32,5 +34,21 @@ class TaskRepository extends ServiceEntityRepository
         PositionList::remove($column->getTasks(), $task);
         $this->getEntityManager()->remove($task);
         $this->getEntityManager()->flush();
+    }
+
+    public function unassignInProject(Project $project, User $user): void
+    {
+        $tasks = $this->createQueryBuilder('t')
+            ->innerJoin('t.column', 'c')
+            ->andWhere('c.project = :project')
+            ->andWhere('t.assignee = :user')
+            ->setParameter('project', $project)
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->toIterable();
+
+        foreach ($tasks as $task) {
+            $task->unassign();
+        }
     }
 }

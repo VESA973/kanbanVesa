@@ -106,6 +106,11 @@ class Task implements Positionable
         return $this->assignee;
     }
 
+    public function unassign(): void
+    {
+        $this->assignee = null;
+    }
+
     public function getDueDate(): ?\DateTimeImmutable
     {
         return $this->dueDate;

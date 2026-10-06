@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'invitation.page_title'|trans }} · {{ parent() }}{% endblock %}
+
+{% block body %}
+    <twig:AuthCard title="{{ 'invitation.page_title'|trans }}">
+        {% if error is defined %}
+            <twig:Alert type="error">{{ error|trans }}</twig:Alert>
+            <twig:Link href="{{ path('app_home') }}">{{ 'invitation.back_home'|trans }}</twig:Link>
+        {% else %}
+            <p class="mb-6 text-slate-700 dark:text-slate-200">
+                {{ 'invitation.intro'|trans({
+                    '%inviter%': invitation.invitedBy.fullName,
+                    '%project%': invitation.project.name,
+                    '%role%': invitation.role.translationKey|trans,
+                }) }}
+            </p>
+
+            {% if app.user %}
+                {% if app.user.email == invitation.email %}
+                    <form method="post" action="{{ path('app_invitation_accept', {token: token}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('accept-invitation') }}">
+                        <twig:Button type="submit" fullWidth>{{ 'invitation.accept'|trans }}</twig:Button>
+                    </form>
+                {% else %}
+                    <twig:Alert type="error">{{ 'invitation.error.email_mismatch'|trans }}</twig:Alert>
+                    <p class="text-sm text-slate-600 dark:text-slate-300">{{ 'invitation.wrong_account'|trans({'%email%': invitation.email}) }}</p>
+                {% endif %}
+            {% else %}
+                <p class="mb-4 text-sm text-slate-600 dark:text-slate-300">{{ 'invitation.login_first'|trans({'%email%': invitation.email}) }}</p>
+                <div class="flex flex-col gap-2 sm:flex-row">
+                    <twig:Button href="{{ path('app_login') }}" fullWidth>{{ 'nav.login'|trans }}</twig:Button>
+                    <twig:Button href="{{ path('app_register') }}" variant="secondary" fullWidth>{{ 'nav.register'|trans }}</twig:Button>
+                </div>
+            {% endif %}
+        {% endif %}
+    </twig:AuthCard>
+{% endblock %}
