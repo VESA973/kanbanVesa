@@ -1,0 +1,2 @@
+{% props href, strong = false %}
+<a href="{{ href }}" {{ attributes.defaults({class: 'rounded text-indigo-600 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:text-indigo-400' ~ (strong ? ' font-semibold' : '')}) }}>{% block content %}{% endblock %}</a>

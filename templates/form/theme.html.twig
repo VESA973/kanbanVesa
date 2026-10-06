@@ -1,0 +1,46 @@
+{% use 'form_div_layout.html.twig' %}
+
+{%- block form_row -%}
+    {%- set widget_attr = {} -%}
+    {%- if help is not empty -%}
+        {%- set widget_attr = {attr: {'aria-describedby': id ~ '_help'}} -%}
+    {%- endif -%}
+    <div class="mb-4">
+        {{- form_label(form) -}}
+        {{- form_widget(form, widget_attr) -}}
+        {{- form_help(form) -}}
+        {{- form_errors(form) -}}
+    </div>
+{%- endblock form_row -%}
+
+{%- block form_label -%}
+    {%- set label_attr = label_attr|merge({class: (label_attr.class|default('') ~ ' mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200')|trim}) -%}
+    {{- parent() -}}
+{%- endblock form_label -%}
+
+{%- block form_widget_simple -%}
+    {%- set attr = attr|merge({
+        class: (attr.class|default('') ~ ' block w-full rounded-md border bg-white px-3 py-2 text-sm text-slate-900 shadow-xs placeholder:text-slate-400 focus:border-indigo-500 focus:outline-2 focus:outline-indigo-500 dark:bg-slate-800 dark:text-slate-100 '
+            ~ (errors|length > 0 ? 'border-red-500 dark:border-red-400' : 'border-slate-300 dark:border-slate-700'))|trim,
+    }) -%}
+    {%- if errors|length > 0 -%}
+        {%- set attr = attr|merge({'aria-invalid': 'true'}) -%}
+    {%- endif -%}
+    {{- parent() -}}
+{%- endblock form_widget_simple -%}
+
+{%- block form_help -%}
+    {%- if help is not empty -%}
+        <p id="{{ id }}_help" class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ help|trans(help_translation_parameters, translation_domain) }}</p>
+    {%- endif -%}
+{%- endblock form_help -%}
+
+{%- block form_errors -%}
+    {%- if errors|length > 0 -%}
+        <ul class="mt-1 space-y-0.5 text-sm text-red-600 dark:text-red-400">
+            {%- for error in errors -%}
+                <li>{{ error.message }}</li>
+            {%- endfor -%}
+        </ul>
+    {%- endif -%}
+{%- endblock form_errors -%}

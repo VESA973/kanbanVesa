@@ -1,0 +1,8 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'home.title'|trans }} · {{ parent() }}{% endblock %}
+
+{% block body %}
+    <h1 class="text-2xl font-bold tracking-tight">{{ 'home.greeting'|trans({'%name%': app.user.firstName}) }}</h1>
+    <p class="mt-2 text-slate-600 dark:text-slate-300">{{ 'home.placeholder'|trans }}</p>
+{% endblock %}

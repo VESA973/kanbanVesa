@@ -1,0 +1,12 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'auth.reset.title'|trans }} · {{ parent() }}{% endblock %}
+
+{% block body %}
+    <twig:AuthCard title="{{ 'auth.reset.title'|trans }}">
+        {{ form_start(form, {attr: {novalidate: 'novalidate'}}) }}
+            {{ form_row(form.plainPassword) }}
+            <twig:Button type="submit" fullWidth>{{ 'auth.reset.submit'|trans }}</twig:Button>
+        {{ form_end(form) }}
+    </twig:AuthCard>
+{% endblock %}

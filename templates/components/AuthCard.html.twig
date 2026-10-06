@@ -1,0 +1,8 @@
+{% props title %}
+<div class="mx-auto mt-6 w-full max-w-md sm:mt-12">
+    <div class="rounded-lg bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8 dark:bg-slate-900 dark:ring-slate-800">
+        <h1 class="mb-6 text-2xl font-bold tracking-tight">{{ title }}</h1>
+        {% block content %}{% endblock %}
+    </div>
+    {% block footer %}{% endblock %}
+</div>

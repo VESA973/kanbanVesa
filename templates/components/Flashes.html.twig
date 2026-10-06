@@ -1,0 +1,5 @@
+{% for type, messages in app.flashes %}
+    {% for message in messages %}
+        <twig:Alert type="{{ type }}">{{ message|trans }}</twig:Alert>
+    {% endfor %}
+{% endfor %}

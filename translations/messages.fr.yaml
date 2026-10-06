@@ -1,0 +1,77 @@
+app:
+    name: TaskBoard
+
+nav:
+    main: Navigation principale
+    skip_to_content: Aller au contenu
+    login: Se connecter
+    register: Créer un compte
+    logout: Se déconnecter
+
+home:
+    title: Accueil
+    greeting: Bonjour %name% 👋
+    placeholder: Vos projets apparaîtront bientôt ici.
+
+user:
+    email: Adresse e-mail
+    first_name: Prénom
+    last_name: Nom
+    password: Mot de passe
+    new_password: Nouveau mot de passe
+    password_confirmation: Confirmez le mot de passe
+    password.help: 8 caractères minimum.
+
+auth:
+    back_to_login: Retour à la connexion
+    login:
+        title: Connexion
+        submit: Se connecter
+        remember_me: Rester connecté
+        forgot_password: Mot de passe oublié ?
+        no_account: Pas encore de compte ?
+        register_link: Créer un compte
+    register:
+        title: Créer un compte
+        submit: Créer mon compte
+        has_account: Déjà inscrit ?
+        login_link: Se connecter
+    reset_request:
+        title: Mot de passe oublié
+        intro: Indiquez votre adresse e-mail, nous vous enverrons un lien pour choisir un nouveau mot de passe.
+        submit: Envoyer le lien
+    check_email:
+        title: Vérifiez vos e-mails
+        message: Si un compte correspond à cette adresse, un e-mail contenant un lien de réinitialisation vient d'être envoyé. Ce lien expirera %expires%.
+        retry: Vous n'avez rien reçu ? Réessayer
+    reset:
+        title: Nouveau mot de passe
+        submit: Enregistrer le mot de passe
+
+verify_email:
+    banner: Votre adresse %email% n'est pas encore confirmée. Consultez le lien reçu par e-mail.
+    resend: Renvoyer l'e-mail
+
+flash:
+    registration:
+        success: Bienvenue ! Un e-mail de confirmation vient de vous être envoyé.
+    verify_email:
+        success: Votre adresse e-mail est confirmée. Merci !
+        resent: Un nouvel e-mail de confirmation vient d'être envoyé.
+        invalid_link: Ce lien de confirmation est invalide ou a expiré. Demandez-en un nouveau.
+    reset_password:
+        success: Votre mot de passe a été modifié. Vous pouvez vous connecter.
+        invalid_token: Ce lien de réinitialisation est invalide ou a expiré. Faites une nouvelle demande.
+
+email:
+    greeting: Bonjour %name%,
+    expires: Ce lien expirera %expires%.
+    verify:
+        subject: Confirmez votre adresse e-mail
+        intro: Merci pour votre inscription sur TaskBoard. Confirmez votre adresse e-mail en cliquant sur le bouton ci-dessous.
+        button: Confirmer mon adresse
+    reset_password:
+        subject: Réinitialisation de votre mot de passe
+        intro: Vous avez demandé à changer votre mot de passe. Cliquez sur le bouton ci-dessous pour en choisir un nouveau.
+        button: Choisir un nouveau mot de passe
+        ignore: Si vous n'êtes pas à l'origine de cette demande, ignorez simplement cet e-mail.

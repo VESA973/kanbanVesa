@@ -1,7 +1,3 @@
-body {
-    background-color: skyblue;
-}
-
-
-
 @import "tailwindcss";
+
+@source "../../templates";

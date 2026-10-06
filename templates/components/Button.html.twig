@@ -1,0 +1,13 @@
+{% props variant = 'primary', href = null, type = 'button', fullWidth = false %}
+{% set variants = {
+    primary: 'bg-indigo-600 text-white hover:bg-indigo-500 dark:bg-indigo-500 dark:hover:bg-indigo-400',
+    secondary: 'bg-white text-slate-700 ring-1 ring-inset ring-slate-300 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-100 dark:ring-slate-700 dark:hover:bg-slate-700',
+    ghost: 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800',
+} %}
+{% set classes = 'inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-semibold shadow-xs transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50 '
+    ~ variants[variant] ~ (fullWidth ? ' w-full' : '') %}
+{% if href %}
+    <a href="{{ href }}" {{ attributes.defaults({class: classes}) }}>{% block content %}{% endblock %}</a>
+{% else %}
+    <button type="{{ type }}" {{ attributes.defaults({class: classes}) }}>{{ block('content') }}</button>
+{% endif %}

@@ -1,0 +1,9 @@
+{% props type = 'info' %}
+{% set styles = {
+    success: 'border-green-300 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200',
+    error: 'border-red-300 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200',
+    info: 'border-sky-300 bg-sky-50 text-sky-800 dark:border-sky-800 dark:bg-sky-950 dark:text-sky-200',
+} %}
+<div role="{{ type == 'error' ? 'alert' : 'status' }}" class="mb-4 rounded-md border px-4 py-3 text-sm {{ styles[type] ?? styles.info }}">
+    {% block content %}{% endblock %}
+</div>

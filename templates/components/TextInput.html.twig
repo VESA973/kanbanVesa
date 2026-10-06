@@ -1,0 +1,9 @@
+{% props id, label, type = 'text', value = '' %}
+<div class="mb-4">
+    <div class="mb-1 flex items-center justify-between">
+        <label for="{{ id }}" class="block text-sm font-medium text-slate-700 dark:text-slate-200">{{ label }}</label>
+        {% block aside %}{% endblock %}
+    </div>
+    <input type="{{ type }}" id="{{ id }}" name="{{ id }}" value="{{ value }}"
+        {{ attributes.defaults({class: 'block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-xs focus:border-indigo-500 focus:outline-2 focus:outline-indigo-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100'}) }}>
+</div>

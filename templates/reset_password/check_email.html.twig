@@ -1,0 +1,14 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'auth.check_email.title'|trans }} · {{ parent() }}{% endblock %}
+
+{% block body %}
+    <twig:AuthCard title="{{ 'auth.check_email.title'|trans }}">
+        <p class="text-sm text-slate-600 dark:text-slate-300">
+            {{ 'auth.check_email.message'|trans({'%expires%': resetToken.expirationMessageKey|trans(resetToken.expirationMessageData, 'ResetPasswordBundle')}) }}
+        </p>
+        <p class="mt-4 text-sm">
+            <twig:Link href="{{ path('app_forgot_password_request') }}">{{ 'auth.check_email.retry'|trans }}</twig:Link>
+        </p>
+    </twig:AuthCard>
+{% endblock %}

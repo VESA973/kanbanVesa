@@ -1,0 +1,25 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'auth.register.title'|trans }} · {{ parent() }}{% endblock %}
+
+{% block body %}
+    <twig:AuthCard title="{{ 'auth.register.title'|trans }}">
+        {{ form_start(form, {attr: {novalidate: 'novalidate'}}) }}
+            {{ form_errors(form) }}
+            <div class="grid gap-x-4 sm:grid-cols-2">
+                {{ form_row(form.firstName) }}
+                {{ form_row(form.lastName) }}
+            </div>
+            {{ form_row(form.email) }}
+            {{ form_row(form.plainPassword) }}
+            <twig:Button type="submit" fullWidth>{{ 'auth.register.submit'|trans }}</twig:Button>
+        {{ form_end(form) }}
+
+        <twig:block name="footer">
+            <p class="mt-4 text-center text-sm text-slate-600 dark:text-slate-400">
+                {{ 'auth.register.has_account'|trans }}
+                <twig:Link href="{{ path('app_login') }}" strong>{{ 'auth.register.login_link'|trans }}</twig:Link>
+            </p>
+        </twig:block>
+    </twig:AuthCard>
+{% endblock %}

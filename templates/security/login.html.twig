@@ -1,0 +1,33 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'auth.login.title'|trans }} · {{ parent() }}{% endblock %}
+
+{% block body %}
+    <twig:AuthCard title="{{ 'auth.login.title'|trans }}">
+        {% if error %}
+            <twig:Alert type="error">{{ error.messageKey|trans(error.messageData, 'security') }}</twig:Alert>
+        {% endif %}
+
+        <form method="post" action="{{ path('app_login') }}">
+            <twig:TextInput id="email" type="email" label="{{ 'user.email'|trans }}" value="{{ lastEmail }}" required autofocus autocomplete="email" />
+            <twig:TextInput id="password" type="password" label="{{ 'user.password'|trans }}" required autocomplete="current-password">
+                <twig:block name="aside">
+                    <twig:Link href="{{ path('app_forgot_password_request') }}" class="text-sm">{{ 'auth.login.forgot_password'|trans }}</twig:Link>
+                </twig:block>
+            </twig:TextInput>
+            <div class="mb-6 flex items-center gap-2">
+                <input type="checkbox" id="remember_me" name="_remember_me" class="size-4 rounded border-slate-300 accent-indigo-600 focus-visible:outline-2 focus-visible:outline-indigo-600">
+                <label for="remember_me" class="text-sm text-slate-700 dark:text-slate-200">{{ 'auth.login.remember_me'|trans }}</label>
+            </div>
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+            <twig:Button type="submit" fullWidth>{{ 'auth.login.submit'|trans }}</twig:Button>
+        </form>
+
+        <twig:block name="footer">
+            <p class="mt-4 text-center text-sm text-slate-600 dark:text-slate-400">
+                {{ 'auth.login.no_account'|trans }}
+                <twig:Link href="{{ path('app_register') }}" strong>{{ 'auth.login.register_link'|trans }}</twig:Link>
+            </p>
+        </twig:block>
+    </twig:AuthCard>
+{% endblock %}

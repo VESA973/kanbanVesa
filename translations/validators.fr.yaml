@@ -1,0 +1,5 @@
+user:
+    email:
+        already_used: Un compte existe déjà avec cette adresse e-mail.
+    password:
+        mismatch: Les deux mots de passe ne correspondent pas.

@@ -1,0 +1,13 @@
+{% if app.user and not app.user.verified %}
+    <div role="status" class="border-b border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100">
+        <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-2 text-sm sm:px-6 lg:px-8">
+            <p>{{ 'verify_email.banner'|trans({'%email%': app.user.email}) }}</p>
+            <form method="post" action="{{ path('app_verify_resend') }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('resend-verification') }}">
+                <button type="submit" class="rounded font-semibold underline hover:no-underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600">
+                    {{ 'verify_email.resend'|trans }}
+                </button>
+            </form>
+        </div>
+    </div>
+{% endif %}
