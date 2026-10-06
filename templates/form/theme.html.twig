@@ -72,3 +72,8 @@
     }) -%}
     {{- parent() -}}
 {%- endblock textarea_widget -%}
+
+{%- block choice_widget_collapsed -%}
+    {%- set attr = attr|merge({class: (attr.class|default('') ~ ' block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-xs focus:border-indigo-500 focus:outline-2 focus:outline-indigo-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100')|trim}) -%}
+    {{- parent() -}}
+{%- endblock choice_widget_collapsed -%}

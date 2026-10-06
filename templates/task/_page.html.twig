@@ -1,0 +1,11 @@
+{# Layout used when the task URL is opened directly (new tab, shared link). #}
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ block('modal_title') }} · {{ parent() }}{% endblock %}
+
+{% block body %}
+    <div class="mx-auto max-w-2xl rounded-lg bg-white p-6 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
+        <h1 class="mb-4 text-xl font-bold break-words">{{ block('modal_title') }}</h1>
+        {{ block('modal_body') }}
+    </div>
+{% endblock %}

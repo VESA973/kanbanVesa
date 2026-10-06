@@ -3,6 +3,9 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        {# After a form on the board redirects back to it, Turbo morphs the page instead of replacing it. #}
+        <meta name="turbo-refresh-method" content="morph">
+        <meta name="turbo-refresh-scroll" content="preserve">
         <title>{% block title %}{{ 'app.name'|trans }}{% endblock %}</title>
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>📋</text></svg>">
         {% block stylesheets %}{% endblock %}
@@ -18,9 +21,11 @@
         <twig:Navbar />
         <twig:VerificationBanner />
 
-        <main id="main" class="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <main id="main" class="{% block main_class %}mx-auto w-full max-w-7xl{% endblock %} px-4 py-6 sm:px-6 lg:px-8">
             <twig:Flashes />
             {% block body %}{% endblock %}
         </main>
+
+        <turbo-frame id="modal"></turbo-frame>
     </body>
 </html>

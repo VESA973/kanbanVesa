@@ -12,6 +12,42 @@ nav:
 action:
     save: Enregistrer
     cancel: Annuler
+    close: Fermer
+
+board:
+    move_error: Le déplacement n'a pas pu être enregistré, l'élément a repris sa place.
+
+column:
+    default:
+        todo: À faire
+        in_progress: En cours
+        done: Terminé
+    new: Nouvelle colonne
+    add: Ajouter la colonne
+    actions: Actions de la colonne %name%
+    rename: Renommer la colonne
+    delete: Supprimer la colonne
+    delete_confirm: Supprimer la colonne « %name% » et ses %count% tâche(s) ?
+    tasks_of: Tâches de la colonne %name%
+
+task:
+    title: Titre
+    description: Description
+    column: Colonne
+    created_by: Créée par
+    created_at: Créée le
+    add: Ajouter une carte
+    new_in: Nouvelle tâche dans %name%
+    has_description: Cette tâche a une description
+    no_description: Aucune description.
+    delete: Supprimer la tâche
+    delete_confirm: Supprimer définitivement cette tâche ?
+    priority:
+        label: Priorité
+        low: Basse
+        medium: Moyenne
+        high: Haute
+        urgent: Urgente
 
 project:
     name: Nom du projet
@@ -37,8 +73,6 @@ project:
         submit: Créer le projet
     edit:
         title: Modifier le projet
-    show:
-        board_placeholder: Le tableau Kanban arrive à la prochaine étape.
     delete:
         title: Supprimer le projet
         warning: Le projet, ses colonnes et ses tâches seront définitivement supprimés. Cette action est irréversible.
@@ -85,6 +119,10 @@ verify_email:
     resend: Renvoyer l'e-mail
 
 flash:
+    column:
+        deleted: La colonne a été supprimée.
+    task:
+        deleted: La tâche a été supprimée.
     project:
         created: Le projet a été créé.
         updated: Le projet a été mis à jour.

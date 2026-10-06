@@ -1,0 +1,59 @@
+{% props column, boardToken, canManageColumns = false %}
+{% set can_create_task = is_granted('PROJECT_CREATE_TASK', column.project) %}
+<section class="flex max-h-[calc(100vh-14rem)] w-72 shrink-0 flex-col rounded-lg bg-slate-100 dark:bg-slate-900"
+         aria-labelledby="column-{{ column.id }}-title"
+         {% if canManageColumns %}data-sortable-url="{{ path('app_column_move', {id: column.id}) }}"{% endif %}>
+    <header class="flex items-center justify-between gap-2 px-3 pt-3 pb-2">
+        <h2 id="column-{{ column.id }}-title" class="flex min-w-0 items-center gap-2 text-sm font-semibold {{ canManageColumns ? 'cursor-grab' }}" {{ canManageColumns ? 'data-column-handle' }}>
+            <span class="truncate">{{ column.name }}</span>
+            <span class="rounded-full bg-slate-200 px-2 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">{{ column.tasks|length }}</span>
+        </h2>
+        {% if canManageColumns %}
+            <details class="relative">
+                <summary class="cursor-pointer list-none rounded px-2 py-1 text-slate-500 hover:bg-slate-200 focus-visible:outline-2 focus-visible:outline-indigo-600 dark:hover:bg-slate-800">
+                    <span aria-hidden="true">⋯</span><span class="sr-only">{{ 'column.actions'|trans({'%name%': column.name}) }}</span>
+                </summary>
+                <div class="absolute right-0 z-10 mt-1 w-64 space-y-3 rounded-md bg-white p-3 shadow-lg ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
+                    <form method="post" action="{{ path('app_column_rename', {id: column.id}) }}">
+                        <input type="hidden" name="_token" value="{{ boardToken }}">
+                        <label for="rename-{{ column.id }}" class="mb-1 block text-xs font-medium">{{ 'column.rename'|trans }}</label>
+                        <div class="flex gap-2">
+                            <input id="rename-{{ column.id }}" name="name" value="{{ column.name }}" required maxlength="50"
+                                   class="block w-full rounded-md border border-slate-300 bg-white px-2 py-1 text-sm focus:outline-2 focus:outline-indigo-500 dark:border-slate-700 dark:bg-slate-900">
+                            <twig:Button type="submit" variant="secondary">{{ 'action.save'|trans }}</twig:Button>
+                        </div>
+                    </form>
+                    <form method="post" action="{{ path('app_column_delete', {id: column.id}) }}"
+                          data-controller="confirm" data-action="confirm#ask"
+                          data-confirm-message-value="{{ 'column.delete_confirm'|trans({'%name%': column.name, '%count%': column.tasks|length}) }}">
+                        <input type="hidden" name="_token" value="{{ boardToken }}">
+                        <twig:Button type="submit" variant="danger" fullWidth>{{ 'column.delete'|trans }}</twig:Button>
+                    </form>
+                </div>
+            </details>
+        {% endif %}
+    </header>
+
+    <ul class="flex min-h-12 flex-1 flex-col gap-2 overflow-y-auto px-3 pb-2"
+        data-column-id="{{ column.id }}"
+        aria-label="{{ 'column.tasks_of'|trans({'%name%': column.name}) }}"
+        {% if can_create_task %}
+            data-controller="sortable"
+            data-sortable-group-value="tasks"
+            data-sortable-csrf-token-value="{{ boardToken }}"
+            data-sortable-error-message-value="{{ 'board.move_error'|trans }}"
+        {% endif %}>
+        {% for task in column.tasks %}
+            <twig:TaskCard :task="task" />
+        {% endfor %}
+    </ul>
+
+    {% if can_create_task %}
+        <form method="post" action="{{ path('app_task_new', {id: column.id}) }}" class="px-3 pb-3">
+            <input type="hidden" name="_token" value="{{ boardToken }}">
+            <label for="new-task-{{ column.id }}" class="sr-only">{{ 'task.new_in'|trans({'%name%': column.name}) }}</label>
+            <input id="new-task-{{ column.id }}" name="name" required maxlength="255" placeholder="+ {{ 'task.add'|trans }}"
+                   class="block w-full rounded-md border border-transparent bg-transparent px-2 py-1.5 text-sm placeholder:text-slate-500 hover:bg-slate-200 focus:border-indigo-500 focus:bg-white focus:outline-2 focus:outline-indigo-500 dark:hover:bg-slate-800 dark:focus:bg-slate-800">
+        </form>
+    {% endif %}
+</section>

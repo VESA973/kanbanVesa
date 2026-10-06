@@ -45,6 +45,13 @@ class Project
     #[ORM\OneToMany(targetEntity: ProjectMember::class, mappedBy: 'project', cascade: ['persist'], orphanRemoval: true)]
     private Collection $members;
 
+    /**
+     * @var Collection<int, BoardColumn>
+     */
+    #[ORM\OneToMany(targetEntity: BoardColumn::class, mappedBy: 'project', cascade: ['persist'], orphanRemoval: true)]
+    #[ORM\OrderBy(['position' => 'ASC'])]
+    private Collection $columns;
+
     public function __construct(string $name, User $owner, ProjectColor $color = ProjectColor::INDIGO, ?string $description = null)
     {
         $this->name = $name;
@@ -53,6 +60,7 @@ class Project
         $this->description = $this->normalizeDescription($description);
         $this->createdAt = new \DateTimeImmutable();
         $this->members = new ArrayCollection();
+        $this->columns = new ArrayCollection();
         $this->addMember($owner, ProjectRole::OWNER);
     }
 
@@ -121,6 +129,22 @@ class Project
         $this->members->add($member);
 
         return $member;
+    }
+
+    /**
+     * @return Collection<int, BoardColumn>
+     */
+    public function getColumns(): Collection
+    {
+        return $this->columns;
+    }
+
+    public function addColumn(string $name): BoardColumn
+    {
+        $column = new BoardColumn($this, $name, $this->columns->count());
+        $this->columns->add($column);
+
+        return $column;
     }
 
     public function getRoleOf(User $user): ?ProjectRole

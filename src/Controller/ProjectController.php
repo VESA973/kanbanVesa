@@ -8,6 +8,7 @@ use App\Entity\Project;
 use App\Entity\User;
 use App\Form\Data\ProjectData;
 use App\Form\ProjectFormType;
+use App\Repository\BoardColumnRepository;
 use App\Repository\ProjectRepository;
 use App\Security\Voter\ProjectVoter;
 use App\Service\ProjectCreator;
@@ -59,9 +60,12 @@ final class ProjectController extends AbstractController
 
     #[Route('/{id}', name: 'app_project_show', requirements: ['id' => '\d+'], methods: ['GET'])]
     #[IsGranted(ProjectVoter::VIEW, 'project', statusCode: 404)]
-    public function show(Project $project): Response
+    public function show(Project $project, BoardColumnRepository $columnRepository): Response
     {
-        return $this->render('project/show.html.twig', ['project' => $project]);
+        return $this->render('project/show.html.twig', [
+            'project' => $project,
+            'columns' => $columnRepository->findBoard($project),
+        ]);
     }
 
     #[Route('/{id}/edit', name: 'app_project_edit', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]

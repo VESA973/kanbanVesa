@@ -19,10 +19,14 @@ final class ProjectVoter extends Voter
     public const string VIEW = 'PROJECT_VIEW';
     public const string EDIT = 'PROJECT_EDIT';
     public const string DELETE = 'PROJECT_DELETE';
+    public const string MANAGE_COLUMNS = 'PROJECT_MANAGE_COLUMNS';
+    public const string CREATE_TASK = 'PROJECT_CREATE_TASK';
+
+    private const array ATTRIBUTES = [self::VIEW, self::EDIT, self::DELETE, self::MANAGE_COLUMNS, self::CREATE_TASK];
 
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return \in_array($attribute, [self::VIEW, self::EDIT, self::DELETE], true)
+        return \in_array($attribute, self::ATTRIBUTES, true)
             && $subject instanceof Project;
     }
 
@@ -43,6 +47,7 @@ final class ProjectVoter extends Voter
         return match ($attribute) {
             self::VIEW => true,
             self::EDIT, self::DELETE => ProjectRole::OWNER === $role,
+            self::MANAGE_COLUMNS, self::CREATE_TASK => ProjectRole::VIEWER !== $role,
             default => false,
         };
     }

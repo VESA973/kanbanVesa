@@ -12,10 +12,11 @@ use App\Form\Data\ProjectData;
 use App\Repository\ProjectRepository;
 use App\Service\ProjectCreator;
 use PHPUnit\Framework\TestCase;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class ProjectCreatorTest extends TestCase
 {
-    public function testCreatesTheProjectWithItsOwnerAsMember(): void
+    public function testCreatesTheProjectWithItsOwnerAsMemberAndDefaultColumns(): void
     {
         $owner = new User('owner@example.com', 'Olivia', 'Owner');
         $repository = $this->createMock(ProjectRepository::class);
@@ -26,7 +27,10 @@ final class ProjectCreatorTest extends TestCase
         $data->description = '   ';
         $data->color = ProjectColor::EMERALD;
 
-        $project = new ProjectCreator($repository)->create($data, $owner);
+        $translator = $this->createStub(TranslatorInterface::class);
+        $translator->method('trans')->willReturnArgument(0);
+
+        $project = new ProjectCreator($repository, $translator)->create($data, $owner);
 
         self::assertSame('Refonte du site', $project->getName());
         self::assertNull($project->getDescription(), 'A blank description is stored as null.');
@@ -34,5 +38,9 @@ final class ProjectCreatorTest extends TestCase
         self::assertSame($owner, $project->getOwner());
         self::assertSame(ProjectRole::OWNER, $project->getRoleOf($owner));
         self::assertCount(1, $project->getMembers());
+        self::assertSame(
+            ['column.default.todo', 'column.default.in_progress', 'column.default.done'],
+            $project->getColumns()->map(static fn ($column): string => $column->getName())->getValues(),
+        );
     }
 }

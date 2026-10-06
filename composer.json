@@ -90,6 +90,12 @@
         ],
         "post-update-cmd": [
             "@auto-scripts"
+        ],
+        "db-reset": [
+            "@php bin/console doctrine:database:drop --force --if-exists",
+            "@php bin/console doctrine:database:create",
+            "@php bin/console doctrine:migrations:migrate -n",
+            "@php bin/console foundry:load-fixtures main --append -n"
         ]
     },
     "conflict": {
@@ -115,5 +121,8 @@
         "symfony/stopwatch": "7.4.*",
         "symfony/web-profiler-bundle": "7.4.*",
         "zenstruck/foundry": "^2.13"
+    },
+    "scripts-descriptions": {
+        "db-reset": "Recreate the dev database from the migrations and load the demo data (do not use foundry:load-fixtures without --append: it would wipe the migration history)."
     }
 }

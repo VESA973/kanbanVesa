@@ -20,6 +20,15 @@ final class ProjectFactory extends PersistentObjectFactory
         return Project::class;
     }
 
+    public function withColumns(string ...$names): self
+    {
+        return $this->afterInstantiate(static function (Project $project) use ($names): void {
+            foreach ($names as $name) {
+                $project->addColumn($name);
+            }
+        });
+    }
+
     public function withMember(User $user, ProjectRole $role): self
     {
         return $this->afterInstantiate(static function (Project $project) use ($user, $role): void {
