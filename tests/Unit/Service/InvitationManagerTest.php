@@ -125,6 +125,7 @@ final class InvitationManagerTest extends TestCase
             $repository ?? $this->createStub(InvitationRepository::class),
             $mailer ?? $this->createStub(MailerInterface::class),
             $this->createStub(TranslatorInterface::class),
+            new RecordingDispatcher(),
         );
     }
 

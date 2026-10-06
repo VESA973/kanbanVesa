@@ -40,6 +40,8 @@
     </source>
 
     <extensions>
+        <!-- Each test runs in a transaction rolled back at the end (fast, isolated tests). -->
+        <bootstrap class="DAMA\DoctrineTestBundle\PHPUnit\PHPUnitExtension" />
         <bootstrap class="Zenstruck\Foundry\PHPUnit\FoundryExtension" />
     </extensions>
 </phpunit>

@@ -6,12 +6,16 @@ namespace App\Service;
 
 use App\Entity\BoardColumn;
 use App\Entity\Task;
+use App\Enum\ActivityAction;
+use App\Event\ProjectActivityEvent;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 final readonly class TaskMover
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
+        private EventDispatcherInterface $dispatcher,
     ) {
     }
 
@@ -30,6 +34,10 @@ final readonly class TaskMover
         if ($source !== $target) {
             $source->getTasks()->removeElement($task);
             PositionList::remove($source->getTasks(), $task);
+            $this->dispatcher->dispatch(new ProjectActivityEvent($task->getProject(), ActivityAction::TASK_MOVED, $task->getTitle(), [
+                'from' => $source->getName(),
+                'to' => $target->getName(),
+            ]));
         }
 
         $position = PositionList::insert($target->getTasks(), $task, $position);

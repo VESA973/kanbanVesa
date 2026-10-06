@@ -8,8 +8,8 @@ use App\Controller\Payload\MovePayload;
 use App\Controller\Payload\NamePayload;
 use App\Entity\BoardColumn;
 use App\Entity\Project;
-use App\Repository\BoardColumnRepository;
 use App\Security\Voter\ProjectVoter;
+use App\Service\BoardColumnManager;
 use App\Service\ColumnMover;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\ExpressionLanguage\Expression;
@@ -23,7 +23,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class BoardColumnController extends AbstractController
 {
     public function __construct(
-        private readonly BoardColumnRepository $columnRepository,
+        private readonly BoardColumnManager $columnManager,
     ) {
     }
 
@@ -33,7 +33,7 @@ final class BoardColumnController extends AbstractController
     #[IsCsrfTokenValid(new Expression('"board-" ~ args["project"].getId()'))]
     public function new(Project $project, #[MapRequestPayload] NamePayload $payload): Response
     {
-        $this->columnRepository->save($project->addColumn($payload->name));
+        $this->columnManager->create($project, $payload->name);
 
         return $this->redirectToRoute('app_project_show', ['id' => $project->getId()]);
     }
@@ -44,8 +44,7 @@ final class BoardColumnController extends AbstractController
     #[IsCsrfTokenValid(new Expression('"board-" ~ args["column"].getProject().getId()'))]
     public function rename(BoardColumn $column, #[MapRequestPayload] NamePayload $payload): Response
     {
-        $column->rename($payload->name);
-        $this->columnRepository->save($column);
+        $this->columnManager->rename($column, $payload->name);
 
         return $this->redirectToRoute('app_project_show', ['id' => $column->getProject()->getId()]);
     }
@@ -57,7 +56,7 @@ final class BoardColumnController extends AbstractController
     public function delete(BoardColumn $column): Response
     {
         $projectId = $column->getProject()->getId();
-        $this->columnRepository->remove($column);
+        $this->columnManager->delete($column);
         $this->addFlash('success', 'flash.column.deleted');
 
         return $this->redirectToRoute('app_project_show', ['id' => $projectId]);

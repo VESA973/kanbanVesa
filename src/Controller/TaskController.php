@@ -12,11 +12,12 @@ use App\Entity\User;
 use App\Form\Data\TaskData;
 use App\Form\TaskFormType;
 use App\Repository\BoardColumnRepository;
-use App\Repository\TaskRepository;
 use App\Security\Voter\ProjectVoter;
 use App\Security\Voter\TaskVoter;
+use App\Service\TaskCompleter;
 use App\Service\TaskCreator;
 use App\Service\TaskMover;
+use App\Service\TaskRemover;
 use App\Service\TaskUpdater;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\ExpressionLanguage\Expression;
@@ -68,13 +69,33 @@ final class TaskController extends AbstractController
     #[IsGranted(TaskVoter::VIEW, 'task', statusCode: 404)]
     #[IsGranted(TaskVoter::EDIT, 'task')]
     #[IsCsrfTokenValid(new Expression('"board-" ~ args["task"].getProject().getId()'))]
-    public function delete(Task $task, TaskRepository $taskRepository): Response
+    public function delete(Task $task, TaskRemover $taskRemover): Response
     {
         $projectId = $task->getProject()->getId();
-        $taskRepository->remove($task);
+        $taskRemover->remove($task);
         $this->addFlash('success', 'flash.task.deleted');
 
         return $this->redirectToRoute('app_project_show', ['id' => $projectId]);
+    }
+
+    /**
+     * Used from the board, the task modal and "Mes tâches": goes back to the page it came from.
+     */
+    #[Route('/tasks/{id}/toggle', name: 'app_task_toggle', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[IsGranted(TaskVoter::VIEW, 'task', statusCode: 404)]
+    #[IsGranted(TaskVoter::COMPLETE, 'task')]
+    #[IsCsrfTokenValid(new Expression('"toggle-task-" ~ args["task"].getId()'))]
+    public function toggle(Request $request, Task $task, TaskCompleter $taskCompleter): Response
+    {
+        $completed = $taskCompleter->toggle($task);
+        $this->addFlash('success', $completed ? 'flash.task.completed' : 'flash.task.reopened');
+
+        // Only local paths: "//host" or "/\host" would be followed to another site.
+        $returnTo = $request->request->getString('_return_to');
+
+        return 1 === preg_match('#^/(?![/\\\\])#', $returnTo)
+            ? $this->redirect($returnTo)
+            : $this->redirectToRoute('app_project_show', ['id' => $task->getProject()->getId()]);
     }
 
     #[Route('/tasks/{id}/move', name: 'app_task_move', requirements: ['id' => '\d+'], methods: ['PATCH'])]

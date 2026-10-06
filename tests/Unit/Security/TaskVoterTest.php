@@ -28,6 +28,7 @@ final class TaskVoterTest extends TestCase
         $expected = [
             TaskVoter::VIEW => ['owner' => self::GRANTED, 'editor' => self::GRANTED, 'viewer' => self::GRANTED, 'none' => self::DENIED],
             TaskVoter::EDIT => ['owner' => self::GRANTED, 'editor' => self::GRANTED, 'viewer' => self::DENIED, 'none' => self::DENIED],
+            TaskVoter::COMPLETE => ['owner' => self::GRANTED, 'editor' => self::GRANTED, 'viewer' => self::DENIED, 'none' => self::DENIED],
         ];
 
         foreach ($expected as $attribute => $results) {
@@ -52,6 +53,21 @@ final class TaskVoterTest extends TestCase
         $vote = new TaskVoter()->vote(new UsernamePasswordToken($user, 'main', $user->getRoles()), $task, [$attribute]);
 
         self::assertSame($expected, $vote);
+    }
+
+    public function testViewerCanCompleteOnlyTasksAssignedToThem(): void
+    {
+        $owner = new User('owner@example.com', 'Olivia', 'Owner');
+        $project = new Project('Projet', $owner);
+        $task = new Task($project->addColumn('À faire'), 'Tâche', 0, $owner);
+        $viewer = $this->member($project, ProjectRole::VIEWER);
+        $token = new UsernamePasswordToken($viewer, 'main', $viewer->getRoles());
+
+        self::assertSame(self::DENIED, new TaskVoter()->vote($token, $task, [TaskVoter::COMPLETE]));
+
+        $task->assignTo($viewer);
+        self::assertSame(self::GRANTED, new TaskVoter()->vote($token, $task, [TaskVoter::COMPLETE]));
+        self::assertSame(self::DENIED, new TaskVoter()->vote($token, $task, [TaskVoter::EDIT]), 'Being assigned does not allow editing.');
     }
 
     public function testAnonymousUserIsDenied(): void

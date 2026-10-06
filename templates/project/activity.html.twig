@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'tracking.activity'|trans }} · {{ project.name }} · {{ parent() }}{% endblock %}
+
+{% block body %}
+    <div class="mx-auto max-w-4xl">
+        <twig:Link href="{{ path('app_project_show', {id: project.id}) }}" class="text-sm">← {{ 'member.back_to_board'|trans({'%project%': project.name}) }}</twig:Link>
+        <h1 class="mt-2 mb-4 text-2xl font-bold tracking-tight">{{ 'tracking.title'|trans }}</h1>
+        {{ include('project/_tracking_nav.html.twig') }}
+
+        {% if entries is empty %}
+            <p class="text-sm text-slate-600 dark:text-slate-300">{{ 'tracking.no_activity'|trans }}</p>
+        {% else %}
+            <ol class="divide-y divide-slate-200 rounded-lg bg-white shadow-sm ring-1 ring-slate-200 dark:divide-slate-800 dark:bg-slate-900 dark:ring-slate-800">
+                {% for entry in entries %}
+                    <li class="flex items-start gap-3 p-4 text-sm">
+                        {% if entry.user %}<twig:Avatar :user="entry.user" />{% endif %}
+                        <div class="min-w-0 flex-1">
+                            <p>
+                                <span class="font-semibold">{{ entry.user ? entry.user.fullName : 'tracking.former_member'|trans }}</span>
+                                {{ entry.action.translationKey|trans(entry.translationParameters) }}
+                            </p>
+                            <time datetime="{{ entry.createdAt|date('c') }}" class="text-xs text-slate-500 dark:text-slate-400">{{ entry.createdAt|date('d/m/Y à H:i') }}</time>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ol>
+
+            <nav aria-label="{{ 'tracking.pagination'|trans }}" class="mt-4 flex justify-between text-sm">
+                {% if page > 1 %}
+                    <twig:Link href="{{ path('app_project_activity', {id: project.id, page: page - 1}) }}">← {{ 'tracking.newer'|trans }}</twig:Link>
+                {% else %}<span></span>{% endif %}
+                {% if hasNextPage %}
+                    <twig:Link href="{{ path('app_project_activity', {id: project.id, page: page + 1}) }}">{{ 'tracking.older'|trans }} →</twig:Link>
+                {% endif %}
+            </nav>
+        {% endif %}
+    </div>
+{% endblock %}

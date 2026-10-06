@@ -1,0 +1,8 @@
+{% props task %}
+{% if task.dueDate %}
+    {% set overdue = task.overdue(date()) %}
+    <span class="{{ overdue ? 'font-semibold text-red-700 dark:text-red-400' }}">
+        <span aria-hidden="true">📅</span> {{ task.dueDate|date('d/m/Y') }}
+        {% if overdue %}<span class="sr-only">({{ 'task.overdue'|trans }})</span>{% endif %}
+    </span>
+{% endif %}

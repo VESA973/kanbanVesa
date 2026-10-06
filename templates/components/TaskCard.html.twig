@@ -1,18 +1,21 @@
 {% props task %}
 <li class="group relative rounded-md bg-white p-3 text-sm shadow-xs ring-1 ring-slate-200 hover:ring-indigo-400 focus-within:ring-2 focus-within:ring-indigo-500 dark:bg-slate-800 dark:ring-slate-700"
     {% if is_granted('TASK_EDIT', task) %}data-sortable-url="{{ path('app_task_move', {id: task.id}) }}"{% endif %}>
-    <a href="{{ path('app_task_show', {id: task.id}) }}" data-turbo-frame="modal"
-       class="block font-medium break-words after:absolute after:inset-0 focus-visible:outline-none {{ task.completed ? 'text-slate-400 line-through' }}">
-        {{ task.title }}
-    </a>
+    <div class="flex items-start gap-2">
+        {% if is_granted('TASK_COMPLETE', task) %}
+            <twig:TaskToggle :task="task" :returnTo="path('app_project_show', {id: task.project.id})" class="mt-0.5" />
+        {% endif %}
+        <a href="{{ path('app_task_show', {id: task.id}) }}" data-turbo-frame="modal"
+           class="block min-w-0 font-medium break-words after:absolute after:inset-0 focus-visible:outline-none {{ task.completed ? 'text-slate-400 line-through' }}">
+            {{ task.title }}
+        </a>
+    </div>
     {% if task.priority.value in ['high', 'urgent'] or task.dueDate or task.assignee or task.description %}
         <div class="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
             {% if task.priority.value in ['high', 'urgent'] %}
                 <twig:PriorityBadge :priority="task.priority" />
             {% endif %}
-            {% if task.dueDate %}
-                <span><span aria-hidden="true">📅</span> {{ task.dueDate|date('d/m') }}</span>
-            {% endif %}
+            <twig:DueDate :task="task" />
             {% if task.description %}
                 <span title="{{ 'task.has_description'|trans }}"><span aria-hidden="true">≡</span><span class="sr-only">{{ 'task.has_description'|trans }}</span></span>
             {% endif %}

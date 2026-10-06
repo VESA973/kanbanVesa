@@ -1,0 +1,9 @@
+<nav aria-label="{{ 'tracking.nav'|trans }}" class="mb-6 flex flex-wrap items-center gap-x-6 gap-y-2 border-b border-slate-200 text-sm dark:border-slate-800">
+    {% for route, label in {app_project_progress: 'tracking.progress', app_project_activity: 'tracking.activity'} %}
+        {% set current = app.current_route == route %}
+        <a href="{{ path(route, {id: project.id}) }}" {{ current ? 'aria-current="page"' }}
+           class="-mb-px border-b-2 px-1 py-2 font-medium focus-visible:outline-2 focus-visible:outline-indigo-600 {{ current ? 'border-indigo-600 text-indigo-700 dark:text-indigo-300' : 'border-transparent text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white' }}">
+            {{ label|trans }}
+        </a>
+    {% endfor %}
+</nav>

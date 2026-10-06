@@ -6,8 +6,11 @@ namespace App\Service;
 
 use App\Entity\Project;
 use App\Entity\User;
+use App\Enum\ActivityAction;
+use App\Event\ProjectActivityEvent;
 use App\Form\Data\ProjectData;
 use App\Repository\ProjectRepository;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 final readonly class ProjectCreator
@@ -17,6 +20,7 @@ final readonly class ProjectCreator
     public function __construct(
         private ProjectRepository $projectRepository,
         private TranslatorInterface $translator,
+        private EventDispatcherInterface $dispatcher,
     ) {
     }
 
@@ -31,6 +35,7 @@ final readonly class ProjectCreator
             $project->addColumn($this->translator->trans($name));
         }
 
+        $this->dispatcher->dispatch(new ProjectActivityEvent($project, ActivityAction::PROJECT_CREATED, $project->getName()));
         $this->projectRepository->save($project);
 
         return $project;

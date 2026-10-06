@@ -32,6 +32,7 @@ final class TaskMoverTest extends TestCase
 
         self::assertSame(0, $position);
         self::assertSame([1, 2, 0], [$a->getPosition(), $b->getPosition(), $c->getPosition()]);
+        self::assertSame([], $this->dispatcher->actions(), 'Reordering inside a column is not logged.');
     }
 
     public function testMovesATaskToAnotherColumnAndClosesTheGap(): void
@@ -49,6 +50,7 @@ final class TaskMoverTest extends TestCase
         self::assertSame([0, 1], [$x->getPosition(), $a->getPosition()]);
         self::assertTrue($done->getTasks()->contains($a));
         self::assertFalse($todo->getTasks()->contains($a));
+        self::assertSame(['from' => 'À faire', 'to' => 'Terminé'], $this->dispatcher->last()->payload);
     }
 
     public function testPositionBeyondTheEndIsClamped(): void
@@ -71,9 +73,13 @@ final class TaskMoverTest extends TestCase
         $this->mover()->move($task, $otherColumn, 0);
     }
 
+    private RecordingDispatcher $dispatcher;
+
     private function mover(): TaskMover
     {
-        return new TaskMover($this->createStub(EntityManagerInterface::class));
+        $this->dispatcher = new RecordingDispatcher();
+
+        return new TaskMover($this->createStub(EntityManagerInterface::class), $this->dispatcher);
     }
 
     /**

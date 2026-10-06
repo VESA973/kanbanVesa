@@ -7,9 +7,12 @@ namespace App\Service;
 use App\Entity\Invitation;
 use App\Entity\Project;
 use App\Entity\User;
+use App\Enum\ActivityAction;
 use App\Enum\ProjectRole;
+use App\Event\ProjectActivityEvent;
 use App\Exception\InvitationException;
 use App\Repository\InvitationRepository;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -20,6 +23,7 @@ final readonly class InvitationManager
         private InvitationRepository $invitationRepository,
         private MailerInterface $mailer,
         private TranslatorInterface $translator,
+        private EventDispatcherInterface $dispatcher,
     ) {
     }
 
@@ -40,6 +44,9 @@ final readonly class InvitationManager
             $invitation->renew($role, $plainToken);
         }
 
+        $this->dispatcher->dispatch(new ProjectActivityEvent($project, ActivityAction::INVITATION_SENT, $invitation->getEmail(), [
+            'role' => $this->translator->trans($role->translationKey()),
+        ]));
         $this->invitationRepository->save($invitation);
         $this->sendEmail($invitation, $plainToken);
 
@@ -80,6 +87,9 @@ final readonly class InvitationManager
 
         $user->markAsVerified();
         $invitation->markAsAccepted();
+        $this->dispatcher->dispatch(new ProjectActivityEvent($project, ActivityAction::MEMBER_JOINED, $user->getFullName(), [
+            'role' => $this->translator->trans($invitation->getRole()->translationKey()),
+        ]));
         $this->invitationRepository->save($invitation);
 
         return $project;

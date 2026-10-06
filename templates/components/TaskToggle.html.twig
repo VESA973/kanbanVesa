@@ -1,0 +1,13 @@
+{# Completion checkbox; a form so it works without JavaScript. #}
+{% props task, returnTo %}
+{# relative z-10 keeps the button above the card's full-size link. #}
+<form method="post" action="{{ path('app_task_toggle', {id: task.id}) }}" class="relative z-10 shrink-0 {{ attributes.render('class') }}" {{ attributes }}>
+    <input type="hidden" name="_token" value="{{ csrf_token('toggle-task-' ~ task.id) }}">
+    <input type="hidden" name="_return_to" value="{{ returnTo }}">
+    <button type="submit" aria-pressed="{{ task.completed ? 'true' : 'false' }}"
+            title="{{ (task.completed ? 'task.reopen' : 'task.complete')|trans }}"
+            class="flex size-5 items-center justify-center rounded-full border-2 text-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 {{ task.completed ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-400 text-transparent hover:border-emerald-600 hover:text-emerald-600 dark:border-slate-500' }}">
+        <span aria-hidden="true">✓</span>
+        <span class="sr-only">{{ (task.completed ? 'task.reopen_named' : 'task.complete_named')|trans({'%title%': task.title}) }}</span>
+    </button>
+</form>

@@ -17,12 +17,15 @@
                 {% endif %}
             </div>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center gap-3">
             <div class="hidden -space-x-2 sm:flex">
                 {% for member in project.members %}
                     <twig:Avatar :user="member.user" />
                 {% endfor %}
             </div>
+            {% if is_granted('PROJECT_TRACK', project) %}
+                <twig:Button variant="secondary" href="{{ path('app_project_progress', {id: project.id}) }}">{{ 'tracking.progress'|trans }}</twig:Button>
+            {% endif %}
             <twig:Button variant="secondary" href="{{ path('app_project_members', {id: project.id}) }}">{{ 'member.title'|trans }}</twig:Button>
             {% if is_granted('PROJECT_EDIT', project) %}
                 <twig:Button variant="secondary" href="{{ path('app_project_edit', {id: project.id}) }}">{{ 'project.edit.title'|trans }}</twig:Button>

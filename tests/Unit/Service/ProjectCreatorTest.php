@@ -6,6 +6,7 @@ namespace App\Tests\Unit\Service;
 
 use App\Entity\Project;
 use App\Entity\User;
+use App\Enum\ActivityAction;
 use App\Enum\ProjectColor;
 use App\Enum\ProjectRole;
 use App\Form\Data\ProjectData;
@@ -30,7 +31,7 @@ final class ProjectCreatorTest extends TestCase
         $translator = $this->createStub(TranslatorInterface::class);
         $translator->method('trans')->willReturnArgument(0);
 
-        $project = new ProjectCreator($repository, $translator)->create($data, $owner);
+        $project = new ProjectCreator($repository, $translator, $dispatcher = new RecordingDispatcher())->create($data, $owner);
 
         self::assertSame('Refonte du site', $project->getName());
         self::assertNull($project->getDescription(), 'A blank description is stored as null.');
@@ -38,6 +39,7 @@ final class ProjectCreatorTest extends TestCase
         self::assertSame($owner, $project->getOwner());
         self::assertSame(ProjectRole::OWNER, $project->getRoleOf($owner));
         self::assertCount(1, $project->getMembers());
+        self::assertSame([ActivityAction::PROJECT_CREATED], $dispatcher->actions());
         self::assertSame(
             ['column.default.todo', 'column.default.in_progress', 'column.default.done'],
             $project->getColumns()->map(static fn ($column): string => $column->getName())->getValues(),

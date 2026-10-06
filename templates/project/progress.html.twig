@@ -1,0 +1,72 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'tracking.progress'|trans }} · {{ project.name }} · {{ parent() }}{% endblock %}
+
+{% block body %}
+    <div class="mx-auto max-w-4xl">
+        <twig:Link href="{{ path('app_project_show', {id: project.id}) }}" class="text-sm">← {{ 'member.back_to_board'|trans({'%project%': project.name}) }}</twig:Link>
+        <h1 class="mt-2 mb-4 text-2xl font-bold tracking-tight">{{ 'tracking.title'|trans }}</h1>
+        {{ include('project/_tracking_nav.html.twig') }}
+
+        <div class="overflow-x-auto rounded-lg bg-white shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
+            <table class="w-full text-left text-sm">
+                <caption class="sr-only">{{ 'tracking.progress_caption'|trans }}</caption>
+                <thead class="border-b border-slate-200 text-xs text-slate-500 uppercase dark:border-slate-800 dark:text-slate-400">
+                    <tr>
+                        <th scope="col" class="px-4 py-3 font-semibold">{{ 'tracking.member'|trans }}</th>
+                        <th scope="col" class="px-4 py-3 text-right font-semibold">{{ 'tracking.assigned'|trans }}</th>
+                        <th scope="col" class="px-4 py-3 text-right font-semibold">{{ 'tracking.completed'|trans }}</th>
+                        <th scope="col" class="px-4 py-3 text-right font-semibold">{{ 'tracking.open'|trans }}</th>
+                        <th scope="col" class="px-4 py-3 text-right font-semibold">{{ 'tracking.overdue'|trans }}</th>
+                        <th scope="col" class="w-40 px-4 py-3 font-semibold">{{ 'tracking.rate'|trans }}</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+                    {% for row in rows %}
+                        <tr>
+                            <th scope="row" class="px-4 py-3 font-medium">
+                                {% if row.user %}
+                                    <span class="flex items-center gap-2"><twig:Avatar :user="row.user" /> {{ row.user.fullName }}</span>
+                                {% else %}
+                                    <span class="text-slate-500 italic dark:text-slate-400">{{ 'task.unassigned'|trans }}</span>
+                                {% endif %}
+                            </th>
+                            <td class="px-4 py-3 text-right tabular-nums">{{ row.total }}</td>
+                            <td class="px-4 py-3 text-right tabular-nums">{{ row.completed }}</td>
+                            <td class="px-4 py-3 text-right tabular-nums">{{ row.open }}</td>
+                            <td class="px-4 py-3 text-right tabular-nums {{ row.overdue > 0 ? 'font-semibold text-red-700 dark:text-red-400' }}">{{ row.overdue }}</td>
+                            <td class="px-4 py-3">
+                                <div class="flex items-center gap-2">
+                                    <div class="h-2 flex-1 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700" role="progressbar"
+                                         aria-valuenow="{{ row.completionRate }}" aria-valuemin="0" aria-valuemax="100"
+                                         aria-label="{{ 'tracking.rate_of'|trans({'%name%': row.user ? row.user.fullName : 'task.unassigned'|trans}) }}">
+                                        <div class="h-full rounded-full bg-emerald-500" style="width: {{ row.completionRate }}%"></div>
+                                    </div>
+                                    <span class="w-10 text-right text-xs tabular-nums">{{ row.completionRate }} %</span>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <section class="mt-8" aria-labelledby="overdue-heading">
+            <h2 id="overdue-heading" class="mb-3 text-lg font-semibold">{{ 'tracking.overdue_tasks'|trans }}</h2>
+            {% if overdueTasks is empty %}
+                <p class="text-sm text-slate-600 dark:text-slate-300">{{ 'tracking.no_overdue'|trans }}</p>
+            {% else %}
+                <ul class="divide-y divide-slate-200 rounded-lg bg-white shadow-sm ring-1 ring-slate-200 dark:divide-slate-800 dark:bg-slate-900 dark:ring-slate-800">
+                    {% for task in overdueTasks %}
+                        <li class="relative flex flex-wrap items-center gap-x-3 gap-y-1 p-4 text-sm">
+                            <a href="{{ path('app_task_show', {id: task.id}) }}" data-turbo-frame="modal" class="min-w-0 flex-1 font-medium after:absolute after:inset-0 focus-visible:outline-none">{{ task.title }}</a>
+                            <span class="text-slate-500 dark:text-slate-400">{{ task.column.name }}</span>
+                            <span class="text-slate-500 dark:text-slate-400">{{ task.assignee ? task.assignee.fullName : 'task.unassigned'|trans }}</span>
+                            <twig:DueDate :task="task" />
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </section>
+    </div>
+{% endblock %}

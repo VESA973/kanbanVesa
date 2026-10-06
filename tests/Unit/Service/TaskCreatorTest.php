@@ -18,7 +18,8 @@ final class TaskCreatorTest extends TestCase
         $column = new Project('Projet', $author)->addColumn('À faire');
         $repository = $this->createMock(TaskRepository::class);
         $repository->expects($this->exactly(2))->method('save');
-        $creator = new TaskCreator($repository);
+        $dispatcher = new RecordingDispatcher();
+        $creator = new TaskCreator($repository, $dispatcher);
 
         $first = $creator->create($column, 'Première', $author);
         $second = $creator->create($column, 'Deuxième', $author);
@@ -26,5 +27,6 @@ final class TaskCreatorTest extends TestCase
         self::assertSame([0, 1], [$first->getPosition(), $second->getPosition()]);
         self::assertSame($author, $second->getCreatedBy());
         self::assertCount(2, $column->getTasks());
+        self::assertSame(['column' => 'À faire'], $dispatcher->last()->payload);
     }
 }

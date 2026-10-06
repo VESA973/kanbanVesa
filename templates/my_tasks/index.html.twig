@@ -1,0 +1,48 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'my_tasks.title'|trans }} · {{ parent() }}{% endblock %}
+
+{% block body %}
+    <div class="mx-auto max-w-3xl">
+        <h1 class="mb-6 text-2xl font-bold tracking-tight">{{ 'my_tasks.title'|trans }}</h1>
+
+        {% set total = groups|reduce((carry, tasks) => carry + tasks|length, 0) %}
+        {% if total == 0 %}
+            <div class="rounded-lg border-2 border-dashed border-slate-300 p-10 text-center text-slate-600 dark:border-slate-700 dark:text-slate-300">
+                {{ 'my_tasks.empty'|trans }}
+            </div>
+        {% endif %}
+
+        {% for group, tasks in groups|filter(tasks => tasks is not empty) %}
+            <section class="mb-8" aria-labelledby="group-{{ group }}">
+                <h2 id="group-{{ group }}" class="mb-3 flex items-center gap-2 text-sm font-semibold tracking-wide uppercase {{ group == 'overdue' ? 'text-red-700 dark:text-red-400' : 'text-slate-500 dark:text-slate-400' }}">
+                    {{ ('my_tasks.group.' ~ group)|trans }}
+                    <span class="rounded-full bg-slate-200 px-2 text-xs text-slate-700 dark:bg-slate-800 dark:text-slate-200">{{ tasks|length }}</span>
+                </h2>
+                <ul class="divide-y divide-slate-200 rounded-lg bg-white shadow-sm ring-1 ring-slate-200 dark:divide-slate-800 dark:bg-slate-900 dark:ring-slate-800">
+                    {% for task in tasks %}
+                        <li class="relative flex items-start gap-3 p-4 text-sm">
+                            {% if is_granted('TASK_COMPLETE', task) %}
+                                <twig:TaskToggle :task="task" :returnTo="path('app_my_tasks')" class="mt-0.5" />
+                            {% endif %}
+                            <div class="min-w-0 flex-1">
+                                <a href="{{ path('app_task_show', {id: task.id}) }}" data-turbo-frame="modal"
+                                   class="font-medium break-words after:absolute after:inset-0 focus-visible:outline-none {{ task.completed ? 'text-slate-400 line-through' }}">{{ task.title }}</a>
+                                <div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
+                                    <span class="flex items-center gap-1.5">
+                                        <twig:ProjectColorSwatch :color="task.project.color.value" size="sm" />
+                                        {{ task.project.name }} · {{ task.column.name }}
+                                    </span>
+                                    <twig:DueDate :task="task" />
+                                    {% if task.priority.value in ['high', 'urgent'] %}
+                                        <twig:PriorityBadge :priority="task.priority" />
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </section>
+        {% endfor %}
+    </div>
+{% endblock %}

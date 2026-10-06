@@ -11,6 +11,7 @@ use App\Repository\TaskRepository;
 use App\Service\MembershipManager;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class MembershipManagerTest extends TestCase
 {
@@ -64,6 +65,11 @@ final class MembershipManagerTest extends TestCase
 
     private function manager(?TaskRepository $tasks = null): MembershipManager
     {
-        return new MembershipManager($tasks ?? $this->createStub(TaskRepository::class), $this->createStub(EntityManagerInterface::class));
+        return new MembershipManager(
+            $tasks ?? $this->createStub(TaskRepository::class),
+            $this->createStub(EntityManagerInterface::class),
+            new RecordingDispatcher(),
+            $this->createStub(TranslatorInterface::class),
+        );
     }
 }

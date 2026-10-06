@@ -106,9 +106,53 @@ class Task implements Positionable
         return $this->assignee;
     }
 
+    public function assignTo(?User $assignee): void
+    {
+        $this->assignee = $assignee;
+    }
+
     public function unassign(): void
     {
         $this->assignee = null;
+    }
+
+    /**
+     * Compares ids as well as instances, like ProjectMember::isFor().
+     */
+    public function isAssignedTo(User $user): bool
+    {
+        if (null === $this->assignee) {
+            return false;
+        }
+
+        return $this->assignee === $user || (null !== $user->getId() && $this->assignee->getId() === $user->getId());
+    }
+
+    public function schedule(?\DateTimeImmutable $dueDate): void
+    {
+        $this->dueDate = $dueDate?->setTime(0, 0);
+    }
+
+    public function isOverdue(\DateTimeInterface $today): bool
+    {
+        return !$this->isCompleted()
+            && null !== $this->dueDate
+            && $this->dueDate < \DateTimeImmutable::createFromInterface($today)->setTime(0, 0);
+    }
+
+    public function prioritize(TaskPriority $priority): void
+    {
+        $this->priority = $priority;
+    }
+
+    public function complete(): void
+    {
+        $this->completedAt ??= new \DateTimeImmutable();
+    }
+
+    public function reopen(): void
+    {
+        $this->completedAt = null;
     }
 
     public function getDueDate(): ?\DateTimeImmutable

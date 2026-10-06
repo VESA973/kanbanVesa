@@ -8,6 +8,7 @@ nav:
     register: Créer un compte
     logout: Se déconnecter
     projects: Mes projets
+    my_tasks: Mes tâches
 
 action:
     save: Enregistrer
@@ -42,6 +43,15 @@ task:
     no_description: Aucune description.
     delete: Supprimer la tâche
     delete_confirm: Supprimer définitivement cette tâche ?
+    assignee: Assignée à
+    unassigned: Non assignée
+    due_date: Échéance
+    overdue: en retard
+    complete: Marquer comme terminée
+    reopen: Rouvrir
+    complete_named: Marquer « %title% » comme terminée
+    reopen_named: Rouvrir « %title% »
+    completed_on: Terminée le %date%
     priority:
         label: Priorité
         low: Basse
@@ -78,6 +88,56 @@ project:
         warning: Le projet, ses colonnes et ses tâches seront définitivement supprimés. Cette action est irréversible.
         confirm: Supprimer définitivement ce projet ?
         submit: Supprimer le projet
+
+my_tasks:
+    title: Mes tâches
+    empty: Aucune tâche ne vous est assignée pour le moment.
+    group:
+        overdue: En retard
+        today: Aujourd'hui
+        upcoming: À venir
+        no_due_date: Sans échéance
+        completed: Terminées ces 7 derniers jours
+
+tracking:
+    title: Suivi du projet
+    nav: Suivi du projet
+    progress: Avancement
+    activity: Journal d'activité
+    progress_caption: Avancement des tâches par membre
+    member: Membre
+    assigned: Assignées
+    completed: Terminées
+    open: À faire
+    overdue: En retard
+    rate: Progression
+    rate_of: Progression de %name%
+    overdue_tasks: Tâches en retard
+    no_overdue: Aucune tâche en retard. 🎉
+    no_activity: Aucune activité pour le moment.
+    former_member: Un ancien membre
+    pagination: Pages du journal
+    newer: Plus récent
+    older: Plus ancien
+
+activity:
+    action:
+        project_created: a créé le projet « %subject% »
+        column_created: a ajouté la colonne « %subject% »
+        column_renamed: a renommé la colonne « %previous% » en « %subject% »
+        column_deleted: a supprimé la colonne « %subject% » (%count% tâche(s))
+        task_created: a créé la tâche « %subject% » dans « %column% »
+        task_updated: a modifié la tâche « %subject% »
+        task_moved: a déplacé « %subject% » de « %from% » vers « %to% »
+        task_assigned: a assigné « %subject% » à %assignee%
+        task_unassigned: a retiré l'assignation de « %subject% »
+        task_completed: a terminé « %subject% »
+        task_reopened: a rouvert « %subject% »
+        task_deleted: a supprimé la tâche « %subject% » de « %column% »
+        invitation_sent: a invité %subject% en tant que %role%
+        member_joined: a rejoint le projet en tant que %role%
+        member_role_changed: a changé le rôle de %subject% en %role%
+        member_removed: a retiré %subject% du projet
 
 member:
     title: Membres
@@ -158,6 +218,8 @@ flash:
         deleted: La colonne a été supprimée.
     task:
         deleted: La tâche a été supprimée.
+        completed: Tâche terminée. Bravo !
+        reopened: La tâche a été rouverte.
     project:
         created: Le projet a été créé.
         updated: Le projet a été mis à jour.
