@@ -22,18 +22,22 @@ final class RegistrationFormType extends AbstractType
     {
         $builder
             ->add('firstName', TextType::class, [
+                'empty_data' => '',
                 'label' => 'user.first_name',
                 'attr' => ['autocomplete' => 'given-name'],
             ])
             ->add('lastName', TextType::class, [
+                'empty_data' => '',
                 'label' => 'user.last_name',
                 'attr' => ['autocomplete' => 'family-name'],
             ])
             ->add('email', EmailType::class, [
+                'empty_data' => '',
                 'label' => 'user.email',
                 'attr' => ['autocomplete' => 'email'],
             ])
             ->add('plainPassword', RepeatedType::class, [
+                'options' => ['empty_data' => ''],
                 'type' => PasswordType::class,
                 'invalid_message' => 'user.password.mismatch',
                 'first_options' => [

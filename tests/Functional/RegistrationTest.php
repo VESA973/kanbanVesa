@@ -31,7 +31,8 @@ final class RegistrationTest extends FunctionalTestCase
         self::assertEmailAddressContains($email, 'To', 'camille@example.com');
 
         $client->followRedirect();
-        self::assertSelectorTextContains('h1', 'Bonjour Camille');
+        $client->followRedirect();
+        self::assertSelectorTextContains('nav', 'Camille');
         self::assertSelectorTextContains('[role=status]', "n'est pas encore confirmée");
 
         $user = self::getContainer()->get(UserRepository::class)->findOneByEmail('camille@example.com');
@@ -56,6 +57,17 @@ final class RegistrationTest extends FunctionalTestCase
         self::assertResponseStatusCodeSame(422);
         self::assertSelectorTextContains('form', 'Un compte existe déjà avec cette adresse e-mail.');
         self::assertQueuedEmailCount(0);
+    }
+
+    public function testEmptyFormShowsValidationErrors(): void
+    {
+        $client = self::createClient();
+        $client->request('GET', '/register');
+
+        $client->submitForm('Créer mon compte');
+
+        self::assertResponseStatusCodeSame(422);
+        self::assertSelectorExists('[aria-invalid=true]');
     }
 
     public function testVerificationLinkMarksTheUserAsVerified(): void

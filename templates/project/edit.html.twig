@@ -1,0 +1,25 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'project.edit.title'|trans }} · {{ parent() }}{% endblock %}
+
+{% block body %}
+    <div class="mx-auto max-w-2xl">
+        <h1 class="mb-6 text-2xl font-bold tracking-tight">{{ 'project.edit.title'|trans }}</h1>
+        <div class="rounded-lg bg-white p-6 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
+            {{ include('project/_form.html.twig', {submit_label: 'action.save', cancel_path: path('app_project_show', {id: project.id})}) }}
+        </div>
+
+        {% if is_granted('PROJECT_DELETE', project) %}
+            <section class="mt-8 rounded-lg p-6 ring-1 ring-red-300 dark:ring-red-900" aria-labelledby="danger-zone">
+                <h2 id="danger-zone" class="text-lg font-semibold text-red-700 dark:text-red-400">{{ 'project.delete.title'|trans }}</h2>
+                <p class="mt-1 mb-4 text-sm text-slate-600 dark:text-slate-300">{{ 'project.delete.warning'|trans }}</p>
+                <form method="post" action="{{ path('app_project_delete', {id: project.id}) }}"
+                      data-controller="confirm" data-action="confirm#ask"
+                      data-confirm-message-value="{{ 'project.delete.confirm'|trans }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete-project-' ~ project.id) }}">
+                    <twig:Button variant="danger" type="submit">{{ 'project.delete.submit'|trans }}</twig:Button>
+                </form>
+            </section>
+        {% endif %}
+    </div>
+{% endblock %}

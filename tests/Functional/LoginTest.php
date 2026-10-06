@@ -29,7 +29,8 @@ final class LoginTest extends FunctionalTestCase
 
         self::assertResponseRedirects('/');
         $client->followRedirect();
-        self::assertSelectorTextContains('h1', 'Bonjour Camille');
+        $client->followRedirect();
+        self::assertSelectorTextContains('nav', 'Camille');
         self::assertSelectorNotExists('[role=status] form');
 
         $client->submitForm('Se déconnecter');

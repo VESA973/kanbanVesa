@@ -44,3 +44,31 @@
         </ul>
     {%- endif -%}
 {%- endblock form_errors -%}
+
+{%- block project_color_widget -%}
+    <div {{ block('widget_container_attributes') }} role="radiogroup" aria-labelledby="{{ id }}_label" class="flex flex-wrap gap-3">
+        {%- for child in form -%}
+            <label class="cursor-pointer">
+                <input type="radio" id="{{ child.vars.id }}" name="{{ child.vars.full_name }}" value="{{ child.vars.value }}"
+                       {{ child.vars.checked ? 'checked' }} class="peer sr-only">
+                <span class="flex items-center gap-2 rounded-full px-3 py-1.5 text-sm ring-1 ring-slate-300 peer-checked:ring-2 peer-checked:ring-indigo-600 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-indigo-600 dark:ring-slate-700 dark:peer-checked:ring-indigo-400">
+                    <twig:ProjectColorSwatch :color="child.vars.value" size="sm" />
+                    {{ child.vars.label|trans }}
+                </span>
+            </label>
+        {%- endfor -%}
+    </div>
+{%- endblock project_color_widget -%}
+
+{%- block project_color_label -%}
+    {%- set label_attr = label_attr|merge({class: 'mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200'}) -%}
+    <span id="{{ id }}_label" {% with {attr: label_attr} %}{{ block('attributes') }}{% endwith %}>{{ label|trans(label_translation_parameters, translation_domain) }}</span>
+{%- endblock project_color_label -%}
+
+{%- block textarea_widget -%}
+    {%- set attr = attr|merge({
+        class: (attr.class|default('') ~ ' block w-full rounded-md border bg-white px-3 py-2 text-sm text-slate-900 shadow-xs focus:border-indigo-500 focus:outline-2 focus:outline-indigo-500 dark:bg-slate-800 dark:text-slate-100 '
+            ~ (errors|length > 0 ? 'border-red-500 dark:border-red-400' : 'border-slate-300 dark:border-slate-700'))|trim,
+    }) -%}
+    {{- parent() -}}
+{%- endblock textarea_widget -%}

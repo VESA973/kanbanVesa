@@ -7,11 +7,43 @@ nav:
     login: Se connecter
     register: Créer un compte
     logout: Se déconnecter
+    projects: Mes projets
 
-home:
-    title: Accueil
-    greeting: Bonjour %name% 👋
-    placeholder: Vos projets apparaîtront bientôt ici.
+action:
+    save: Enregistrer
+    cancel: Annuler
+
+project:
+    name: Nom du projet
+    description: Description
+    color:
+        label: Couleur
+        indigo: Indigo
+        sky: Ciel
+        emerald: Émeraude
+        amber: Ambre
+        rose: Rose
+        violet: Violet
+        slate: Ardoise
+    role:
+        owner: Propriétaire
+        editor: Éditeur
+        viewer: Lecteur
+    index:
+        title: Mes projets
+        empty: Vous n'avez encore aucun projet. Créez le premier pour commencer !
+    new:
+        title: Nouveau projet
+        submit: Créer le projet
+    edit:
+        title: Modifier le projet
+    show:
+        board_placeholder: Le tableau Kanban arrive à la prochaine étape.
+    delete:
+        title: Supprimer le projet
+        warning: Le projet, ses colonnes et ses tâches seront définitivement supprimés. Cette action est irréversible.
+        confirm: Supprimer définitivement ce projet ?
+        submit: Supprimer le projet
 
 user:
     email: Adresse e-mail
@@ -53,6 +85,10 @@ verify_email:
     resend: Renvoyer l'e-mail
 
 flash:
+    project:
+        created: Le projet a été créé.
+        updated: Le projet a été mis à jour.
+        deleted: Le projet a été supprimé.
     registration:
         success: Bienvenue ! Un e-mail de confirmation vient de vous être envoyé.
     verify_email:

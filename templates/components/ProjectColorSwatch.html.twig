@@ -1,0 +1,13 @@
+{# Classes are written out in full so Tailwind can detect them. #}
+{% props color, size = 'md' %}{# color: a ProjectColor value, e.g. 'indigo' #}
+{% set backgrounds = {
+    indigo: 'bg-indigo-500',
+    sky: 'bg-sky-500',
+    emerald: 'bg-emerald-500',
+    amber: 'bg-amber-500',
+    rose: 'bg-rose-500',
+    violet: 'bg-violet-500',
+    slate: 'bg-slate-500',
+} %}
+{% set sizes = {sm: 'size-3', md: 'size-5', bar: 'h-1.5 w-full'} %}
+<span aria-hidden="true" {{ attributes.defaults({class: 'inline-block shrink-0 rounded-full ' ~ backgrounds[color] ~ ' ' ~ sizes[size]}) }}></span>

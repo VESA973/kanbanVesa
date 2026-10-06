@@ -1,0 +1,9 @@
+{{ form_start(form, {attr: {novalidate: 'novalidate'}}) }}
+    {{ form_row(form.name) }}
+    {{ form_row(form.description) }}
+    {{ form_row(form.color) }}
+    <div class="flex flex-wrap items-center gap-3">
+        <twig:Button type="submit">{{ submit_label|trans }}</twig:Button>
+        <twig:Button variant="ghost" href="{{ cancel_path }}">{{ 'action.cancel'|trans }}</twig:Button>
+    </div>
+{{ form_end(form) }}

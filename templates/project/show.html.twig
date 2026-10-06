@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ project.name }} · {{ parent() }}{% endblock %}
+
+{% block body %}
+    <div class="mb-6 flex flex-wrap items-start justify-between gap-4">
+        <div class="flex items-start gap-3">
+            <twig:ProjectColorSwatch :color="project.color.value" class="mt-1.5" />
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight">{{ project.name }}</h1>
+                {% if project.description %}
+                    <p class="mt-1 max-w-3xl whitespace-pre-line text-slate-600 dark:text-slate-300">{{ project.description }}</p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="flex -space-x-2">
+                {% for member in project.members %}
+                    <twig:Avatar :user="member.user" />
+                {% endfor %}
+            </div>
+            {% if is_granted('PROJECT_EDIT', project) %}
+                <twig:Button variant="secondary" href="{{ path('app_project_edit', {id: project.id}) }}">{{ 'project.edit.title'|trans }}</twig:Button>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="rounded-lg border-2 border-dashed border-slate-300 p-10 text-center text-slate-500 dark:border-slate-700 dark:text-slate-400">
+        {{ 'project.show.board_placeholder'|trans }}
+    </div>
+{% endblock %}
