@@ -126,9 +126,10 @@ final class TrackingTest extends FunctionalTestCase
         $crawler = $client->request('GET', '/projects/'.$project->getId().'/progress');
 
         self::assertResponseIsSuccessful();
-        $alexRow = $crawler->filter('tbody tr')->reduce(static fn ($row): bool => str_contains($row->text(), $alex->getFullName()));
+        $alexRow = $crawler->filter('table')->first()->filter('tbody tr')->reduce(static fn ($row): bool => str_contains($row->text(), $alex->getFullName()));
         self::assertSame(['2', '1', '1', '1'], $alexRow->filter('td.tabular-nums')->each(static fn ($cell): string => trim($cell->text())));
         self::assertSelectorTextContains('#overdue-heading + ul', 'Oubliée');
+        self::assertSelectorTextContains('#weekly-heading + div', $alex->getFullName());
     }
 
     public function testTrackingIsReservedToTheOwner(): void

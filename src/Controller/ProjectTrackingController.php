@@ -9,6 +9,7 @@ use App\Repository\ActivityLogRepository;
 use App\Repository\TaskRepository;
 use App\Security\Voter\ProjectVoter;
 use App\Service\ProjectProgress;
+use App\Service\ProjectStatistics;
 use Psr\Clock\ClockInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -25,11 +26,12 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class ProjectTrackingController extends AbstractController
 {
     #[Route('/progress', name: 'app_project_progress', methods: ['GET'])]
-    public function progress(Project $project, ProjectProgress $projectProgress, TaskRepository $taskRepository, ClockInterface $clock): Response
+    public function progress(Project $project, ProjectProgress $projectProgress, ProjectStatistics $statistics, TaskRepository $taskRepository, ClockInterface $clock): Response
     {
         return $this->render('project/progress.html.twig', [
             'project' => $project,
             'rows' => $projectProgress->byMember($project),
+            'weekly' => $statistics->weeklyCompletions($project),
             'overdueTasks' => $taskRepository->findOverdue($project, $clock->now()),
         ]);
     }

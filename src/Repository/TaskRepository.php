@@ -217,4 +217,26 @@ class TaskRepository extends ServiceEntityRepository
 
         return array_combine(array_map(intval(...), array_column($rows, 'id')), array_map(intval(...), array_column($rows, 'comments')));
     }
+
+    /**
+     * @return list<array{assigneeId: ?int, completedAt: \DateTimeImmutable}>
+     */
+    public function findCompletionsSince(Project $project, \DateTimeImmutable $since): array
+    {
+        /** @var list<array{assigneeId: int|string|null, completedAt: \DateTimeImmutable}> $rows */
+        $rows = $this->createQueryBuilder('t')
+            ->select('IDENTITY(t.assignee) AS assigneeId', 't.completedAt AS completedAt')
+            ->innerJoin('t.column', 'c')
+            ->andWhere('c.project = :project')
+            ->andWhere('t.completedAt >= :since')
+            ->setParameter('project', $project)
+            ->setParameter('since', $since)
+            ->getQuery()
+            ->getArrayResult();
+
+        return array_map(static fn (array $row): array => [
+            'assigneeId' => null === $row['assigneeId'] ? null : (int) $row['assigneeId'],
+            'completedAt' => $row['completedAt'],
+        ], $rows);
+    }
 }

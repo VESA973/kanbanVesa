@@ -174,6 +174,12 @@ tracking:
     rate: Progression
     rate_of: Progression de %name%
     overdue_tasks: Tâches en retard
+    weekly:
+        title: Tâches terminées par semaine
+        caption: Nombre de tâches terminées par membre sur les 8 dernières semaines
+        empty: Aucune tâche terminée ces 8 dernières semaines.
+        week_of: Semaine du %date%
+        total: Total
     no_overdue: Aucune tâche en retard. 🎉
     no_activity: Aucune activité pour le moment.
     former_member: Un ancien membre
