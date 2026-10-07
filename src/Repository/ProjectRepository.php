@@ -40,6 +40,21 @@ class ProjectRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * @return list<Project>
+     */
+    public function findArchivedForMember(User $user): array
+    {
+        /** @var list<Project> */
+        return $this->createQueryBuilder('p')
+            ->innerJoin('p.members', 'me', 'WITH', 'me.user = :user')
+            ->andWhere('p.archivedAt IS NOT NULL')
+            ->setParameter('user', $user)
+            ->orderBy('p.archivedAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
     public function save(Project $project): void
     {
         $this->getEntityManager()->persist($project);

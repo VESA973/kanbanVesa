@@ -9,6 +9,14 @@
             {{ include('project/_form.html.twig', {submit_label: 'action.save', cancel_path: path('app_project_show', {id: project.id})}) }}
         </div>
 
+        {% if is_granted('PROJECT_ARCHIVE', project) %}
+            <section class="mt-8 rounded-lg p-6 ring-1 ring-slate-200 dark:ring-slate-800" aria-labelledby="archive-zone">
+                <h2 id="archive-zone" class="text-lg font-semibold">{{ 'project.archive.title'|trans }}</h2>
+                <p class="mt-1 mb-4 text-sm text-slate-600 dark:text-slate-300">{{ 'project.archive.help'|trans }}</p>
+                {{ include('project/_archive_form.html.twig') }}
+            </section>
+        {% endif %}
+
         {% if is_granted('PROJECT_DELETE', project) %}
             <section class="mt-8 rounded-lg p-6 ring-1 ring-red-300 dark:ring-red-900" aria-labelledby="danger-zone">
                 <h2 id="danger-zone" class="text-lg font-semibold text-red-700 dark:text-red-400">{{ 'project.delete.title'|trans }}</h2>

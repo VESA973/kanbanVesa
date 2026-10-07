@@ -71,6 +71,20 @@ final class TaskVoterTest extends TestCase
         self::assertSame(self::DENIED, new TaskVoter()->vote($token, $task, [TaskVoter::EDIT]), 'Being assigned does not allow editing.');
     }
 
+    public function testTasksOfAnArchivedProjectCanOnlyBeViewed(): void
+    {
+        $owner = new User('owner@example.com', 'Olivia', 'Owner');
+        $project = new Project('Projet', $owner);
+        $task = new Task($project->addColumn('À faire'), 'Tâche', 0, $owner);
+        $project->archive();
+        $token = new UsernamePasswordToken($owner, 'main', $owner->getRoles());
+
+        self::assertSame(self::GRANTED, new TaskVoter()->vote($token, $task, [TaskVoter::VIEW]));
+        foreach ([TaskVoter::EDIT, TaskVoter::COMPLETE, TaskVoter::COMMENT] as $denied) {
+            self::assertSame(self::DENIED, new TaskVoter()->vote($token, $task, [$denied]), $denied);
+        }
+    }
+
     public function testAnonymousUserIsDenied(): void
     {
         $owner = new User('owner@example.com', 'Olivia', 'Owner');

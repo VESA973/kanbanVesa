@@ -27,6 +27,7 @@ final class ProjectVoterTest extends TestCase
         $expected = [
             ProjectVoter::VIEW => ['owner' => self::GRANTED, 'editor' => self::GRANTED, 'viewer' => self::GRANTED, 'none' => self::DENIED],
             ProjectVoter::EDIT => ['owner' => self::GRANTED, 'editor' => self::DENIED, 'viewer' => self::DENIED, 'none' => self::DENIED],
+            ProjectVoter::ARCHIVE => ['owner' => self::GRANTED, 'editor' => self::DENIED, 'viewer' => self::DENIED, 'none' => self::DENIED],
             ProjectVoter::DELETE => ['owner' => self::GRANTED, 'editor' => self::DENIED, 'viewer' => self::DENIED, 'none' => self::DENIED],
             ProjectVoter::MANAGE_COLUMNS => ['owner' => self::GRANTED, 'editor' => self::GRANTED, 'viewer' => self::DENIED, 'none' => self::DENIED],
             ProjectVoter::MANAGE_MEMBERS => ['owner' => self::GRANTED, 'editor' => self::DENIED, 'viewer' => self::DENIED, 'none' => self::DENIED],
@@ -56,6 +57,22 @@ final class ProjectVoterTest extends TestCase
         $vote = new ProjectVoter()->vote(new UsernamePasswordToken($user, 'main', $user->getRoles()), $project, [$attribute]);
 
         self::assertSame($expected, $vote);
+    }
+
+    public function testArchivedProjectIsReadOnlyEvenForTheOwner(): void
+    {
+        $owner = new User('owner@example.com', 'Olivia', 'Owner');
+        $project = new Project('Projet', $owner);
+        $project->archive();
+        $token = new UsernamePasswordToken($owner, 'main', $owner->getRoles());
+        $voter = new ProjectVoter();
+
+        foreach ([ProjectVoter::VIEW, ProjectVoter::TRACK, ProjectVoter::ARCHIVE, ProjectVoter::DELETE] as $allowed) {
+            self::assertSame(self::GRANTED, $voter->vote($token, $project, [$allowed]), $allowed);
+        }
+        foreach ([ProjectVoter::EDIT, ProjectVoter::MANAGE_COLUMNS, ProjectVoter::CREATE_TASK, ProjectVoter::MANAGE_MEMBERS, ProjectVoter::MANAGE_LABELS] as $denied) {
+            self::assertSame(self::DENIED, $voter->vote($token, $project, [$denied]), $denied);
+        }
     }
 
     public function testAnonymousUserIsDenied(): void

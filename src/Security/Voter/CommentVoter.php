@@ -31,8 +31,9 @@ final class CommentVoter extends Voter
             return false;
         }
 
-        $role = $subject->getTask()->getProject()->getRoleOf($user);
-        if (null === $role) {
+        $project = $subject->getTask()->getProject();
+        $role = $project->getRoleOf($user);
+        if (null === $role || $project->isArchived()) {
             return false;
         }
 

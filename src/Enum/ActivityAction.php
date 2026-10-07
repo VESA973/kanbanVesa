@@ -7,6 +7,8 @@ namespace App\Enum;
 enum ActivityAction: string
 {
     case PROJECT_CREATED = 'project_created';
+    case PROJECT_ARCHIVED = 'project_archived';
+    case PROJECT_UNARCHIVED = 'project_unarchived';
     case COLUMN_CREATED = 'column_created';
     case COLUMN_RENAMED = 'column_renamed';
     case COLUMN_DELETED = 'column_deleted';

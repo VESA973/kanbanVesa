@@ -117,6 +117,16 @@ class Project
         return null !== $this->archivedAt;
     }
 
+    public function archive(): void
+    {
+        $this->archivedAt ??= new \DateTimeImmutable();
+    }
+
+    public function unarchive(): void
+    {
+        $this->archivedAt = null;
+    }
+
     public function getArchivedAt(): ?\DateTimeImmutable
     {
         return $this->archivedAt;

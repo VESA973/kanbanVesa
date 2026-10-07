@@ -1,0 +1,5 @@
+<form method="post" action="{{ path('app_project_archive', {id: project.id}) }}"
+      {% if not project.archived %}data-controller="confirm" data-action="confirm#ask" data-confirm-message-value="{{ 'project.archive.confirm'|trans }}"{% endif %}>
+    <input type="hidden" name="_token" value="{{ csrf_token('archive-project-' ~ project.id) }}">
+    <twig:Button type="submit" variant="secondary">{{ (project.archived ? 'project.archive.unarchive' : 'project.archive.submit')|trans }}</twig:Button>
+</form>

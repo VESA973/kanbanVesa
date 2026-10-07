@@ -44,6 +44,11 @@ final class TaskVoter extends Voter
             return false;
         }
 
+        // An archived project is read-only.
+        if ($subject->getProject()->isArchived()) {
+            return self::VIEW === $attribute;
+        }
+
         return match ($attribute) {
             self::VIEW, self::COMMENT => true,
             self::EDIT => ProjectRole::VIEWER !== $role,

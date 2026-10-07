@@ -14,6 +14,7 @@ use App\Repository\BoardColumnRepository;
 use App\Repository\ProjectRepository;
 use App\Repository\TaskRepository;
 use App\Security\Voter\ProjectVoter;
+use App\Service\ProjectArchiver;
 use App\Service\ProjectCreator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\ExpressionLanguage\Expression;
@@ -42,6 +43,7 @@ final class ProjectController extends AbstractController
     {
         return $this->render('project/index.html.twig', [
             'projects' => $this->projectRepository->findActiveForMember($user),
+            'archivedProjects' => $this->projectRepository->findArchivedForMember($user),
         ]);
     }
 
@@ -96,6 +98,25 @@ final class ProjectController extends AbstractController
         $this->addFlash('success', 'flash.project.updated');
 
         return $this->redirectToRoute('app_project_show', ['id' => $project->getId()]);
+    }
+
+    #[Route('/{id}/archive', name: 'app_project_archive', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[IsGranted(ProjectVoter::VIEW, 'project', statusCode: 404)]
+    #[IsGranted(ProjectVoter::ARCHIVE, 'project')]
+    #[IsCsrfTokenValid(new Expression('"archive-project-" ~ args["project"].getId()'))]
+    public function archive(Project $project, ProjectArchiver $projectArchiver): Response
+    {
+        if ($project->isArchived()) {
+            $projectArchiver->unarchive($project);
+            $this->addFlash('success', 'flash.project.unarchived');
+
+            return $this->redirectToRoute('app_project_show', ['id' => $project->getId()]);
+        }
+
+        $projectArchiver->archive($project);
+        $this->addFlash('success', 'flash.project.archived');
+
+        return $this->redirectToRoute('app_project_index');
     }
 
     #[Route('/{id}/delete', name: 'app_project_delete', requirements: ['id' => '\d+'], methods: ['POST'])]

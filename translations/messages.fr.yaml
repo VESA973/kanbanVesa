@@ -84,6 +84,15 @@ project:
         submit: Créer le projet
     edit:
         title: Modifier le projet
+    archive:
+        title: Archiver le projet
+        help: Le projet disparaît de « Mes projets » et de « Mes tâches » et passe en lecture seule pour tous. Vous pourrez le désarchiver à tout moment.
+        submit: Archiver le projet
+        unarchive: Désarchiver
+        confirm: Archiver ce projet ? Il passera en lecture seule.
+        banner: Ce projet est archivé depuis le %date% et ne peut plus être modifié.
+        list: "Projets archivés (%count%)"
+        archived_on: archivé le %date%
     delete:
         title: Supprimer le projet
         warning: Le projet, ses colonnes et ses tâches seront définitivement supprimés. Cette action est irréversible.
@@ -163,6 +172,8 @@ tracking:
 activity:
     action:
         project_created: a créé le projet « %subject% »
+        project_archived: a archivé le projet
+        project_unarchived: a désarchivé le projet
         column_created: a ajouté la colonne « %subject% »
         column_renamed: a renommé la colonne « %previous% » en « %subject% »
         column_deleted: a supprimé la colonne « %subject% » (%count% tâche(s))
@@ -268,6 +279,8 @@ flash:
         created: Le projet a été créé.
         updated: Le projet a été mis à jour.
         deleted: Le projet a été supprimé.
+        archived: Le projet a été archivé.
+        unarchived: Le projet a été désarchivé.
     registration:
         success: Bienvenue ! Un e-mail de confirmation vient de vous être envoyé.
     verify_email:
