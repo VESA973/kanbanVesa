@@ -1,0 +1,19 @@
+# /etc/apache2/sites-available/kanban.conf — replace taskboard.example.org by your domain.
+# HTTPS: sudo certbot --apache -d taskboard.example.org (creates the :443 VirtualHost).
+<VirtualHost *:80>
+    ServerName taskboard.example.org
+    DocumentRoot /var/www/kanban/public
+
+    <Directory /var/www/kanban/public>
+        AllowOverride None
+        Require all granted
+        FallbackResource /index.php
+    </Directory>
+
+    <FilesMatch \.php$>
+        SetHandler "proxy:unix:/run/php/php8.4-fpm.sock|fcgi://localhost"
+    </FilesMatch>
+
+    ErrorLog ${APACHE_LOG_DIR}/kanban_error.log
+    CustomLog ${APACHE_LOG_DIR}/kanban_access.log combined
+</VirtualHost>

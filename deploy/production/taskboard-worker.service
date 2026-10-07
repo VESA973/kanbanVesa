@@ -1,0 +1,18 @@
+# Sends the queued e-mails (invitations, notifications…) and keeps running.
+# sudo cp deploy/production/taskboard-worker.service /etc/systemd/system/
+# sudo systemctl daemon-reload && sudo systemctl enable --now taskboard-worker
+[Unit]
+Description=TaskBoard Messenger worker (e-mails)
+After=network.target mariadb.service
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/kanban
+# Restarts every hour (or after 50 MB) so new code and memory are picked up.
+ExecStart=/usr/bin/php bin/console messenger:consume async --time-limit=3600 --memory-limit=50M --no-interaction
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
