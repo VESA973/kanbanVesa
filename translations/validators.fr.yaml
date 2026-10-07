@@ -3,3 +3,6 @@ user:
         already_used: Un compte existe déjà avec cette adresse e-mail.
     password:
         mismatch: Les deux mots de passe ne correspondent pas.
+label:
+    name:
+        already_used: Une étiquette porte déjà ce nom dans ce projet.

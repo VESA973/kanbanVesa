@@ -18,6 +18,7 @@ enum ActivityAction: string
     case TASK_COMPLETED = 'task_completed';
     case TASK_REOPENED = 'task_reopened';
     case TASK_DELETED = 'task_deleted';
+    case COMMENT_ADDED = 'comment_added';
     case INVITATION_SENT = 'invitation_sent';
     case MEMBER_JOINED = 'member_joined';
     case MEMBER_ROLE_CHANGED = 'member_role_changed';

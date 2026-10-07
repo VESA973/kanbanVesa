@@ -4,18 +4,22 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Entity\BoardColumn;
 use App\Entity\Project;
 use App\Entity\User;
 use App\Form\Data\ProjectData;
 use App\Form\ProjectFormType;
+use App\Model\BoardFilter;
 use App\Repository\BoardColumnRepository;
 use App\Repository\ProjectRepository;
+use App\Repository\TaskRepository;
 use App\Security\Voter\ProjectVoter;
 use App\Service\ProjectCreator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\ExpressionLanguage\Expression;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Security\Http\Attribute\IsCsrfTokenValid;
@@ -60,11 +64,17 @@ final class ProjectController extends AbstractController
 
     #[Route('/{id}', name: 'app_project_show', requirements: ['id' => '\d+'], methods: ['GET'])]
     #[IsGranted(ProjectVoter::VIEW, 'project', statusCode: 404)]
-    public function show(Project $project, BoardColumnRepository $columnRepository): Response
+    public function show(Project $project, BoardColumnRepository $columnRepository, TaskRepository $taskRepository, #[MapQueryString] BoardFilter $filter = new BoardFilter()): Response
     {
+        $columns = $columnRepository->findBoard($project);
+        $tasks = array_merge(...array_map(static fn (BoardColumn $column): array => $column->getTasks()->getValues(), $columns));
+        $taskRepository->preloadCardDetails($tasks);
+
         return $this->render('project/show.html.twig', [
             'project' => $project,
-            'columns' => $columnRepository->findBoard($project),
+            'columns' => $columns,
+            'filter' => $filter,
+            'commentCounts' => $taskRepository->countCommentsByTask($tasks),
         ]);
     }
 

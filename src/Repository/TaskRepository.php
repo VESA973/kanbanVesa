@@ -126,4 +126,71 @@ class TaskRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @return list<Task>
+     */
+    public function findNeedingDueReminder(\DateTimeImmutable $dueDate): array
+    {
+        /** @var list<Task> */
+        return $this->createQueryBuilder('t')
+            ->innerJoin('t.assignee', 'a')
+            ->innerJoin('t.column', 'c')
+            ->innerJoin('c.project', 'p')
+            ->addSelect('a', 'c', 'p')
+            ->andWhere('t.dueDate = :dueDate')
+            ->andWhere('t.completedAt IS NULL')
+            ->andWhere('t.dueReminderSentAt IS NULL')
+            ->andWhere('p.archivedAt IS NULL')
+            ->setParameter('dueDate', $dueDate->setTime(0, 0), 'date_immutable')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Loads labels and checklist items of the board cards in two queries
+     * instead of one per card.
+     *
+     * @param list<Task> $tasks
+     */
+    public function preloadCardDetails(array $tasks): void
+    {
+        if ([] === $tasks) {
+            return;
+        }
+
+        foreach (['labels', 'checklistItems'] as $collection) {
+            $this->createQueryBuilder('t')
+                ->leftJoin('t.'.$collection, 'x')
+                ->addSelect('x')
+                ->andWhere('t IN (:tasks)')
+                ->setParameter('tasks', $tasks)
+                ->getQuery()
+                ->getResult();
+        }
+    }
+
+    /**
+     * @param list<Task> $tasks
+     *
+     * @return array<int, int> number of comments per task id
+     */
+    public function countCommentsByTask(array $tasks): array
+    {
+        if ([] === $tasks) {
+            return [];
+        }
+
+        /** @var list<array{id: int|string, comments: int|string}> $rows */
+        $rows = $this->createQueryBuilder('t')
+            ->select('t.id AS id', 'COUNT(cm.id) AS comments')
+            ->innerJoin('t.comments', 'cm')
+            ->andWhere('t IN (:tasks)')
+            ->setParameter('tasks', $tasks)
+            ->groupBy('t.id')
+            ->getQuery()
+            ->getArrayResult();
+
+        return array_combine(array_map(intval(...), array_column($rows, 'id')), array_map(intval(...), array_column($rows, 'comments')));
+    }
 }

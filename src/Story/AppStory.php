@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace App\Story;
 
+use App\Entity\ChecklistItem;
+use App\Entity\Comment;
+use App\Entity\Label;
+use App\Entity\Project;
+use App\Entity\User;
 use App\Enum\ProjectColor;
 use App\Enum\ProjectRole;
 use App\Enum\TaskPriority;
@@ -14,6 +19,7 @@ use Zenstruck\Foundry\Attribute\AsFixture;
 use Zenstruck\Foundry\Story;
 
 use function Zenstruck\Foundry\force;
+use function Zenstruck\Foundry\Persistence\save;
 
 #[AsFixture(name: 'main')]
 final class AppStory extends Story
@@ -37,10 +43,45 @@ final class AppStory extends Story
         TaskFactory::new()->inColumn($doing)->create(['title' => 'Migrer le blog', 'assignee' => force($demo)]);
         TaskFactory::new()->inColumn($done)->create(['title' => 'Choisir la nouvelle palette', 'assignee' => force($sam), 'completedAt' => force(new \DateTimeImmutable('-1 day'))]);
 
+        $this->decorate($website, $demo, $alex);
+
         ProjectFactory::new()->withColumns('À faire', 'En cours', 'Terminé')->create(['name' => 'Application mobile', 'owner' => $demo, 'color' => ProjectColor::EMERALD]);
         ProjectFactory::new()
             ->withColumns('Idées', 'Validé')
             ->withMember($demo, ProjectRole::EDITOR)
             ->create(['name' => 'Salon professionnel 2027', 'owner' => $alex, 'color' => ProjectColor::AMBER]);
+    }
+
+    /**
+     * Labels, a checklist and a discussion so every board feature is visible in the demo.
+     */
+    private function decorate(Project $website, User $demo, User $alex): void
+    {
+        $tasks = [];
+        foreach ($website->getColumns() as $column) {
+            array_push($tasks, ...$column->getTasks()->getValues());
+        }
+        [$legal, $demoTask, , $accessibility, $homepage] = $tasks;
+
+        $bug = new Label($website, 'Bug', ProjectColor::ROSE);
+        $design = new Label($website, 'Design', ProjectColor::VIOLET);
+        $content = new Label($website, 'Contenu', ProjectColor::SKY);
+        array_map(save(...), [$bug, $design, $content]);
+        $legal->replaceLabels([$content]);
+        $accessibility->replaceLabels([$bug, $design]);
+        $homepage->replaceLabels([$design]);
+
+        foreach (['Maquette validée', 'Intégration mobile', 'Recette'] as $position => $item) {
+            $checklistItem = new ChecklistItem($homepage, $item, $position);
+            if (0 === $position) {
+                $checklistItem->toggle();
+            }
+            $homepage->getChecklistItems()->add($checklistItem);
+            save($checklistItem);
+        }
+
+        save(new Comment($demoTask, $alex, 'Je peux préparer les slides si besoin.'));
+        save(new Comment($demoTask, $demo, 'Merci ! Je m’occupe de la démo technique.'));
+        save($website);
     }
 }

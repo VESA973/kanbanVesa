@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Event;
 
 use App\Entity\Project;
+use App\Entity\Task;
 use App\Enum\ActivityAction;
 
 /**
@@ -21,6 +22,7 @@ final readonly class ProjectActivityEvent
         public ActivityAction $action,
         public string $subject,
         public array $payload = [],
+        public ?Task $task = null,
     ) {
     }
 }

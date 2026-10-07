@@ -1,0 +1,48 @@
+{% set can_edit = is_granted('TASK_EDIT', task) %}
+{% set can_tick = is_granted('TASK_COMPLETE', task) %}
+{% set task_token = csrf_token('task-' ~ task.id) %}
+{% if can_edit or task.checklistItems is not empty %}
+    <section class="mt-6 border-t border-slate-200 pt-4 dark:border-slate-800" aria-labelledby="checklist-title">
+        <h3 id="checklist-title" class="mb-2 flex items-center justify-between text-sm font-semibold">
+            {{ 'checklist.title'|trans }}
+            {% if task.checklistItems is not empty %}
+                <span class="text-xs font-normal text-slate-500 dark:text-slate-400">{{ 'checklist.progress'|trans({'%done%': task.countDoneChecklistItems, '%total%': task.checklistItems|length}) }}</span>
+            {% endif %}
+        </h3>
+        <ul class="mb-3 space-y-1">
+            {% for item in task.checklistItems %}
+                <li class="flex items-center gap-2 text-sm">
+                    {% if can_tick %}
+                        <form method="post" action="{{ path('app_checklist_toggle', {id: item.id}) }}">
+                            <input type="hidden" name="_token" value="{{ task_token }}">
+                            <button type="submit" aria-pressed="{{ item.done ? 'true' : 'false' }}"
+                                    class="flex size-4 items-center justify-center rounded border text-[10px] focus-visible:outline-2 focus-visible:outline-indigo-600 {{ item.done ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-400 text-transparent' }}">
+                                <span aria-hidden="true">✓</span><span class="sr-only">{{ item.label }}</span>
+                            </button>
+                        </form>
+                    {% else %}
+                        <span aria-hidden="true">{{ item.done ? '☑' : '☐' }}</span>
+                    {% endif %}
+                    <span class="flex-1 break-words {{ item.done ? 'text-slate-400 line-through' }}">{{ item.label }}</span>
+                    {% if can_edit %}
+                        <form method="post" action="{{ path('app_checklist_delete', {id: item.id}) }}">
+                            <input type="hidden" name="_token" value="{{ task_token }}">
+                            <button type="submit" class="rounded px-1 text-slate-400 hover:text-red-600 focus-visible:outline-2 focus-visible:outline-indigo-600">
+                                <span aria-hidden="true">✕</span><span class="sr-only">{{ 'checklist.delete'|trans({'%label%': item.label}) }}</span>
+                            </button>
+                        </form>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+        {% if can_edit %}
+            <form method="post" action="{{ path('app_checklist_new', {id: task.id}) }}" class="flex gap-2">
+                <input type="hidden" name="_token" value="{{ task_token }}">
+                <label for="checklist-new" class="sr-only">{{ 'checklist.new'|trans }}</label>
+                <input id="checklist-new" name="name" required maxlength="255" placeholder="{{ 'checklist.new'|trans }}"
+                       class="block w-full rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm focus:outline-2 focus:outline-indigo-500 dark:border-slate-700 dark:bg-slate-800">
+                <twig:Button type="submit" variant="secondary">{{ 'checklist.add'|trans }}</twig:Button>
+            </form>
+        {% endif %}
+    </section>
+{% endif %}

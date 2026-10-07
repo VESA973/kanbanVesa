@@ -26,6 +26,9 @@
             {% if is_granted('PROJECT_TRACK', project) %}
                 <twig:Button variant="secondary" href="{{ path('app_project_progress', {id: project.id}) }}">{{ 'tracking.progress'|trans }}</twig:Button>
             {% endif %}
+            {% if is_granted('PROJECT_MANAGE_LABELS', project) %}
+                <twig:Button variant="secondary" href="{{ path('app_project_labels', {id: project.id}) }}">{{ 'label.title'|trans }}</twig:Button>
+            {% endif %}
             <twig:Button variant="secondary" href="{{ path('app_project_members', {id: project.id}) }}">{{ 'member.title'|trans }}</twig:Button>
             {% if is_granted('PROJECT_EDIT', project) %}
                 <twig:Button variant="secondary" href="{{ path('app_project_edit', {id: project.id}) }}">{{ 'project.edit.title'|trans }}</twig:Button>
@@ -35,8 +38,10 @@
 
     <p id="board-status" class="sr-only" role="status" aria-live="polite"></p>
 
+    {{ include('project/_board_filters.html.twig') }}
+
     <div class="flex items-start gap-4 overflow-x-auto pb-4"
-         {% if can_manage_columns %}
+         {% if can_manage_columns and not filter.active %}
              data-controller="sortable"
              data-sortable-group-value="columns"
              data-sortable-handle-value="[data-column-handle]"
@@ -44,7 +49,7 @@
              data-sortable-error-message-value="{{ 'board.move_error'|trans }}"
          {% endif %}>
         {% for column in columns %}
-            <twig:KanbanColumn :column="column" :boardToken="board_token" :canManageColumns="can_manage_columns" />
+            <twig:KanbanColumn :column="column" :boardToken="board_token" :canManageColumns="can_manage_columns" :filter="filter" :commentCounts="commentCounts" />
         {% endfor %}
 
         {% if can_manage_columns %}

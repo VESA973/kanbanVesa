@@ -1,0 +1,38 @@
+{% set task_token = csrf_token('task-' ~ task.id) %}
+<section class="mt-6 border-t border-slate-200 pt-4 dark:border-slate-800" aria-labelledby="comments-title">
+    <h3 id="comments-title" class="mb-3 text-sm font-semibold">{{ 'comment.title'|trans }} ({{ task.comments|length }})</h3>
+    <ol class="mb-4 space-y-3">
+        {% for comment in task.comments %}
+            <li class="flex gap-3 text-sm">
+                <twig:Avatar :user="comment.author" />
+                <div class="min-w-0 flex-1 rounded-md bg-slate-50 px-3 py-2 dark:bg-slate-800">
+                    <div class="mb-1 flex items-center justify-between gap-2">
+                        <p class="text-xs">
+                            <span class="font-semibold">{{ comment.author.fullName }}</span>
+                            <time datetime="{{ comment.createdAt|date('c') }}" class="text-slate-500 dark:text-slate-400">· {{ comment.createdAt|date('d/m/Y H:i') }}</time>
+                        </p>
+                        {% if is_granted('COMMENT_DELETE', comment) %}
+                            <form method="post" action="{{ path('app_comment_delete', {id: comment.id}) }}"
+                                  data-controller="confirm" data-action="confirm#ask" data-confirm-message-value="{{ 'comment.delete_confirm'|trans }}">
+                                <input type="hidden" name="_token" value="{{ task_token }}">
+                                <button type="submit" class="rounded text-xs text-slate-500 hover:text-red-600 focus-visible:outline-2 focus-visible:outline-indigo-600">{{ 'comment.delete'|trans }}</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                    <p class="whitespace-pre-line break-words">{{ comment.content }}</p>
+                </div>
+            </li>
+        {% else %}
+            <li class="text-sm text-slate-500 dark:text-slate-400">{{ 'comment.empty'|trans }}</li>
+        {% endfor %}
+    </ol>
+    {% if is_granted('TASK_COMMENT', task) %}
+        <form method="post" action="{{ path('app_comment_new', {id: task.id}) }}">
+            <input type="hidden" name="_token" value="{{ task_token }}">
+            <label for="comment-new" class="mb-1 block text-xs font-medium">{{ 'comment.new'|trans }}</label>
+            <textarea id="comment-new" name="content" required maxlength="5000" rows="3"
+                      class="mb-2 block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-2 focus:outline-indigo-500 dark:border-slate-700 dark:bg-slate-800"></textarea>
+            <twig:Button type="submit">{{ 'comment.submit'|trans }}</twig:Button>
+        </form>
+    {% endif %}
+</section>

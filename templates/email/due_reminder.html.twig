@@ -1,0 +1,9 @@
+{% extends 'email/layout.html.twig' %}
+
+{% block content %}
+    <p>{{ 'email.greeting'|trans({'%name%': firstName}) }}</p>
+    <p>{{ 'email.due_reminder.intro'|trans({'%task%': taskTitle, '%project%': projectName, '%date%': dueDate|date('d/m/Y')}) }}</p>
+    <p style="margin:24px 0;">
+        <a href="{{ url('app_task_show', {id: taskId}) }}" style="background:#4f46e5;color:#ffffff;padding:12px 20px;border-radius:6px;text-decoration:none;font-weight:bold;">{{ 'email.task_link'|trans }}</a>
+    </p>
+{% endblock %}

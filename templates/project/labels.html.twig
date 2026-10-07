@@ -1,0 +1,37 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'label.title'|trans }} · {{ project.name }} · {{ parent() }}{% endblock %}
+
+{% block body %}
+    {% set labels_token = csrf_token('labels-' ~ project.id) %}
+    <div class="mx-auto max-w-2xl">
+        <twig:Link href="{{ path('app_project_show', {id: project.id}) }}" class="text-sm">← {{ 'member.back_to_board'|trans({'%project%': project.name}) }}</twig:Link>
+        <h1 class="mt-2 mb-6 text-2xl font-bold tracking-tight">{{ 'label.title'|trans }}</h1>
+
+        {% if project.labels is empty %}
+            <p class="mb-6 text-sm text-slate-600 dark:text-slate-300">{{ 'label.empty'|trans }}</p>
+        {% else %}
+            <ul class="mb-8 divide-y divide-slate-200 rounded-lg bg-white shadow-sm ring-1 ring-slate-200 dark:divide-slate-800 dark:bg-slate-900 dark:ring-slate-800">
+                {% for label in project.labels %}
+                    <li class="flex items-center justify-between gap-3 p-3">
+                        <twig:LabelChip :label="label" class="text-sm" />
+                        <form method="post" action="{{ path('app_label_delete', {id: label.id}) }}"
+                              data-controller="confirm" data-action="confirm#ask" data-confirm-message-value="{{ 'label.delete_confirm'|trans({'%name%': label.name}) }}">
+                            <input type="hidden" name="_token" value="{{ labels_token }}">
+                            <twig:Button type="submit" variant="ghost">{{ 'label.delete'|trans }}<span class="sr-only"> {{ label.name }}</span></twig:Button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <section aria-labelledby="new-label" class="rounded-lg bg-white p-6 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
+            <h2 id="new-label" class="mb-4 text-lg font-semibold">{{ 'label.new'|trans }}</h2>
+            {{ form_start(form, {attr: {novalidate: 'novalidate'}}) }}
+                {{ form_row(form.name) }}
+                {{ form_row(form.color) }}
+                <twig:Button type="submit">{{ 'label.submit'|trans }}</twig:Button>
+            {{ form_end(form) }}
+        </section>
+    </div>
+{% endblock %}

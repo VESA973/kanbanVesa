@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Form;
 
 use App\Entity\BoardColumn;
+use App\Entity\Label;
 use App\Entity\Project;
 use App\Entity\ProjectMember;
 use App\Entity\User;
@@ -59,6 +60,16 @@ final class TaskFormType extends AbstractType
                 'label' => 'task.priority.label',
                 'class' => TaskPriority::class,
                 'choice_label' => static fn (TaskPriority $priority): string => $priority->translationKey(),
+            ])
+            ->add('labels', EntityType::class, [
+                'label' => 'task.labels',
+                'class' => Label::class,
+                'choices' => $project->getLabels()->getValues(),
+                'choice_label' => 'name',
+                'multiple' => true,
+                'expanded' => true,
+                'required' => false,
+                'block_prefix' => 'task_labels',
             ])
             // Keyboard-accessible alternative to drag & drop.
             ->add('column', EntityType::class, [

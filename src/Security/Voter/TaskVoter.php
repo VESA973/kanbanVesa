@@ -19,12 +19,14 @@ final class TaskVoter extends Voter
     public const string VIEW = 'TASK_VIEW';
     /** Edit, move or delete the task. */
     public const string EDIT = 'TASK_EDIT';
-    /** Mark as completed or reopen: anyone who can edit, plus a viewer on a task assigned to them. */
+    /** Every member can take part in the discussion. */
+    public const string COMMENT = 'TASK_COMMENT';
+    /** Mark as completed or reopen (and tick its checklist): anyone who can edit, plus a viewer on a task assigned to them. */
     public const string COMPLETE = 'TASK_COMPLETE';
 
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return \in_array($attribute, [self::VIEW, self::EDIT, self::COMPLETE], true)
+        return \in_array($attribute, [self::VIEW, self::EDIT, self::COMPLETE, self::COMMENT], true)
             && $subject instanceof Task;
     }
 
@@ -43,7 +45,7 @@ final class TaskVoter extends Voter
         }
 
         return match ($attribute) {
-            self::VIEW => true,
+            self::VIEW, self::COMMENT => true,
             self::EDIT => ProjectRole::VIEWER !== $role,
             self::COMPLETE => ProjectRole::VIEWER !== $role || $subject->isAssignedTo($user),
             default => false,

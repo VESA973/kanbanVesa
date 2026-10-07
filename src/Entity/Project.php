@@ -59,6 +59,13 @@ class Project
     #[ORM\OrderBy(['createdAt' => 'DESC'])]
     private Collection $invitations;
 
+    /**
+     * @var Collection<int, Label>
+     */
+    #[ORM\OneToMany(targetEntity: Label::class, mappedBy: 'project', orphanRemoval: true)]
+    #[ORM\OrderBy(['name' => 'ASC'])]
+    private Collection $labels;
+
     public function __construct(string $name, User $owner, ProjectColor $color = ProjectColor::INDIGO, ?string $description = null)
     {
         $this->name = $name;
@@ -69,6 +76,7 @@ class Project
         $this->members = new ArrayCollection();
         $this->columns = new ArrayCollection();
         $this->invitations = new ArrayCollection();
+        $this->labels = new ArrayCollection();
         $this->addMember($owner, ProjectRole::OWNER);
     }
 
@@ -161,6 +169,14 @@ class Project
     public function getInvitations(): Collection
     {
         return $this->invitations;
+    }
+
+    /**
+     * @return Collection<int, Label>
+     */
+    public function getLabels(): Collection
+    {
+        return $this->labels;
     }
 
     public function getMemberOf(User $user): ?ProjectMember

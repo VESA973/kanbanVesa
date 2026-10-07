@@ -52,6 +52,7 @@ task:
     complete_named: Marquer « %title% » comme terminée
     reopen_named: Rouvrir « %title% »
     completed_on: Terminée le %date%
+    labels: Étiquettes
     priority:
         label: Priorité
         low: Basse
@@ -88,6 +89,45 @@ project:
         warning: Le projet, ses colonnes et ses tâches seront définitivement supprimés. Cette action est irréversible.
         confirm: Supprimer définitivement ce projet ?
         submit: Supprimer le projet
+
+checklist:
+    title: Checklist
+    progress: "%done% sur %total% fait(s)"
+    new: Ajouter un élément
+    add: Ajouter
+    delete: Supprimer « %label% »
+
+comment:
+    title: Commentaires
+    count: "{1}commentaire|]1,Inf[commentaires"
+    empty: Aucun commentaire pour le moment.
+    new: Ajouter un commentaire
+    submit: Commenter
+    delete: Supprimer
+    delete_confirm: Supprimer ce commentaire ?
+
+label:
+    title: Étiquettes
+    empty: Aucune étiquette. Créez-en pour classer vos tâches (Bug, Design, Urgent…).
+    new: Nouvelle étiquette
+    submit: Créer l'étiquette
+    delete: Supprimer
+    delete_confirm: Supprimer l'étiquette « %name% » ? Elle sera retirée de toutes les tâches.
+    name:
+        label: Nom
+
+filter:
+    title: Filtrer le tableau
+    assignee: Assignée à
+    label: Étiquette
+    due: Échéance
+    all: Toutes
+    due_overdue: En retard
+    due_week: Dans les 7 jours
+    due_none: Sans échéance
+    apply: Filtrer
+    reset: Réinitialiser
+    drag_disabled: Le glisser-déposer est désactivé tant qu'un filtre est actif.
 
 my_tasks:
     title: Mes tâches
@@ -138,6 +178,7 @@ activity:
         member_joined: a rejoint le projet en tant que %role%
         member_role_changed: a changé le rôle de %subject% en %role%
         member_removed: a retiré %subject% du projet
+        comment_added: a commenté « %subject% »
 
 member:
     title: Membres
@@ -207,6 +248,9 @@ verify_email:
     resend: Renvoyer l'e-mail
 
 flash:
+    label:
+        created: L'étiquette a été créée.
+        deleted: L'étiquette a été supprimée.
     invitation:
         sent: L'invitation a été envoyée.
         revoked: L'invitation a été annulée.
@@ -241,6 +285,14 @@ email:
         subject: Confirmez votre adresse e-mail
         intro: Merci pour votre inscription sur TaskBoard. Confirmez votre adresse e-mail en cliquant sur le bouton ci-dessous.
         button: Confirmer mon adresse
+    task_link: Voir la tâche
+    task_assigned:
+        subject: "Nouvelle tâche pour vous : %task%"
+        intro_by: "%user% vous a assigné la tâche « %task% » dans le projet « %project% »."
+        intro: "La tâche « %task% » du projet « %project% » vous a été assignée."
+    due_reminder:
+        subject: "Échéance demain : %task%"
+        intro: "La tâche « %task% » du projet « %project% » arrive à échéance demain (%date%)."
     invitation:
         subject: Invitation au projet « %project% »
         intro: "%inviter% vous invite à rejoindre le projet « %project% » sur TaskBoard en tant que %role%."

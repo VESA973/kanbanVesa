@@ -1,0 +1,39 @@
+<form method="get" action="{{ path('app_project_show', {id: project.id}) }}" role="search" aria-label="{{ 'filter.title'|trans }}"
+      class="mb-4 flex flex-wrap items-end gap-3 rounded-lg bg-white p-3 text-sm shadow-xs ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
+    {% set select_class = 'block rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm focus:outline-2 focus:outline-indigo-500 dark:border-slate-700 dark:bg-slate-800' %}
+    <div>
+        <label for="filter-assignee" class="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300">{{ 'filter.assignee'|trans }}</label>
+        <select id="filter-assignee" name="assignee" class="{{ select_class }}">
+            <option value="">{{ 'filter.all'|trans }}</option>
+            <option value="none" {{ filter.assignee == 'none' ? 'selected' }}>{{ 'task.unassigned'|trans }}</option>
+            {% for member in project.members %}
+                <option value="{{ member.user.id }}" {{ filter.assignee == member.user.id ~ '' ? 'selected' }}>{{ member.user.fullName }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    {% if project.labels is not empty %}
+        <div>
+            <label for="filter-label" class="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300">{{ 'filter.label'|trans }}</label>
+            <select id="filter-label" name="label" class="{{ select_class }}">
+                <option value="">{{ 'filter.all'|trans }}</option>
+                {% for label in project.labels %}
+                    <option value="{{ label.id }}" {{ filter.label == label.id ~ '' ? 'selected' }}>{{ label.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    {% endif %}
+    <div>
+        <label for="filter-due" class="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300">{{ 'filter.due'|trans }}</label>
+        <select id="filter-due" name="due" class="{{ select_class }}">
+            <option value="">{{ 'filter.all'|trans }}</option>
+            {% for due in ['overdue', 'week', 'none'] %}
+                <option value="{{ due }}" {{ filter.due == due ? 'selected' }}>{{ ('filter.due_' ~ due)|trans }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <twig:Button type="submit" variant="secondary">{{ 'filter.apply'|trans }}</twig:Button>
+    {% if filter.active %}
+        <twig:Link href="{{ path('app_project_show', {id: project.id}) }}" class="py-2">{{ 'filter.reset'|trans }}</twig:Link>
+        <p class="w-full text-xs text-slate-500 dark:text-slate-400">{{ 'filter.drag_disabled'|trans }}</p>
+    {% endif %}
+</form>

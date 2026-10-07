@@ -31,6 +31,7 @@ final class ProjectVoterTest extends TestCase
             ProjectVoter::MANAGE_COLUMNS => ['owner' => self::GRANTED, 'editor' => self::GRANTED, 'viewer' => self::DENIED, 'none' => self::DENIED],
             ProjectVoter::MANAGE_MEMBERS => ['owner' => self::GRANTED, 'editor' => self::DENIED, 'viewer' => self::DENIED, 'none' => self::DENIED],
             ProjectVoter::TRACK => ['owner' => self::GRANTED, 'editor' => self::DENIED, 'viewer' => self::DENIED, 'none' => self::DENIED],
+            ProjectVoter::MANAGE_LABELS => ['owner' => self::GRANTED, 'editor' => self::GRANTED, 'viewer' => self::DENIED, 'none' => self::DENIED],
             ProjectVoter::CREATE_TASK => ['owner' => self::GRANTED, 'editor' => self::GRANTED, 'viewer' => self::DENIED, 'none' => self::DENIED],
         ];
 

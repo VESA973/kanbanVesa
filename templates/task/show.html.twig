@@ -57,6 +57,11 @@
                 {{ form_row(form.priority) }}
                 {{ form_row(form.column) }}
             </div>
+            {% if form.labels|length > 0 %}
+                {{ form_row(form.labels) }}
+            {% else %}
+                {% do form.labels.setRendered %}
+            {% endif %}
             <twig:Button type="submit">{{ 'action.save'|trans }}</twig:Button>
         {{ form_end(form) }}
 
@@ -66,7 +71,13 @@
             <twig:Button type="submit" variant="danger">{{ 'task.delete'|trans }}</twig:Button>
         </form>
     {% else %}
+        {% if task.labels is not empty %}
+            <div class="mb-4 flex flex-wrap gap-1">{% for label in task.labels %}<twig:LabelChip :label="label" />{% endfor %}</div>
+        {% endif %}
         <h3 class="mb-1 text-sm font-semibold">{{ 'task.description'|trans }}</h3>
         <p class="whitespace-pre-line text-sm text-slate-700 dark:text-slate-300">{{ task.description ?: 'task.no_description'|trans }}</p>
     {% endif %}
+
+    {{ include('task/_checklist.html.twig') }}
+    {{ include('task/_comments.html.twig') }}
 {% endblock %}

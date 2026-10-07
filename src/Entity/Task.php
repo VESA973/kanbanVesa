@@ -6,6 +6,8 @@ namespace App\Entity;
 
 use App\Enum\TaskPriority;
 use App\Repository\TaskRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -38,6 +40,33 @@ class Task implements Positionable
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private \DateTimeImmutable $createdAt;
 
+    /** Set when the "due tomorrow" e-mail is sent; cleared when the due date changes. */
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $dueReminderSentAt = null;
+
+    /**
+     * @var Collection<int, Comment>
+     */
+    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'task', orphanRemoval: true)]
+    #[ORM\OrderBy(['createdAt' => 'ASC'])]
+    private Collection $comments;
+
+    /**
+     * @var Collection<int, ChecklistItem>
+     */
+    #[ORM\OneToMany(targetEntity: ChecklistItem::class, mappedBy: 'task', orphanRemoval: true)]
+    #[ORM\OrderBy(['position' => 'ASC'])]
+    private Collection $checklistItems;
+
+    /**
+     * @var Collection<int, Label>
+     */
+    #[ORM\ManyToMany(targetEntity: Label::class)]
+    #[ORM\JoinTable(name: 'task_label')]
+    #[ORM\JoinColumn(onDelete: 'CASCADE')]
+    #[ORM\InverseJoinColumn(onDelete: 'CASCADE')]
+    private Collection $labels;
+
     public function __construct(
         #[ORM\ManyToOne(inversedBy: 'tasks')]
         #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
@@ -51,6 +80,9 @@ class Task implements Positionable
         private User $createdBy,
     ) {
         $this->createdAt = new \DateTimeImmutable();
+        $this->comments = new ArrayCollection();
+        $this->checklistItems = new ArrayCollection();
+        $this->labels = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -130,7 +162,22 @@ class Task implements Positionable
 
     public function schedule(?\DateTimeImmutable $dueDate): void
     {
-        $this->dueDate = $dueDate?->setTime(0, 0);
+        $dueDate = $dueDate?->setTime(0, 0);
+        if ($dueDate?->format('Y-m-d') !== $this->dueDate?->format('Y-m-d')) {
+            $this->dueReminderSentAt = null;
+        }
+
+        $this->dueDate = $dueDate;
+    }
+
+    public function markDueReminderAsSent(): void
+    {
+        $this->dueReminderSentAt = new \DateTimeImmutable();
+    }
+
+    public function getDueReminderSentAt(): ?\DateTimeImmutable
+    {
+        return $this->dueReminderSentAt;
     }
 
     public function isOverdue(\DateTimeInterface $today): bool
@@ -183,5 +230,49 @@ class Task implements Positionable
     public function getCreatedAt(): \DateTimeImmutable
     {
         return $this->createdAt;
+    }
+
+    /**
+     * @return Collection<int, Comment>
+     */
+    public function getComments(): Collection
+    {
+        return $this->comments;
+    }
+
+    /**
+     * @return Collection<int, ChecklistItem>
+     */
+    public function getChecklistItems(): Collection
+    {
+        return $this->checklistItems;
+    }
+
+    public function countDoneChecklistItems(): int
+    {
+        return $this->checklistItems->filter(static fn (ChecklistItem $item): bool => $item->isDone())->count();
+    }
+
+    /**
+     * @return Collection<int, Label>
+     */
+    public function getLabels(): Collection
+    {
+        return $this->labels;
+    }
+
+    /**
+     * @param iterable<Label> $labels labels of the task's project
+     */
+    public function replaceLabels(iterable $labels): void
+    {
+        $this->labels->clear();
+        foreach ($labels as $label) {
+            if ($label->getProject() !== $this->getProject()) {
+                throw new \InvalidArgumentException('A label from another project cannot be put on this task.');
+            }
+
+            $this->labels->add($label);
+        }
     }
 }
