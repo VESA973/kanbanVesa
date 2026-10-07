@@ -1,0 +1,48 @@
+{% extends 'admin/_layout.html.twig' %}
+
+{% block admin_content %}
+    <div class="max-w-2xl">
+        <p class="mb-4 text-sm text-slate-600 dark:text-slate-300">{{ 'admin.smtp.intro'|trans }}</p>
+        {% if not settings.configured %}
+            <twig:Alert type="info">{{ 'admin.smtp.not_configured'|trans }}</twig:Alert>
+        {% elseif settings.updatedAt %}
+            <p class="mb-4 text-xs text-slate-500 dark:text-slate-400">{{ 'admin.smtp.updated_at'|trans({'%date%': settings.updatedAt|date('d/m/Y H:i')}) }}</p>
+        {% endif %}
+
+        <div class="rounded-lg bg-white p-6 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
+            {{ form_start(form, {attr: {novalidate: 'novalidate', autocomplete: 'off'}}) }}
+                <div class="grid gap-x-4 sm:grid-cols-[1fr_8rem]">
+                    {{ form_row(form.host) }}
+                    {{ form_row(form.port) }}
+                </div>
+                {{ form_row(form.encryption) }}
+                <div class="grid gap-x-4 sm:grid-cols-2">
+                    {{ form_row(form.username) }}
+                    {{ form_row(form.password) }}
+                </div>
+                {% if form.removePassword is defined %}
+                    <div class="mb-4 flex items-center gap-2 text-sm">
+                        {{ form_widget(form.removePassword, {attr: {class: 'size-4 accent-indigo-600'}}) }}
+                        {{ form_label(form.removePassword, null, {label_attr: {class: 'text-sm text-slate-700 dark:text-slate-200'}}) }}
+                    </div>
+                {% endif %}
+                <div class="grid gap-x-4 sm:grid-cols-2">
+                    {{ form_row(form.fromAddress) }}
+                    {{ form_row(form.fromName) }}
+                </div>
+                <twig:Button type="submit">{{ 'action.save'|trans }}</twig:Button>
+            {{ form_end(form) }}
+        </div>
+
+        {% if settings.configured %}
+            <section class="mt-6 rounded-lg p-6 ring-1 ring-slate-200 dark:ring-slate-800" aria-labelledby="smtp-test">
+                <h2 id="smtp-test" class="text-lg font-semibold">{{ 'admin.smtp.test_title'|trans }}</h2>
+                <p class="mt-1 mb-4 text-sm text-slate-600 dark:text-slate-300">{{ 'admin.smtp.test_help'|trans({'%email%': app.user.email}) }}</p>
+                <form method="post" action="{{ path('app_admin_smtp_test') }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('admin-smtp-test') }}">
+                    <twig:Button type="submit" variant="secondary">{{ 'admin.smtp.test_submit'|trans }}</twig:Button>
+                </form>
+            </section>
+        {% endif %}
+    </div>
+{% endblock %}

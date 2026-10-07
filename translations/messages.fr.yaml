@@ -9,6 +9,7 @@ nav:
     logout: Se déconnecter
     projects: Mes projets
     my_tasks: Mes tâches
+    admin: Administration
 
 action:
     save: Enregistrer
@@ -138,6 +139,61 @@ filter:
     reset: Réinitialiser
     drag_disabled: Le glisser-déposer est désactivé tant qu'un filtre est actif.
 
+admin:
+    title: Administration
+    users:
+        title: Utilisateurs
+        search: Nom ou adresse e-mail
+        user: Utilisateur
+        status: Statut
+        projects: Projets possédés
+        created_at: Inscription
+        actions: Actions
+        you: vous
+        none: Aucun utilisateur trouvé.
+        previous: Précédents
+        next: Suivants
+        verify: Vérifier l'e-mail
+        promote: Nommer admin
+        demote: Retirer admin
+        activate: Réactiver
+        deactivate: Désactiver
+        deactivate_confirm: Désactiver le compte de %name% ? Cette personne sera déconnectée et ne pourra plus se connecter.
+        delete: Supprimer
+        delete_confirm: Supprimer définitivement le compte de %name% ? Ses tâches restent, sans auteur ni assignation.
+        delete_blocked: Supprimez ou confiez d'abord ses projets pour pouvoir supprimer ce compte.
+        owner: Propriétaire de projets
+        badge:
+            admin: Admin
+            disabled: Désactivé
+            verified: Vérifié
+            unverified: Non vérifié
+    smtp:
+        title: Serveur e-mail (SMTP)
+        intro: Les e-mails de l'application (vérification, invitations, mots de passe oubliés, notifications) partent par ce serveur.
+        not_configured: "Aucun serveur n'est configuré : aucun e-mail ne part pour le moment."
+        updated_at: Dernière modification le %date%.
+        host: Serveur
+        host_invalid: Saisissez un nom de serveur ou une adresse IP (ex. smtp.example.com).
+        port: Port
+        username: Identifiant
+        password: Mot de passe
+        password_keep: Laisser vide pour conserver le mot de passe enregistré (il est stocké chiffré).
+        remove_password: Supprimer le mot de passe enregistré
+        from_address: Adresse d'expédition
+        from_name: Nom d'expéditeur
+        encryption:
+            label: Chiffrement
+            starttls: STARTTLS (port 587, recommandé)
+            ssl: SSL/TLS (port 465)
+            none: Aucun (serveur local uniquement)
+        test_title: Tester la configuration
+        test_help: Un e-mail de test est envoyé immédiatement à %email% ; en cas d'échec, l'erreur du serveur s'affiche.
+        test_submit: Envoyer un e-mail de test
+        test_email:
+            subject: Test d'envoi TaskBoard
+            body: "Bonjour %name%, la configuration SMTP de TaskBoard fonctionne."
+
 search:
     title: Recherche
     label: Rechercher une tâche ou un projet
@@ -247,6 +303,7 @@ user:
     password.help: 8 caractères minimum.
 
 auth:
+    account_disabled: Ce compte a été désactivé par un administrateur.
     back_to_login: Retour à la connexion
     login:
         title: Connexion
@@ -277,6 +334,17 @@ verify_email:
     resend: Renvoyer l'e-mail
 
 flash:
+    admin:
+        verified: L'adresse e-mail a été marquée comme vérifiée.
+        activated: Le compte a été réactivé.
+        deactivated: Le compte a été désactivé.
+        promoted: Le compte est maintenant administrateur.
+        demoted: Le compte n'est plus administrateur.
+        deleted: Le compte a été supprimé.
+        smtp_saved: Les paramètres SMTP ont été enregistrés.
+        smtp_not_configured: Enregistrez d'abord les paramètres du serveur.
+        smtp_test_sent: E-mail de test envoyé à %email%.
+        smtp_test_failed: "Échec de l'envoi : %error%"
     label:
         created: L'étiquette a été créée.
         deleted: L'étiquette a été supprimée.

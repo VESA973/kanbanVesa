@@ -39,7 +39,7 @@
         </div>
         <div>
             <dt class="text-slate-500 dark:text-slate-400">{{ 'task.created_by'|trans }}</dt>
-            <dd class="font-medium">{{ task.createdBy.fullName }}</dd>
+            <dd class="font-medium">{{ task.createdBy ? task.createdBy.fullName : 'tracking.former_member'|trans }}</dd>
         </div>
         <div>
             <dt class="text-slate-500 dark:text-slate-400">{{ 'task.created_at'|trans }}</dt>

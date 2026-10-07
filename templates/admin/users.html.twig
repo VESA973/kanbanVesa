@@ -1,0 +1,83 @@
+{% extends 'admin/_layout.html.twig' %}
+
+{% macro action(route, user, label, variant = 'ghost', confirm = null) %}
+    <form method="post" action="{{ path(route, {id: user.id}) }}"
+          {% if confirm %}data-controller="confirm" data-action="confirm#ask" data-confirm-message-value="{{ confirm }}"{% endif %}>
+        <input type="hidden" name="_token" value="{{ csrf_token('admin-user-' ~ user.id) }}">
+        <twig:Button type="submit" variant="{{ variant }}">{{ label }}<span class="sr-only"> ({{ user.fullName }})</span></twig:Button>
+    </form>
+{% endmacro %}
+
+{% block admin_content %}
+    <form method="get" role="search" class="mb-4 flex gap-2">
+        <label for="admin-search" class="sr-only">{{ 'admin.users.search'|trans }}</label>
+        <input id="admin-search" type="search" name="q" value="{{ search }}" placeholder="{{ 'admin.users.search'|trans }}"
+               class="block w-full max-w-sm rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-2 focus:outline-indigo-500 dark:border-slate-700 dark:bg-slate-800">
+        <twig:Button type="submit" variant="secondary">{{ 'search.submit'|trans }}</twig:Button>
+    </form>
+
+    <div class="overflow-x-auto rounded-lg bg-white shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
+        <table class="w-full text-left text-sm">
+            <caption class="sr-only">{{ 'admin.users.title'|trans }}</caption>
+            <thead class="border-b border-slate-200 text-xs text-slate-500 uppercase dark:border-slate-800 dark:text-slate-400">
+                <tr>
+                    <th scope="col" class="px-4 py-3">{{ 'admin.users.user'|trans }}</th>
+                    <th scope="col" class="px-4 py-3">{{ 'admin.users.status'|trans }}</th>
+                    <th scope="col" class="px-4 py-3 text-right">{{ 'admin.users.projects'|trans }}</th>
+                    <th scope="col" class="px-4 py-3">{{ 'admin.users.created_at'|trans }}</th>
+                    <th scope="col" class="px-4 py-3"><span class="sr-only">{{ 'admin.users.actions'|trans }}</span></th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+                {% for row in users %}
+                    {% set user = row.user %}
+                    <tr class="{{ not user.active ? 'bg-slate-50 text-slate-500 dark:bg-slate-950' }}">
+                        <th scope="row" class="px-4 py-3 font-normal">
+                            <p class="font-medium">{{ user.fullName }}{% if user.id == app.user.id %} <span class="text-xs text-slate-500">({{ 'admin.users.you'|trans }})</span>{% endif %}</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">{{ user.email }}</p>
+                        </th>
+                        <td class="px-4 py-3">
+                            <div class="flex flex-wrap gap-1 text-xs font-medium">
+                                {% if user.admin %}<span class="rounded bg-indigo-100 px-1.5 py-0.5 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">{{ 'admin.users.badge.admin'|trans }}</span>{% endif %}
+                                {% if not user.active %}<span class="rounded bg-red-100 px-1.5 py-0.5 text-red-800 dark:bg-red-900 dark:text-red-200">{{ 'admin.users.badge.disabled'|trans }}</span>{% endif %}
+                                {% if user.verified %}
+                                    <span class="rounded bg-emerald-100 px-1.5 py-0.5 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200">{{ 'admin.users.badge.verified'|trans }}</span>
+                                {% else %}
+                                    <span class="rounded bg-amber-100 px-1.5 py-0.5 text-amber-800 dark:bg-amber-900 dark:text-amber-200">{{ 'admin.users.badge.unverified'|trans }}</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 text-right tabular-nums">{{ row.ownedProjects }}</td>
+                        <td class="px-4 py-3 whitespace-nowrap">{{ user.createdAt|date('d/m/Y') }}</td>
+                        <td class="px-4 py-3">
+                            <div class="flex flex-wrap justify-end gap-1">
+                                {% if is_granted('USER_VERIFY', user) %}
+                                    {{ _self.action('app_admin_user_verify', user, 'admin.users.verify'|trans) }}
+                                {% endif %}
+                                {% if is_granted('USER_TOGGLE_ADMIN', user) %}
+                                    {{ _self.action('app_admin_user_toggle_admin', user, (user.admin ? 'admin.users.demote' : 'admin.users.promote')|trans) }}
+                                {% endif %}
+                                {% if is_granted('USER_TOGGLE_ACTIVE', user) %}
+                                    {{ _self.action('app_admin_user_toggle_active', user, (user.active ? 'admin.users.deactivate' : 'admin.users.activate')|trans, 'secondary',
+                                        user.active ? 'admin.users.deactivate_confirm'|trans({'%name%': user.fullName}) : null) }}
+                                {% endif %}
+                                {% if is_granted('USER_DELETE', user) %}
+                                    {{ _self.action('app_admin_user_delete', user, 'admin.users.delete'|trans, 'danger', 'admin.users.delete_confirm'|trans({'%name%': user.fullName})) }}
+                                {% elseif row.ownedProjects > 0 and user.id != app.user.id %}
+                                    <span class="self-center text-xs text-slate-500 dark:text-slate-400" title="{{ 'admin.users.delete_blocked'|trans }}">{{ 'admin.users.owner'|trans }}</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="5" class="px-4 py-6 text-center text-slate-500">{{ 'admin.users.none'|trans }}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <nav aria-label="{{ 'tracking.pagination'|trans }}" class="mt-4 flex justify-between text-sm">
+        {% if page > 1 %}<twig:Link href="{{ path('app_admin_users', {q: search, page: page - 1}) }}">← {{ 'admin.users.previous'|trans }}</twig:Link>{% else %}<span></span>{% endif %}
+        {% if hasNextPage %}<twig:Link href="{{ path('app_admin_users', {q: search, page: page + 1}) }}">{{ 'admin.users.next'|trans }} →</twig:Link>{% endif %}
+    </nav>
+{% endblock %}

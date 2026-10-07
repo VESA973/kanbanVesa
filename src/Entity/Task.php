@@ -75,9 +75,10 @@ class Task implements Positionable
         private string $title,
         #[ORM\Column]
         private int $position,
+        /** Becomes null when the author's account is deleted: the task stays. */
         #[ORM\ManyToOne]
-        #[ORM\JoinColumn(nullable: false)]
-        private User $createdBy,
+        #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+        private ?User $createdBy,
     ) {
         $this->createdAt = new \DateTimeImmutable();
         $this->comments = new ArrayCollection();
@@ -222,7 +223,7 @@ class Task implements Positionable
         return $this->completedAt;
     }
 
-    public function getCreatedBy(): User
+    public function getCreatedBy(): ?User
     {
         return $this->createdBy;
     }

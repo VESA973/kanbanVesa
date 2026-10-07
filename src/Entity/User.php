@@ -41,6 +41,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private bool $isVerified = false;
 
+    /** A deactivated account can no longer log in (see App\Security\UserChecker). */
+    #[ORM\Column(options: ['default' => true])]
+    private bool $isActive = true;
+
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private \DateTimeImmutable $createdAt;
 
@@ -115,6 +119,38 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function markAsVerified(): void
     {
         $this->isVerified = true;
+    }
+
+    public function isAdmin(): bool
+    {
+        return \in_array('ROLE_ADMIN', $this->roles, true);
+    }
+
+    public function promoteToAdmin(): void
+    {
+        if (!$this->isAdmin()) {
+            $this->roles[] = 'ROLE_ADMIN';
+        }
+    }
+
+    public function demoteFromAdmin(): void
+    {
+        $this->roles = array_values(array_diff($this->roles, ['ROLE_ADMIN']));
+    }
+
+    public function isActive(): bool
+    {
+        return $this->isActive;
+    }
+
+    public function activate(): void
+    {
+        $this->isActive = true;
+    }
+
+    public function deactivate(): void
+    {
+        $this->isActive = false;
     }
 
     public function getCreatedAt(): \DateTimeImmutable

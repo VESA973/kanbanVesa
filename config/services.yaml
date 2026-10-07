@@ -19,6 +19,10 @@ services:
     App\:
         resource: '../src/'
 
+    # MAILER_DSN=settings://default: SMTP server configured in the administration.
+    App\Mailer\SettingsTransportFactory:
+        tags: ['mailer.transport_factory']
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 

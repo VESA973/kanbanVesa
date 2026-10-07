@@ -3,6 +3,9 @@ user:
         already_used: Un compte existe déjà avec cette adresse e-mail.
     password:
         mismatch: Les deux mots de passe ne correspondent pas.
+admin:
+    smtp:
+        host_invalid: Saisissez un nom de serveur ou une adresse IP (ex. smtp.example.com).
 label:
     name:
         already_used: Une étiquette porte déjà ce nom dans ce projet.

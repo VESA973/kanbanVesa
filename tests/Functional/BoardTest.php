@@ -58,7 +58,7 @@ final class BoardTest extends FunctionalTestCase
         self::assertResponseRedirects('/projects/'.$project->getId());
         $task = TaskFactory::repository()->findOneBy(['title' => 'Écrire les specs ✍️']);
         self::assertNotNull($task);
-        self::assertSame($editor->getId(), $task->getCreatedBy()->getId());
+        self::assertSame($editor->getId(), $task->getCreatedBy()?->getId());
     }
 
     public function testViewerSeesTheBoardWithoutEditingControls(): void
