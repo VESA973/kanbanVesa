@@ -45,6 +45,9 @@
         </div>
     {% endif %}
 
+    {# Real time: the hub asks this page to refresh when another member changes the board. #}
+    <turbo-stream-source src="{{ mercure(realtimeTopic, {subscribe: realtimeTopic}) }}"></turbo-stream-source>
+
     <p id="board-status" class="sr-only" role="status" aria-live="polite"></p>
 
     {{ include('project/_board_filters.html.twig') }}

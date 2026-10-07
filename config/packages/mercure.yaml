@@ -1,0 +1,17 @@
+mercure:
+    hubs:
+        default:
+            url: '%env(default::MERCURE_URL)%'
+            public_url: '%env(default::MERCURE_PUBLIC_URL)%'
+            # Mercure hub 1.x: RFC 9068 access tokens (see deploy/mercure/Caddyfile).
+            protocol_version: '1.0'
+            # Plain HTTP: the default "__Secure-" cookie name would be refused by browsers.
+            cookie_name: mercureAuthorization
+            jwt:
+                secret: '%env(MERCURE_JWT_SECRET)%'
+                publish: '*'
+                claims:
+                    iss: taskboard
+                    sub: taskboard
+                    client_id: taskboard
+                    aud: '%env(MERCURE_PUBLIC_URL)%'

@@ -1,0 +1,31 @@
+# Mercure hub for TaskBoard: listens on 127.0.0.1:3000 only, Apache proxies
+# /.well-known/mercure to it (same origin, so the authorization cookie works).
+# Keys come from /etc/mercure/mercure.env (same value as MERCURE_JWT_SECRET).
+{
+	auto_https off
+	admin off
+	default_bind 127.0.0.1
+}
+
+:3000 {
+	log
+	mercure {
+		issuer {$MERCURE_TRUSTED_ISSUERS:taskboard} {
+			publisher {
+				jwt {env.MERCURE_PUBLISHER_JWT_KEY} HS256
+			}
+			subscriber {
+				jwt {env.MERCURE_SUBSCRIBER_JWT_KEY} HS256
+			}
+		}
+		transport bolt {
+			path {$MERCURE_DB_PATH:/var/lib/mercure/mercure.db}
+		}
+		# Tokens are issued for the public URL even when Symfony publishes through 127.0.0.1.
+		resource_identifier {$MERCURE_RESOURCE_IDENTIFIER:http://kanban.lan/.well-known/mercure}
+		# Plain HTTP: the default "__Secure-" cookie name would be refused by browsers.
+		cookie_name {$MERCURE_COOKIE_NAME:mercureAuthorization}
+		heartbeat 30s
+	}
+	respond "Not Found" 404
+}

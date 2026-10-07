@@ -24,6 +24,7 @@
         "symfony/http-client": "7.4.*",
         "symfony/intl": "7.4.*",
         "symfony/mailer": "7.4.*",
+        "symfony/mercure-bundle": "^0.5.0",
         "symfony/mime": "7.4.*",
         "symfony/monolog-bundle": "^3.0|^4.1",
         "symfony/notifier": "7.4.*",
@@ -96,6 +97,13 @@
             "@php bin/console doctrine:database:create",
             "@php bin/console doctrine:migrations:migrate -n",
             "@php bin/console foundry:load-fixtures main --append -n"
+        ],
+        "quality": [
+            "@php bin/console cache:warmup --env=test",
+            "vendor/bin/php-cs-fixer fix",
+            "vendor/bin/rector process --dry-run",
+            "vendor/bin/phpstan analyse",
+            "@php bin/phpunit"
         ]
     },
     "conflict": {
@@ -124,6 +132,7 @@
         "zenstruck/foundry": "^2.13"
     },
     "scripts-descriptions": {
-        "db-reset": "Recreate the dev database from the migrations and load the demo data (do not use foundry:load-fixtures without --append: it would wipe the migration history)."
+        "db-reset": "Recreate the dev database from the migrations and load the demo data (do not use foundry:load-fixtures without --append: it would wipe the migration history).",
+        "quality": "Run every check required before a commit (PHPStan and Rector read the test container, hence the cache warmup)."
     }
 }

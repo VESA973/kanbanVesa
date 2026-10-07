@@ -14,6 +14,7 @@ use App\Repository\BoardColumnRepository;
 use App\Repository\ProjectRepository;
 use App\Repository\TaskRepository;
 use App\Security\Voter\ProjectVoter;
+use App\Service\BoardRefreshPublisher;
 use App\Service\ProjectArchiver;
 use App\Service\ProjectCreator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -77,6 +78,7 @@ final class ProjectController extends AbstractController
             'columns' => $columns,
             'filter' => $filter,
             'commentCounts' => $taskRepository->countCommentsByTask($tasks),
+            'realtimeTopic' => BoardRefreshPublisher::topicFor($project),
         ]);
     }
 

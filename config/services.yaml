@@ -21,3 +21,13 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+when@test:
+    services:
+        # No Mercure hub during tests: updates are recorded instead of published.
+        App\Tests\Mercure\RecordingHub:
+            public: true
+        App\Service\BoardRefreshPublisher:
+            autowire: true
+            arguments:
+                $hub: '@App\Tests\Mercure\RecordingHub'

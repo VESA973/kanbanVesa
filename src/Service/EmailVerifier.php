@@ -32,7 +32,7 @@ final readonly class EmailVerifier
             ['id' => $user->getId()],
         );
 
-        $this->mailer->send((new TemplatedEmail())
+        $this->mailer->send(new TemplatedEmail()
             ->to($user->getEmail())
             ->subject($this->translator->trans('email.verify.subject'))
             ->htmlTemplate('email/verify_email.html.twig')

@@ -26,6 +26,7 @@
             {% block body %}{% endblock %}
         </main>
 
-        <turbo-frame id="modal"></turbo-frame>
+        {# Permanent: a real-time refresh of the board must not close a task being read. #}
+        <turbo-frame id="modal" data-turbo-permanent></turbo-frame>
     </body>
 </html>
