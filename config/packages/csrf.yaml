@@ -1,11 +1,10 @@
-# Enable stateless CSRF protection for forms and logins/logouts
+# Session-based CSRF tokens for every form, login and logout included.
+# The "stateless" variant relies on JavaScript adding a cookie at submit time; once a
+# session has used it, any submission without it (password manager auto-submit, page
+# restored from cache…) is rejected for the rest of the session: "Jeton CSRF invalide".
 framework:
     form:
         csrf_protection:
             token_id: submit
 
-    csrf_protection:
-        stateless_token_ids:
-            - submit
-            - authenticate
-            - logout
+    csrf_protection: true
