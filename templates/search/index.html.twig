@@ -1,0 +1,57 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'search.title'|trans }} · {{ parent() }}{% endblock %}
+
+{% block body %}
+    <div class="mx-auto max-w-3xl">
+        <h1 class="mb-4 text-2xl font-bold tracking-tight">{{ 'search.title'|trans }}</h1>
+
+        <form method="get" action="{{ path('app_search') }}" role="search" class="mb-8 flex gap-2">
+            <label for="search-page" class="sr-only">{{ 'search.label'|trans }}</label>
+            <input id="search-page" type="search" name="q" value="{{ term }}" minlength="2" maxlength="100" autofocus
+                   placeholder="{{ 'search.placeholder'|trans }}"
+                   class="block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-2 focus:outline-indigo-500 dark:border-slate-700 dark:bg-slate-800">
+            <twig:Button type="submit">{{ 'search.submit'|trans }}</twig:Button>
+        </form>
+
+        {% if not searched %}
+            <p class="text-sm text-slate-600 dark:text-slate-300">{{ 'search.too_short'|trans }}</p>
+        {% elseif projects is empty and tasks is empty %}
+            <p role="status" class="text-sm text-slate-600 dark:text-slate-300">{{ 'search.no_result'|trans({'%term%': term}) }}</p>
+        {% else %}
+            <p role="status" class="sr-only">{{ 'search.result_count'|trans({'%count%': projects|length + tasks|length}) }}</p>
+            {% if projects is not empty %}
+                <section class="mb-8" aria-labelledby="results-projects">
+                    <h2 id="results-projects" class="mb-3 text-sm font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">{{ 'search.projects'|trans }}</h2>
+                    <ul class="divide-y divide-slate-200 rounded-lg bg-white shadow-sm ring-1 ring-slate-200 dark:divide-slate-800 dark:bg-slate-900 dark:ring-slate-800">
+                        {% for project in projects %}
+                            <li class="flex items-center gap-3 p-3 text-sm">
+                                <twig:ProjectColorSwatch :color="project.color.value" size="sm" />
+                                <twig:Link href="{{ path('app_project_show', {id: project.id}) }}" class="flex-1 font-medium">{{ project.name }}</twig:Link>
+                                {% if project.archived %}<span class="text-xs text-slate-500 dark:text-slate-400">{{ 'search.archived'|trans }}</span>{% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </section>
+            {% endif %}
+            {% if tasks is not empty %}
+                <section aria-labelledby="results-tasks">
+                    <h2 id="results-tasks" class="mb-3 text-sm font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">{{ 'search.tasks'|trans }}</h2>
+                    <ul class="divide-y divide-slate-200 rounded-lg bg-white shadow-sm ring-1 ring-slate-200 dark:divide-slate-800 dark:bg-slate-900 dark:ring-slate-800">
+                        {% for task in tasks %}
+                            <li class="relative p-3 text-sm">
+                                <a href="{{ path('app_task_show', {id: task.id}) }}" data-turbo-frame="modal"
+                                   class="font-medium break-words after:absolute after:inset-0 focus-visible:outline-none {{ task.completed ? 'text-slate-400 line-through' }}">{{ task.title }}</a>
+                                <p class="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-slate-500 dark:text-slate-400">
+                                    <twig:ProjectColorSwatch :color="task.project.color.value" size="sm" />
+                                    {{ task.project.name }} · {{ task.column.name }}
+                                    {% if task.project.archived %}· {{ 'search.archived'|trans }}{% endif %}
+                                </p>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </section>
+            {% endif %}
+        {% endif %}
+    </div>
+{% endblock %}

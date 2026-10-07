@@ -138,6 +138,18 @@ filter:
     reset: Réinitialiser
     drag_disabled: Le glisser-déposer est désactivé tant qu'un filtre est actif.
 
+search:
+    title: Recherche
+    label: Rechercher une tâche ou un projet
+    placeholder: Rechercher…
+    submit: Rechercher
+    too_short: Saisissez au moins 2 caractères pour rechercher dans vos projets et vos tâches.
+    no_result: Aucun résultat pour « %term% ».
+    result_count: "{1}1 résultat|]1,Inf[%count% résultats"
+    projects: Projets
+    tasks: Tâches
+    archived: archivé
+
 my_tasks:
     title: Mes tâches
     empty: Aucune tâche ne vous est assignée pour le moment.

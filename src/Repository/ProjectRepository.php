@@ -55,6 +55,24 @@ class ProjectRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * @return list<Project>
+     */
+    public function search(User $user, string $term, int $limit = 10): array
+    {
+        /** @var list<Project> */
+        return $this->createQueryBuilder('p')
+            ->innerJoin('p.members', 'me', 'WITH', 'me.user = :user')
+            ->andWhere('p.name LIKE :term OR p.description LIKE :term')
+            ->setParameter('user', $user)
+            ->setParameter('term', '%'.addcslashes($term, '%_\\').'%')
+            ->orderBy('p.archivedAt', 'ASC')
+            ->addOrderBy('p.name', 'ASC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
     public function save(Project $project): void
     {
         $this->getEntityManager()->persist($project);

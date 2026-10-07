@@ -17,6 +17,13 @@
 
         <div class="flex items-center gap-3 text-sm">
             {% if app.user %}
+                <form method="get" action="{{ path('app_search') }}" role="search" class="hidden md:block">
+                    <label for="nav-search" class="sr-only">{{ 'search.label'|trans }}</label>
+                    <input id="nav-search" type="search" name="q" value="{{ app.current_route == 'app_search' ? app.request.query.get('q') }}" minlength="2" maxlength="100"
+                           placeholder="{{ 'search.placeholder'|trans }}"
+                           class="w-56 rounded-md border border-slate-300 bg-slate-50 px-3 py-1.5 text-sm focus:border-indigo-500 focus:bg-white focus:outline-2 focus:outline-indigo-500 dark:border-slate-700 dark:bg-slate-800">
+                </form>
+                <twig:Link href="{{ path('app_search') }}" class="md:hidden"><span aria-hidden="true">🔍</span><span class="sr-only">{{ 'search.title'|trans }}</span></twig:Link>
                 <span class="hidden text-slate-600 sm:inline dark:text-slate-300">{{ app.user.fullName }}</span>
                 <form method="post" action="{{ logout_path() }}">
                     <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">

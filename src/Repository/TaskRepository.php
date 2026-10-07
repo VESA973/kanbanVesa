@@ -53,6 +53,30 @@ class TaskRepository extends ServiceEntityRepository
     }
 
     /**
+     * Tasks whose title or description contains $term, in the projects the user belongs to.
+     * The utf8mb4_unicode_ci collation makes LIKE case and accent insensitive.
+     *
+     * @return list<Task>
+     */
+    public function search(User $user, string $term, int $limit = 30): array
+    {
+        /** @var list<Task> */
+        return $this->createQueryBuilder('t')
+            ->innerJoin('t.column', 'c')
+            ->innerJoin('c.project', 'p')
+            ->innerJoin('p.members', 'm', 'WITH', 'm.user = :user')
+            ->addSelect('c', 'p')
+            ->andWhere('t.title LIKE :term OR t.description LIKE :term')
+            ->setParameter('user', $user)
+            ->setParameter('term', '%'.addcslashes($term, '%_\\').'%')
+            ->orderBy('p.archivedAt', 'ASC')
+            ->addOrderBy('t.createdAt', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * Tasks assigned to the user in the active projects they belong to.
      *
      * @return list<Task>
