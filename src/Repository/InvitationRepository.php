@@ -6,6 +6,7 @@ namespace App\Repository;
 
 use App\Entity\Invitation;
 use App\Entity\Project;
+use App\Entity\Task;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -42,6 +43,22 @@ class InvitationRepository extends ServiceEntityRepository
             ->setParameter('project', $project)
             ->setParameter('now', new \DateTimeImmutable())
             ->orderBy('i.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return list<Invitation>
+     */
+    public function findPendingForTask(Task $task): array
+    {
+        /** @var list<Invitation> */
+        return $this->createQueryBuilder('i')
+            ->andWhere('i.task = :task')
+            ->andWhere('i.acceptedAt IS NULL')
+            ->andWhere('i.expiresAt > :now')
+            ->setParameter('task', $task)
+            ->setParameter('now', new \DateTimeImmutable())
             ->getQuery()
             ->getResult();
     }

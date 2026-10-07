@@ -6,6 +6,7 @@ namespace App\Tests\Unit\Service;
 
 use App\Entity\Invitation;
 use App\Entity\Project;
+use App\Entity\Task;
 use App\Entity\User;
 use App\Enum\ProjectRole;
 use App\Exception\InvitationException;
@@ -74,6 +75,45 @@ final class InvitationManagerTest extends TestCase
         self::assertSame(ProjectRole::VIEWER, $project->getRoleOf($alex));
         self::assertTrue($alex->isVerified());
         self::assertTrue($invitation->isAccepted());
+    }
+
+    public function testAcceptingAnInvitationForATaskAssignsIt(): void
+    {
+        $task = new Task($this->project->addColumn('À faire'), 'Distribuer les flyers', 0, $this->owner);
+        $invitation = new Invitation($this->project, 'alex@example.com', ProjectRole::VIEWER, $this->owner, 'secret');
+        $invitation->forTask($task);
+        $alex = new User('alex@example.com', 'Alex', 'Martin');
+
+        $this->manager($this->repositoryFinding($invitation))->accept('secret', $alex);
+
+        self::assertSame($alex, $task->getAssignee());
+        self::assertTrue($alex->isVerified(), 'A link received by e-mail proves the address.');
+    }
+
+    public function testAHandSharedLinkDoesNotVerifyTheAccount(): void
+    {
+        $invitation = new Invitation($this->project, 'alex@example.com', ProjectRole::VIEWER, $this->owner, 'emailed-token');
+        $manager = $this->manager($this->repositoryFinding($invitation));
+
+        $sharedToken = $manager->createShareableLink($invitation);
+        self::assertTrue($invitation->isLinkShared());
+        self::assertSame(Invitation::hashToken($sharedToken), new \ReflectionProperty(Invitation::class, 'tokenHash')->getValue($invitation));
+
+        $alex = new User('alex@example.com', 'Alex', 'Martin');
+        $manager->accept($sharedToken, $alex);
+
+        self::assertSame(ProjectRole::VIEWER, $this->project->getRoleOf($alex));
+        self::assertFalse($alex->isVerified());
+    }
+
+    public function testATaskOfAnotherProjectIsRefused(): void
+    {
+        $otherTask = new Task(new Project('Autre', $this->owner)->addColumn('À faire'), 'Tâche', 0, $this->owner);
+        $invitation = new Invitation($this->project, 'alex@example.com', ProjectRole::VIEWER, $this->owner, 'secret');
+
+        $this->expectException(\InvalidArgumentException::class);
+
+        $invitation->forTask($otherTask);
     }
 
     public function testAcceptRefusesAnotherAccount(): void

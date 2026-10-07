@@ -1,0 +1,28 @@
+{% extends app.request.headers.has('Turbo-Frame') ? 'task/_modal.html.twig' : 'task/_page.html.twig' %}
+
+{% block modal_title %}{{ 'invitation.link.title'|trans({'%email%': invitation.email}) }}{% endblock %}
+
+{% block modal_body %}
+    {% set message = 'invitation.link.whatsapp_message'|trans({
+        '%project%': invitation.project.name,
+        '%task%': invitation.task ? invitation.task.title : '',
+        '%email%': invitation.email,
+        '%link%': link,
+    })|trim %}
+    <p class="mb-4 text-sm text-slate-600 dark:text-slate-300">
+        {{ 'invitation.link.help'|trans({'%email%': invitation.email, '%date%': invitation.expiresAt|date('d/m/Y')}) }}
+    </p>
+
+    <div data-controller="clipboard" data-clipboard-copied-label-value="{{ 'invitation.link.copied'|trans }}" class="mb-4 flex gap-2">
+        <label for="invitation-link" class="sr-only">{{ 'invitation.link.label'|trans }}</label>
+        <input id="invitation-link" type="text" readonly value="{{ link }}" data-clipboard-target="source"
+               class="block w-full rounded-md border border-slate-300 bg-slate-50 px-3 py-2 font-mono text-xs focus:outline-2 focus:outline-indigo-500 dark:border-slate-700 dark:bg-slate-800">
+        <twig:Button type="button" data-action="clipboard#copy" data-clipboard-target="button">{{ 'invitation.link.copy'|trans }}</twig:Button>
+    </div>
+
+    <twig:Button variant="secondary" href="https://wa.me/?text={{ message|url_encode }}" target="_blank" rel="noopener noreferrer">
+        <span aria-hidden="true">💬</span> {{ 'invitation.link.whatsapp'|trans }}
+    </twig:Button>
+
+    <p class="mt-6 rounded-md bg-amber-50 p-3 text-xs text-amber-900 dark:bg-amber-950 dark:text-amber-100">{{ 'invitation.link.warning'|trans }}</p>
+{% endblock %}

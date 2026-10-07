@@ -278,6 +278,27 @@ invitation:
     role: Rôle
     submit: Envoyer l'invitation
     pending: Invitations en attente
+    pending_short: en attente
+    for_task: "pour « %task% »"
+    task:
+        title: Inviter une personne pour cette tâche
+        help: Elle crée son compte (ou se connecte) depuis le lien d'invitation ; la tâche lui est alors assignée automatiquement et apparaît dans « Mes tâches ».
+        role_viewer: Lecteur (cocher sa tâche, commenter)
+        role_editor: Éditeur (modifier le tableau)
+        submit: Inviter
+        intro: "La tâche « %task% » vous sera confiée dès que vous aurez rejoint le projet."
+    link:
+        get: Obtenir le lien
+        title: Lien d'invitation pour %email%
+        label: Lien d'invitation
+        help: Envoyez ce lien à %email% (WhatsApp, SMS…). La personne devra créer son compte avec cette adresse e-mail. Le lien est valable jusqu'au %date% et ne sert qu'une fois.
+        copy: Copier
+        copied: Copié !
+        whatsapp: Partager sur WhatsApp
+        whatsapp_message: |
+            Bonjour, je vous invite à rejoindre le projet « %project% » sur TaskBoard. %task%
+            Créez votre compte avec l'adresse %email% en ouvrant ce lien : %link%
+        warning: "Ce lien remplace celui envoyé par e-mail (qui ne fonctionne plus). Toute personne qui l'obtient peut l'utiliser en créant un compte avec l'adresse invitée : ne le partagez qu'avec la personne concernée."
     expires_on: expire le %date%
     revoke: Annuler
     page_title: Invitation
@@ -352,6 +373,7 @@ flash:
         sent: L'invitation a été envoyée.
         revoked: L'invitation a été annulée.
         accepted: Bienvenue dans le projet !
+        sent_for_task: L'invitation a été créée. Utilisez « Obtenir le lien » pour la partager par WhatsApp si l'e-mail n'est pas configuré.
     member:
         role_changed: Le rôle a été modifié.
         removed: Le membre a été retiré du projet.

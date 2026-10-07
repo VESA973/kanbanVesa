@@ -1,0 +1,39 @@
+{# Owner only: invite someone who gets this task as soon as they accept. #}
+{% if is_granted('PROJECT_MANAGE_MEMBERS', task.project) %}
+    {% set members_token = csrf_token('members-' ~ task.project.id) %}
+    <section class="mt-6 border-t border-slate-200 pt-4 dark:border-slate-800" aria-labelledby="task-invite-title">
+        <h3 id="task-invite-title" class="mb-1 text-sm font-semibold">{{ 'invitation.task.title'|trans }}</h3>
+        <p class="mb-3 text-xs text-slate-500 dark:text-slate-400">{{ 'invitation.task.help'|trans }}</p>
+
+        {% for invitation in invitations %}
+            <div class="mb-2 flex flex-wrap items-center justify-between gap-2 rounded-md bg-slate-50 px-3 py-2 text-sm dark:bg-slate-800">
+                <span>
+                    <span class="font-medium">{{ invitation.email }}</span>
+                    <span class="text-xs text-slate-500 dark:text-slate-400">· {{ invitation.role.translationKey|trans }} · {{ 'invitation.pending_short'|trans }}</span>
+                </span>
+                <form method="post" action="{{ path('app_invitation_link', {id: invitation.id}) }}">
+                    <input type="hidden" name="_token" value="{{ members_token }}">
+                    <twig:Button type="submit" variant="ghost">🔗 {{ 'invitation.link.get'|trans }}</twig:Button>
+                </form>
+            </div>
+        {% endfor %}
+
+        <form method="post" action="{{ path('app_task_invite', {id: task.id}) }}" class="flex flex-wrap items-end gap-2">
+            <input type="hidden" name="_token" value="{{ csrf_token('task-' ~ task.id) }}">
+            <div class="min-w-48 flex-1">
+                <label for="task-invite-email" class="mb-1 block text-xs font-medium">{{ 'invitation.email'|trans }}</label>
+                <input id="task-invite-email" type="email" name="email" required maxlength="180"
+                       class="block w-full rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm focus:outline-2 focus:outline-indigo-500 dark:border-slate-700 dark:bg-slate-800">
+            </div>
+            <div>
+                <label for="task-invite-role" class="mb-1 block text-xs font-medium">{{ 'invitation.role'|trans }}</label>
+                <select id="task-invite-role" name="role"
+                        class="block rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm focus:outline-2 focus:outline-indigo-500 dark:border-slate-700 dark:bg-slate-800">
+                    <option value="viewer">{{ 'invitation.task.role_viewer'|trans }}</option>
+                    <option value="editor">{{ 'invitation.task.role_editor'|trans }}</option>
+                </select>
+            </div>
+            <twig:Button type="submit" variant="secondary">{{ 'invitation.task.submit'|trans }}</twig:Button>
+        </form>
+    </section>
+{% endif %}

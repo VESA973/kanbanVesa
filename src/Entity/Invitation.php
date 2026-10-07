@@ -40,6 +40,19 @@ class Invitation
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private \DateTimeImmutable $createdAt;
 
+    /** Task assigned to the invitee as soon as they accept (invitation sent from a task). */
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(onDelete: 'SET NULL')]
+    private ?Task $task = null;
+
+    /**
+     * True once the owner copied the link to share it by hand (WhatsApp…): owning the link
+     * then no longer proves that the invitee controls the address, so accepting does not
+     * verify the account.
+     */
+    #[ORM\Column(options: ['default' => false])]
+    private bool $linkShared = false;
+
     public function __construct(
         #[ORM\ManyToOne(inversedBy: 'invitations')]
         #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
@@ -74,6 +87,34 @@ class Invitation
         $this->role = $role;
         $this->tokenHash = self::hashToken($plainToken);
         $this->expiresAt = new \DateTimeImmutable(self::LIFETIME);
+    }
+
+    public function forTask(?Task $task): void
+    {
+        if (null !== $task && $task->getProject() !== $this->project) {
+            throw new \InvalidArgumentException('The task must belong to the invitation project.');
+        }
+
+        $this->task = $task;
+    }
+
+    public function getTask(): ?Task
+    {
+        return $this->task;
+    }
+
+    /**
+     * Gives a new token to share by hand; the link sent by e-mail stops working.
+     */
+    public function shareLink(string $plainToken): void
+    {
+        $this->renew($this->role, $plainToken);
+        $this->linkShared = true;
+    }
+
+    public function isLinkShared(): bool
+    {
+        return $this->linkShared;
     }
 
     public function markAsAccepted(): void

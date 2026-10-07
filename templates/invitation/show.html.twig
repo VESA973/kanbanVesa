@@ -15,6 +15,11 @@
                     '%role%': invitation.role.translationKey|trans,
                 }) }}
             </p>
+            {% if invitation.task %}
+                <p class="-mt-4 mb-6 rounded-md bg-indigo-50 px-3 py-2 text-sm text-indigo-900 dark:bg-indigo-950 dark:text-indigo-100">
+                    {{ 'invitation.task.intro'|trans({'%task%': invitation.task.title}) }}
+                </p>
+            {% endif %}
 
             {% if app.user %}
                 {% if app.user.email == invitation.email %}
@@ -30,7 +35,7 @@
                 <p class="mb-4 text-sm text-slate-600 dark:text-slate-300">{{ 'invitation.login_first'|trans({'%email%': invitation.email}) }}</p>
                 <div class="flex flex-col gap-2 sm:flex-row">
                     <twig:Button href="{{ path('app_login') }}" fullWidth>{{ 'nav.login'|trans }}</twig:Button>
-                    <twig:Button href="{{ path('app_register') }}" variant="secondary" fullWidth>{{ 'nav.register'|trans }}</twig:Button>
+                    <twig:Button href="{{ path('app_register', {email: invitation.email}) }}" variant="secondary" fullWidth>{{ 'nav.register'|trans }}</twig:Button>
                 </div>
             {% endif %}
         {% endif %}

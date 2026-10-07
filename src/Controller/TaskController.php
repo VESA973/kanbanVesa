@@ -12,6 +12,7 @@ use App\Entity\User;
 use App\Form\Data\TaskData;
 use App\Form\TaskFormType;
 use App\Repository\BoardColumnRepository;
+use App\Repository\InvitationRepository;
 use App\Security\Voter\ProjectVoter;
 use App\Security\Voter\TaskVoter;
 use App\Service\TaskCompleter;
@@ -49,14 +50,18 @@ final class TaskController extends AbstractController
      */
     #[Route('/tasks/{id}', name: 'app_task_show', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
     #[IsGranted(TaskVoter::VIEW, 'task', statusCode: 404)]
-    public function show(Request $request, Task $task, TaskUpdater $taskUpdater): Response
+    public function show(Request $request, Task $task, TaskUpdater $taskUpdater, InvitationRepository $invitationRepository): Response
     {
         $data = TaskData::fromTask($task);
         $form = $this->createForm(TaskFormType::class, $data, ['project' => $task->getProject()]);
         $form->handleRequest($request);
 
         if (!$form->isSubmitted() || !$form->isValid()) {
-            return $this->render('task/show.html.twig', ['task' => $task, 'form' => $form]);
+            return $this->render('task/show.html.twig', [
+                'task' => $task,
+                'form' => $form,
+                'invitations' => $invitationRepository->findPendingForTask($task),
+            ]);
         }
 
         $this->denyAccessUnlessGranted(TaskVoter::EDIT, $task);

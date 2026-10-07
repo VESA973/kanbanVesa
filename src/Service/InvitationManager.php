@@ -6,6 +6,7 @@ namespace App\Service;
 
 use App\Entity\Invitation;
 use App\Entity\Project;
+use App\Entity\Task;
 use App\Entity\User;
 use App\Enum\ActivityAction;
 use App\Enum\ProjectRole;
@@ -30,7 +31,10 @@ final readonly class InvitationManager
     /**
      * @throws InvitationException when the address already belongs to a member
      */
-    public function invite(Project $project, string $email, ProjectRole $role, User $invitedBy): Invitation
+    /**
+     * @param Task|null $task assigned to the invitee when they accept
+     */
+    public function invite(Project $project, string $email, ProjectRole $role, User $invitedBy, ?Task $task = null): Invitation
     {
         if ($this->isMember($project, $email)) {
             throw InvitationException::alreadyMember();
@@ -42,6 +46,9 @@ final readonly class InvitationManager
             $invitation = new Invitation($project, $email, $role, $invitedBy, $plainToken);
         } else {
             $invitation->renew($role, $plainToken);
+        }
+        if (null !== $task) {
+            $invitation->forTask($task);
         }
 
         $this->dispatcher->dispatch(new ProjectActivityEvent($project, ActivityAction::INVITATION_SENT, $invitation->getEmail(), [
@@ -85,8 +92,12 @@ final readonly class InvitationManager
             $project->addMember($user, $invitation->getRole());
         }
 
-        $user->markAsVerified();
+        // Only a link received by e-mail proves the address belongs to the user.
+        if (!$invitation->isLinkShared()) {
+            $user->markAsVerified();
+        }
         $invitation->markAsAccepted();
+        $this->assignInvitedTask($invitation, $user);
         $this->dispatcher->dispatch(new ProjectActivityEvent($project, ActivityAction::MEMBER_JOINED, $user->getFullName(), [
             'role' => $this->translator->trans($invitation->getRole()->translationKey()),
         ]));
@@ -95,9 +106,34 @@ final readonly class InvitationManager
         return $project;
     }
 
+    /**
+     * @return string the new plain token, to build the link shown once to the owner
+     */
+    public function createShareableLink(Invitation $invitation): string
+    {
+        $plainToken = bin2hex(random_bytes(32));
+        $invitation->shareLink($plainToken);
+        $this->invitationRepository->save($invitation);
+
+        return $plainToken;
+    }
+
     public function revoke(Invitation $invitation): void
     {
         $this->invitationRepository->remove($invitation);
+    }
+
+    private function assignInvitedTask(Invitation $invitation, User $user): void
+    {
+        $task = $invitation->getTask();
+        if (null === $task) {
+            return;
+        }
+
+        $task->assignTo($user);
+        $this->dispatcher->dispatch(new ProjectActivityEvent($task->getProject(), ActivityAction::TASK_ASSIGNED, $task->getTitle(), [
+            'assignee' => $user->getFullName(),
+        ], $task));
     }
 
     private function isMember(Project $project, string $email): bool

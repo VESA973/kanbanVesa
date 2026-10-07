@@ -51,6 +51,7 @@ final class InvitationController extends AbstractController
     public function accept(string $token, #[CurrentUser] User $user): Response
     {
         try {
+            $invitation = $this->invitationManager->findValid($token);
             $project = $this->invitationManager->accept($token, $user);
         } catch (InvitationException $exception) {
             $this->addFlash('error', $exception->getMessage());
@@ -60,6 +61,9 @@ final class InvitationController extends AbstractController
 
         $this->addFlash('success', 'flash.invitation.accepted');
 
-        return $this->redirectToRoute('app_project_show', ['id' => $project->getId()]);
+        // Invited for a task: "Mes tâches" shows it straight away.
+        return null !== $invitation->getTask()
+            ? $this->redirectToRoute('app_my_tasks')
+            : $this->redirectToRoute('app_project_show', ['id' => $project->getId()]);
     }
 }

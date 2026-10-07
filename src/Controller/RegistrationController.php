@@ -31,6 +31,8 @@ final class RegistrationController extends AbstractController
     public function register(Request $request, UserRegistrar $registrar, Security $security): Response
     {
         $data = new RegistrationData();
+        // Coming from an invitation link: the invited address is already filled in.
+        $data->email = mb_substr($request->query->getString('email'), 0, 180);
         $form = $this->createForm(RegistrationFormType::class, $data);
         $form->handleRequest($request);
 

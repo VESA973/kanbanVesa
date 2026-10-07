@@ -78,6 +78,7 @@
         <p class="whitespace-pre-line text-sm text-slate-700 dark:text-slate-300">{{ task.description ?: 'task.no_description'|trans }}</p>
     {% endif %}
 
+    {{ include('task/_invite.html.twig') }}
     {{ include('task/_checklist.html.twig') }}
     {{ include('task/_comments.html.twig') }}
 {% endblock %}

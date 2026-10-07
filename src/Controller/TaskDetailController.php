@@ -5,14 +5,18 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Controller\Payload\CommentPayload;
+use App\Controller\Payload\InvitePayload;
 use App\Controller\Payload\NamePayload;
 use App\Entity\ChecklistItem;
 use App\Entity\Comment;
 use App\Entity\Task;
 use App\Entity\User;
+use App\Exception\InvitationException;
 use App\Security\Voter\CommentVoter;
+use App\Security\Voter\ProjectVoter;
 use App\Security\Voter\TaskVoter;
 use App\Service\ChecklistManager;
+use App\Service\InvitationManager;
 use App\Service\TaskCommenter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\ExpressionLanguage\Expression;
@@ -59,6 +63,25 @@ final class TaskDetailController extends AbstractController
     public function addChecklistItem(Task $task, #[MapRequestPayload] NamePayload $payload, ChecklistManager $checklistManager): Response
     {
         $checklistManager->add($task, $payload->name);
+
+        return $this->backToTask($task);
+    }
+
+    /**
+     * Invites someone who will get this task as soon as they accept.
+     */
+    #[Route('/tasks/{id}/invite', name: 'app_task_invite', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[IsGranted(TaskVoter::VIEW, 'task', statusCode: 404)]
+    #[IsGranted(ProjectVoter::MANAGE_MEMBERS, new Expression('args["task"].getProject()'))]
+    #[IsCsrfTokenValid(new Expression('"task-" ~ args["task"].getId()'))]
+    public function invite(Task $task, #[MapRequestPayload] InvitePayload $payload, InvitationManager $invitationManager, #[CurrentUser] User $user): Response
+    {
+        try {
+            $invitationManager->invite($task->getProject(), $payload->email, $payload->role, $user, $task);
+            $this->addFlash('success', 'flash.invitation.sent_for_task');
+        } catch (InvitationException $exception) {
+            $this->addFlash('error', $exception->getMessage());
+        }
 
         return $this->backToTask($task);
     }

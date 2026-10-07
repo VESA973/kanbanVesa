@@ -25,6 +25,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Security\Http\Attribute\IsCsrfTokenValid;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -79,6 +80,23 @@ final class MemberController extends AbstractController
         $this->addFlash('success', 'flash.invitation.revoked');
 
         return $this->redirectToRoute('app_project_members', ['id' => $projectId]);
+    }
+
+    /**
+     * Shows, once, a link the owner can share by hand (WhatsApp, SMS…) when e-mail is not an option.
+     */
+    #[Route('/invitations/{id}/link', name: 'app_invitation_link', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[IsGranted(ProjectVoter::VIEW, new Expression('args["invitation"].getProject()'), statusCode: 404)]
+    #[IsGranted(ProjectVoter::MANAGE_MEMBERS, new Expression('args["invitation"].getProject()'))]
+    #[IsCsrfTokenValid(new Expression('"members-" ~ args["invitation"].getProject().getId()'))]
+    public function shareLink(Invitation $invitation, InvitationManager $invitationManager): Response
+    {
+        $token = $invitationManager->createShareableLink($invitation);
+
+        return $this->render('invitation/link.html.twig', [
+            'invitation' => $invitation,
+            'link' => $this->generateUrl('app_invitation_show', ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL),
+        ]);
     }
 
     #[Route('/members/{id}/role', name: 'app_member_role', requirements: ['id' => '\d+'], methods: ['POST'])]
