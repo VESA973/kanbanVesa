@@ -6,6 +6,7 @@ namespace App\Mailer;
 
 use App\Entity\SmtpSettings;
 use App\Repository\SmtpSettingsRepository;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\Envelope;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
@@ -28,6 +29,7 @@ final readonly class SettingsTransport implements TransportInterface
         private SmtpDsnFactory $dsnFactory,
         private LoggerInterface $logger,
         private EmailJournal $journal,
+        private EventDispatcherInterface $dispatcher,
     ) {
     }
 
@@ -43,7 +45,7 @@ final readonly class SettingsTransport implements TransportInterface
 
         [$message, $envelope] = self::withSender($settings, $message, $envelope);
         try {
-            $sent = self::forSettings($settings, $this->dsnFactory)->send($message, $envelope);
+            $sent = self::forSettings($settings, $this->dsnFactory, $this->dispatcher)->send($message, $envelope);
         } catch (TransportExceptionInterface $exception) {
             // Logged, then rethrown so Messenger retries and finally keeps the message in "failed".
             $this->journal->failed($message, $envelope, $exception);
@@ -60,10 +62,14 @@ final readonly class SettingsTransport implements TransportInterface
 
     /**
      * Also used to test the settings from the administration, before saving them.
+     *
+     * @param EventDispatcherInterface|null $dispatcher required for e-mails built from a Twig template:
+     *                                                  since Symfony 7 a queued TemplatedEmail is rendered by
+     *                                                  the MessageEvent the transport dispatches right before sending
      */
-    public static function forSettings(SmtpSettings $settings, SmtpDsnFactory $dsnFactory): TransportInterface
+    public static function forSettings(SmtpSettings $settings, SmtpDsnFactory $dsnFactory, ?EventDispatcherInterface $dispatcher = null): TransportInterface
     {
-        return Transport::fromDsn($dsnFactory->create($settings));
+        return Transport::fromDsn($dsnFactory->create($settings), $dispatcher);
     }
 
     /**

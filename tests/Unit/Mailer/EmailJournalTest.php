@@ -17,6 +17,7 @@ use App\Service\SecretBox;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 use Symfony\Component\Clock\MockClock;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Mailer\Envelope;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\SentMessage;
@@ -44,7 +45,7 @@ final class EmailJournalTest extends TestCase
 
     public function testAnEmailDroppedForLackOfSmtpServerIsRecorded(): void
     {
-        $transport = new SettingsTransport($this->settingsRepository(null), new SmtpDsnFactory(new SecretBox('x')), new NullLogger(), $this->journal());
+        $transport = new SettingsTransport($this->settingsRepository(null), new SmtpDsnFactory(new SecretBox('x')), new NullLogger(), $this->journal(), new EventDispatcher());
 
         self::assertNull($transport->send($this->email()));
         self::assertSame(EmailStatus::NOT_CONFIGURED, $this->logs[0]->getStatus());
@@ -56,7 +57,7 @@ final class EmailJournalTest extends TestCase
         $settings = new SmtpSettings();
         // Nothing listens on port 1: the connection is refused immediately.
         $settings->update('127.0.0.1', 1, SmtpEncryption::NONE, null, 'noreply@example.com', 'TaskBoard');
-        $transport = new SettingsTransport($this->settingsRepository($settings), new SmtpDsnFactory(new SecretBox('x')), new NullLogger(), $this->journal());
+        $transport = new SettingsTransport($this->settingsRepository($settings), new SmtpDsnFactory(new SecretBox('x')), new NullLogger(), $this->journal(), new EventDispatcher());
 
         try {
             $transport->send($this->email());
