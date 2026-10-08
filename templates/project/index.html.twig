@@ -6,7 +6,6 @@
     <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
         <h1 class="text-2xl font-bold tracking-tight">{{ 'project.index.title'|trans }}</h1>
         <div class="flex flex-wrap gap-3">
-            <twig:Button variant="secondary" href="{{ path('app_pole_index') }}">{{ 'pole.manage'|trans }}</twig:Button>
             <button type="button" popovertarget="pole-new-popover"
                     class="inline-flex items-center justify-center gap-2 rounded-md bg-white px-3 py-2 text-sm font-semibold text-slate-900 shadow-xs ring-1 ring-slate-300 hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-slate-800 dark:text-slate-100 dark:ring-slate-700 dark:hover:bg-slate-700">
                 <span aria-hidden="true">+</span> {{ 'pole.new_card'|trans }}
