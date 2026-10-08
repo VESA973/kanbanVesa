@@ -29,10 +29,9 @@ final readonly class InvitationManager
     }
 
     /**
-     * @throws InvitationException when the address already belongs to a member
-     */
-    /**
      * @param Task|null $task assigned to the invitee when they accept
+     *
+     * @throws InvitationException when the address already belongs to a member
      */
     public function invite(Project $project, string $email, ProjectRole $role, User $invitedBy, ?Task $task = null): Invitation
     {
@@ -51,11 +50,7 @@ final readonly class InvitationManager
             $invitation->forTask($task);
         }
 
-        $this->dispatcher->dispatch(new ProjectActivityEvent($project, ActivityAction::INVITATION_SENT, $invitation->getEmail(), [
-            'role' => $this->translator->trans($role->translationKey()),
-        ]));
-        $this->invitationRepository->save($invitation);
-        $this->sendEmail($invitation, $plainToken);
+        $this->send($invitation, $plainToken);
 
         return $invitation;
     }
@@ -118,9 +113,41 @@ final readonly class InvitationManager
         return $plainToken;
     }
 
+    /**
+     * Sends a fresh e-mail with a new token valid for another Invitation::LIFETIME; previous links stop working.
+     *
+     * @throws InvitationException when the invitation was already accepted
+     */
+    public function resend(Invitation $invitation): void
+    {
+        if ($invitation->isAccepted()) {
+            throw InvitationException::alreadyUsed();
+        }
+
+        $plainToken = bin2hex(random_bytes(32));
+        $invitation->renew($invitation->getRole(), $plainToken);
+        $this->send($invitation, $plainToken);
+    }
+
+    /**
+     * @throws InvitationException when the invitation was already accepted (it is kept as a record)
+     */
     public function revoke(Invitation $invitation): void
     {
+        if ($invitation->isAccepted()) {
+            throw InvitationException::alreadyUsed();
+        }
+
         $this->invitationRepository->remove($invitation);
+    }
+
+    private function send(Invitation $invitation, string $plainToken): void
+    {
+        $this->dispatcher->dispatch(new ProjectActivityEvent($invitation->getProject(), ActivityAction::INVITATION_SENT, $invitation->getEmail(), [
+            'role' => $this->translator->trans($invitation->getRole()->translationKey()),
+        ]));
+        $this->invitationRepository->save($invitation);
+        $this->sendEmail($invitation, $plainToken);
     }
 
     private function assignInvitedTask(Invitation $invitation, User $user): void

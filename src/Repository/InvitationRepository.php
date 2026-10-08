@@ -31,18 +31,20 @@ class InvitationRepository extends ServiceEntityRepository
     }
 
     /**
+     * Every invitation of the project whatever its status (pending, accepted, expired), most recent first.
+     *
      * @return list<Invitation>
      */
-    public function findPendingFor(Project $project): array
+    public function findAllFor(Project $project, int $limit = 50): array
     {
         /** @var list<Invitation> */
         return $this->createQueryBuilder('i')
+            ->leftJoin('i.task', 't')
+            ->addSelect('t')
             ->andWhere('i.project = :project')
-            ->andWhere('i.acceptedAt IS NULL')
-            ->andWhere('i.expiresAt > :now')
             ->setParameter('project', $project)
-            ->setParameter('now', new \DateTimeImmutable())
             ->orderBy('i.createdAt', 'DESC')
+            ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
     }

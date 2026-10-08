@@ -76,10 +76,30 @@ final class MemberController extends AbstractController
     public function revoke(Invitation $invitation, InvitationManager $invitationManager): Response
     {
         $projectId = $invitation->getProject()->getId();
-        $invitationManager->revoke($invitation);
-        $this->addFlash('success', 'flash.invitation.revoked');
+        try {
+            $invitationManager->revoke($invitation);
+            $this->addFlash('success', 'flash.invitation.revoked');
+        } catch (InvitationException $exception) {
+            $this->addFlash('error', $exception->getMessage());
+        }
 
         return $this->redirectToRoute('app_project_members', ['id' => $projectId]);
+    }
+
+    #[Route('/invitations/{id}/resend', name: 'app_invitation_resend', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[IsGranted(ProjectVoter::VIEW, new Expression('args["invitation"].getProject()'), statusCode: 404)]
+    #[IsGranted(ProjectVoter::MANAGE_MEMBERS, new Expression('args["invitation"].getProject()'))]
+    #[IsCsrfTokenValid(new Expression('"members-" ~ args["invitation"].getProject().getId()'))]
+    public function resend(Invitation $invitation, InvitationManager $invitationManager): Response
+    {
+        try {
+            $invitationManager->resend($invitation);
+            $this->addFlash('success', 'flash.invitation.resent');
+        } catch (InvitationException $exception) {
+            $this->addFlash('error', $exception->getMessage());
+        }
+
+        return $this->redirectToRoute('app_project_members', ['id' => $invitation->getProject()->getId()]);
     }
 
     /**
@@ -133,7 +153,7 @@ final class MemberController extends AbstractController
         return $this->render('project/members.html.twig', [
             'project' => $project,
             'form' => $form,
-            'invitations' => $this->invitationRepository->findPendingFor($project),
+            'invitations' => $this->invitationRepository->findAllFor($project),
         ]);
     }
 

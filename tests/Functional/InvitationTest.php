@@ -112,6 +112,28 @@ final class InvitationTest extends FunctionalTestCase
         self::assertSame(0, self::getContainer()->get(InvitationRepository::class)->count());
     }
 
+    public function testOwnerSeesTheStatusOfInvitationsAndResendsAnExpiredOne(): void
+    {
+        $client = self::createClient();
+        [$owner, $project] = $this->project();
+        $client->loginUser($owner);
+        $this->invite($client, $project, 'alex@example.com', 'editor');
+        $invitation = self::getContainer()->get(InvitationRepository::class)->findOneBy(['email' => 'alex@example.com']) ?? throw new \LogicException();
+        new \ReflectionProperty(Invitation::class, 'expiresAt')->setValue($invitation, new \DateTimeImmutable('-1 day'));
+        self::getContainer()->get(InvitationRepository::class)->save($invitation);
+
+        $crawler = $client->request('GET', '/projects/'.$project->getId().'/members');
+        self::assertSelectorTextContains('#invitations-heading + ul', 'Expirée');
+        self::assertCount(0, $crawler->filter('form[action$="/link"]'), 'An expired link is not shared any more.');
+
+        $client->submit($crawler->filter('form[action="/invitations/'.$invitation->getId().'/resend"]')->form());
+        self::assertResponseRedirects('/projects/'.$project->getId().'/members');
+        self::assertQueuedEmailCount(1);
+        $client->followRedirect();
+        self::assertSelectorTextContains('#invitations-heading + ul', 'En attente');
+        self::assertSelectorTextContains('main', 'renvoyée');
+    }
+
     public function testEditorSeesMembersButCannotManageThem(): void
     {
         $client = self::createClient();

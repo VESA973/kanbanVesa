@@ -303,7 +303,6 @@ invitation:
     email: Adresse e-mail
     role: Rôle
     submit: Envoyer l'invitation
-    pending: Invitations en attente
     pending_short: en attente
     for_task: "pour « %task% »"
     task:
@@ -326,6 +325,14 @@ invitation:
             Créez votre compte avec l'adresse %email% en ouvrant ce lien : %link%
         warning: "Ce lien remplace celui envoyé par e-mail (qui ne fonctionne plus). Toute personne qui l'obtient peut l'utiliser en créant un compte avec l'adresse invitée : ne le partagez qu'avec la personne concernée."
     expires_on: expire le %date%
+    expired_on: expirée depuis le %date%
+    accepted_on: acceptée le %date%
+    list_title: Invitations
+    status:
+        pending: En attente
+        accepted: Acceptée
+        expired: Expirée
+    resend: Renvoyer
     revoke: Annuler
     page_title: Invitation
     intro: "%inviter% vous invite à rejoindre le projet « %project% » en tant que %role%."
@@ -398,6 +405,7 @@ flash:
     invitation:
         sent: L'invitation a été envoyée.
         revoked: L'invitation a été annulée.
+        resent: L'invitation a été renvoyée ; elle est valable 7 jours.
         accepted: Bienvenue dans le projet !
         sent_for_task: L'invitation a été créée. Utilisez « Obtenir le lien » pour la partager par WhatsApp si l'e-mail n'est pas configuré.
     member:

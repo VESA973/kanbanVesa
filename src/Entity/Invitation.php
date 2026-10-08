@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Enum\InvitationStatus;
 use App\Enum\ProjectRole;
 use App\Repository\InvitationRepository;
 use Doctrine\DBAL\Types\Types;
@@ -165,6 +166,20 @@ class Invitation
     public function isPending(): bool
     {
         return !$this->isAccepted() && !$this->isExpired();
+    }
+
+    public function getAcceptedAt(): ?\DateTimeImmutable
+    {
+        return $this->acceptedAt;
+    }
+
+    public function getStatus(): InvitationStatus
+    {
+        return match (true) {
+            $this->isAccepted() => InvitationStatus::ACCEPTED,
+            $this->isExpired() => InvitationStatus::EXPIRED,
+            default => InvitationStatus::PENDING,
+        };
     }
 
     public function getCreatedAt(): \DateTimeImmutable
