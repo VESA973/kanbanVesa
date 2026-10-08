@@ -44,7 +44,7 @@
                 </div>
 
                 <div class="overflow-x-auto rounded-md ring-1 ring-slate-200 dark:ring-slate-700">
-                    <table class="min-w-full divide-y divide-slate-200 text-left text-sm dark:divide-slate-700" aria-labelledby="table-{{ table.id }}-title">
+                    <table id="task-table-{{ table.id }}" class="min-w-full divide-y divide-slate-200 text-left text-sm dark:divide-slate-700" aria-labelledby="table-{{ table.id }}-title">
                         <thead class="bg-slate-50 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                             <tr>
                                 {% for column in table.columns %}
@@ -109,7 +109,8 @@
 
                 {% if can_edit %}
                     <div class="mt-2 flex flex-wrap items-start gap-3">
-                        <form method="post" action="{{ path('app_task_table_row_new', {id: table.id}) }}">
+                        <form method="post" action="{{ path('app_task_table_row_new', {id: table.id}) }}"
+                              data-modal-focus-after="#task-table-{{ table.id }} tbody tr:last-child [data-controller~='table-cell']">
                             <input type="hidden" name="_token" value="{{ task_token }}">
                             <twig:Button type="submit" variant="secondary">+ {{ 'task_table.add_row'|trans }}</twig:Button>
                         </form>

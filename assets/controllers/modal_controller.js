@@ -32,7 +32,7 @@ function writeWidth(width) {
  * cards show the new comment count, checklist progress…
  */
 export default class extends Controller {
-    static targets = ['wideButton'];
+    static targets = ['wideButton', 'body'];
 
     connect() {
         this.frame = this.element.closest('turbo-frame');
@@ -42,7 +42,9 @@ export default class extends Controller {
 
         this.applyWidth(readWidth());
         this.element.showModal();
+        this.restoreScroll();
         this.element.addEventListener('close', this.clear);
+        this.element.addEventListener('turbo:submit-start', this.rememberScroll);
         this.element.addEventListener('turbo:submit-end', this.markDirty);
         this.resizeObserver = new ResizeObserver(this.rememberWidth);
         this.resizeObserver.observe(this.element);
@@ -51,7 +53,33 @@ export default class extends Controller {
     disconnect() {
         this.resizeObserver?.disconnect();
         this.element.removeEventListener('close', this.clear);
+        this.element.removeEventListener('turbo:submit-start', this.rememberScroll);
         this.element.removeEventListener('turbo:submit-end', this.markDirty);
+    }
+
+    // A form re-renders the whole frame: without this the window would jump back to the top.
+    // A form may also ask, with data-modal-focus-after, which field gets the focus afterwards.
+    rememberScroll = (event) => {
+        const state = this.frame && frameState.get(this.frame);
+        if (state && this.hasBodyTarget) {
+            state.scrollTop = this.bodyTarget.scrollTop;
+            state.focusAfter = event.target?.dataset?.modalFocusAfter ?? null;
+        }
+    };
+
+    restoreScroll() {
+        const state = this.frame && frameState.get(this.frame);
+        if (!state || !this.hasBodyTarget) {
+            return;
+        }
+        if (state.scrollTop) {
+            this.bodyTarget.scrollTop = state.scrollTop;
+        }
+        if (state.focusAfter) {
+            this.element.querySelector(state.focusAfter)?.focus({ preventScroll: true });
+        }
+        state.scrollTop = 0;
+        state.focusAfter = null;
     }
 
     toggleWide() {
