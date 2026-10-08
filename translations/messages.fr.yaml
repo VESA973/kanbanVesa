@@ -15,6 +15,7 @@ action:
     save: Enregistrer
     cancel: Annuler
     close: Fermer
+    toggle_wide: Agrandir ou réduire la fenêtre
 
 board:
     move_error: Le déplacement n'a pas pu être enregistré, l'élément a repris sa place.

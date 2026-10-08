@@ -1,10 +1,17 @@
-{# Rename, move or delete a column; expects `column`, `table` and `task_token`. #}
-<details class="relative font-normal">
-    <summary class="cursor-pointer list-none rounded px-1 text-slate-400 hover:bg-slate-200 focus-visible:outline-2 focus-visible:outline-indigo-600 dark:hover:bg-slate-700">
-        <span aria-hidden="true">▾</span><span class="sr-only">{{ 'task_table.column_actions'|trans({'%name%': column.name}) }}</span>
-    </summary>
-    <div class="absolute left-0 z-20 mt-1 w-64 space-y-3 rounded-md bg-white p-3 text-slate-900 normal-case shadow-lg ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:ring-slate-700">
-        <p class="text-xs text-slate-500 dark:text-slate-400">{{ 'task_table.column_type'|trans }} : {{ column.type.translationKey|trans }}</p>
+{# Rename, move or delete a column; expects `column`, `table` and `task_token`.
+   A popover (top layer) rather than a dropdown: the table scrolls horizontally and would clip it. #}
+<button type="button" popovertarget="column-menu-{{ column.id }}"
+        class="rounded px-1 font-normal text-slate-400 hover:bg-slate-200 focus-visible:outline-2 focus-visible:outline-indigo-600 dark:hover:bg-slate-700">
+    <span aria-hidden="true">▾</span><span class="sr-only">{{ 'task_table.column_actions'|trans({'%name%': column.name}) }}</span>
+</button>
+<div id="column-menu-{{ column.id }}" popover aria-label="{{ 'task_table.column_actions'|trans({'%name%': column.name}) }}"
+     class="m-auto w-72 max-w-[90vw] space-y-3 rounded-lg bg-white p-4 text-left text-sm font-normal text-slate-900 shadow-xl ring-1 ring-slate-200 backdrop:bg-slate-900/20 dark:bg-slate-800 dark:text-slate-100 dark:ring-slate-700">
+        <div class="flex items-center justify-between gap-2">
+            <p class="font-semibold">{{ column.name }} <span class="font-normal text-slate-500 dark:text-slate-400">· {{ column.type.translationKey|trans }}</span></p>
+            <button type="button" popovertarget="column-menu-{{ column.id }}" popovertargetaction="hide" class="rounded p-1 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700">
+                <span aria-hidden="true">✕</span><span class="sr-only">{{ 'action.close'|trans }}</span>
+            </button>
+        </div>
         <form method="post" action="{{ path('app_task_table_column_rename', {id: column.id}) }}">
             <input type="hidden" name="_token" value="{{ task_token }}">
             <label for="column-rename-{{ column.id }}" class="mb-1 block text-xs font-medium">{{ 'task_table.rename_column'|trans }}</label>
@@ -32,5 +39,4 @@
                 <twig:Button type="submit" variant="danger" fullWidth>{{ 'task_table.delete_column'|trans }}</twig:Button>
             </form>
         {% endif %}
-    </div>
-</details>
+</div>
