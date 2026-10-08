@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Entity\Program;
 use App\Entity\User;
 use App\Exception\InvitationException;
 use App\Service\InvitationManager;
@@ -52,7 +53,7 @@ final class InvitationController extends AbstractController
     {
         try {
             $invitation = $this->invitationManager->findValid($token);
-            $project = $this->invitationManager->accept($token, $user);
+            $joined = $this->invitationManager->accept($token, $user);
         } catch (InvitationException $exception) {
             $this->addFlash('error', $exception->getMessage());
 
@@ -62,8 +63,10 @@ final class InvitationController extends AbstractController
         $this->addFlash('success', 'flash.invitation.accepted');
 
         // Invited for a task: "Mes tâches" shows it straight away.
-        return null !== $invitation->getTask()
-            ? $this->redirectToRoute('app_my_tasks')
-            : $this->redirectToRoute('app_project_show', ['id' => $project->getId()]);
+        return match (true) {
+            null !== $invitation->getTask() => $this->redirectToRoute('app_my_tasks'),
+            $joined instanceof Program => $this->redirectToRoute('app_program_show', ['id' => $joined->getId()]),
+            default => $this->redirectToRoute('app_project_show', ['id' => $joined->getId()]),
+        };
     }
 }

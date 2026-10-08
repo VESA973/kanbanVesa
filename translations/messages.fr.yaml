@@ -63,6 +63,9 @@ task:
 
 project:
     name: Nom du projet
+    program: Projet global
+    program_help: Les membres de ce projet global auront aussi accès à ce projet.
+    program_default: Général (mon projet global par défaut)
     description: Description
     color:
         label: Couleur
@@ -99,6 +102,35 @@ project:
         warning: Le projet, ses colonnes et ses tâches seront définitivement supprimés. Cette action est irréversible.
         confirm: Supprimer définitivement ce projet ?
         submit: Supprimer le projet
+
+program:
+    label: Projet global
+    name: Nom du projet global
+    default_name: Général
+    empty: Aucun projet dans ce projet global pour l'instant.
+    projects_of: Projets de %name%
+    back: Retour à %name%
+    members_help: Les membres d'un projet global ont accès à tous ses projets, présents et futurs, avec le rôle choisi ici.
+    remove_member_confirm: Retirer %name% du projet global ? Cette personne perdra l'accès à tous ses projets (sauf ceux où elle a été invitée directement).
+    new:
+        title: Nouveau projet global
+        help: Un projet global regroupe plusieurs projets ; vous verrez leur avancement d'un coup d'œil.
+        submit: Créer le projet global
+    edit:
+        title: Modifier le projet global
+    delete:
+        title: Supprimer le projet global
+        confirm: Supprimer définitivement ce projet global ?
+        submit: Supprimer le projet global
+    error:
+        not_empty: Ce projet global contient encore des projets ; supprimez-les ou archivez-les d'abord.
+
+progress:
+    overall: Avancement global
+    overall_of: Avancement de %name%
+    task_count: "{0} 0 tâche|{1} 1 tâche|]1,Inf[ %count% tâches"
+    done_of: "%completed%/%total%"
+    value_text: "%percent% % (%completed% tâche(s) terminée(s) sur %total%)"
 
 checklist:
     title: Checklist
@@ -286,6 +318,8 @@ member:
     role_of: Rôle de %name%
     remove: Retirer
     remove_confirm: Retirer %name% du projet ? Ses tâches ne lui seront plus assignées.
+    inherited: via le projet global
+    inherited_help: Accès donné par le projet global ; il se gère depuis la page des membres du projet global.
 
 invitation:
     title: Inviter une personne
@@ -325,6 +359,7 @@ invitation:
     revoke: Annuler
     page_title: Invitation
     intro: "%inviter% vous invite à rejoindre le projet « %project% » en tant que %role%."
+    intro_program: "%inviter% vous invite à rejoindre le projet global « %project% » (et tous ses projets) en tant que %role%."
     accept: Rejoindre le projet
     login_first: Connectez-vous ou créez un compte avec l'adresse %email% pour accepter l'invitation.
     wrong_account: Déconnectez-vous puis reconnectez-vous avec l'adresse %email%.
@@ -397,6 +432,11 @@ flash:
         resent: L'invitation a été renvoyée ; elle est valable 7 jours.
         accepted: Bienvenue dans le projet !
         sent_for_task: L'invitation a été créée. Utilisez « Obtenir le lien » pour la partager par WhatsApp si l'e-mail n'est pas configuré.
+    program:
+        created: Le projet global a été créé.
+        updated: Le projet global a été modifié.
+        deleted: Le projet global a été supprimé.
+        member_removed: Cette personne n'a plus accès au projet global ni à ses projets.
     member:
         role_changed: Le rôle a été modifié.
         removed: Le membre a été retiré du projet.
@@ -440,6 +480,7 @@ email:
     invitation:
         subject: Invitation au projet « %project% »
         intro: "%inviter% vous invite à rejoindre le projet « %project% » sur TaskBoard en tant que %role%."
+        intro_program: "%inviter% vous invite à rejoindre le projet global « %project% » sur TaskBoard (et tous ses projets) en tant que %role%."
         button: Voir l'invitation
         expires: Cette invitation expire le %date%.
     reset_password:

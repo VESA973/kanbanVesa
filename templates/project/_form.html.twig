@@ -1,4 +1,5 @@
 {{ form_start(form, {attr: {novalidate: 'novalidate'}}) }}
+    {% if form.program is defined %}{{ form_row(form.program) }}{% endif %}
     {{ form_row(form.name) }}
     {{ form_row(form.description) }}
     {{ form_row(form.color) }}

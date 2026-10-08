@@ -54,10 +54,19 @@ class Invitation
     #[ORM\Column(options: ['default' => false])]
     private bool $linkShared = false;
 
+    #[ORM\ManyToOne(inversedBy: 'invitations')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
+    private ?Project $project = null;
+
+    #[ORM\ManyToOne(inversedBy: 'invitations')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
+    private ?Program $program = null;
+
+    /**
+     * @param Project|Program $target what the invitee joins (a whole program gives access to all its projects)
+     */
     public function __construct(
-        #[ORM\ManyToOne(inversedBy: 'invitations')]
-        #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-        private Project $project,
+        Project|Program $target,
         string $email,
         #[ORM\Column(length: 20, enumType: ProjectRole::class)]
         private ProjectRole $role,
@@ -70,6 +79,11 @@ class Invitation
             throw new \InvalidArgumentException('Nobody can be invited as owner.');
         }
 
+        if ($target instanceof Project) {
+            $this->project = $target;
+        } else {
+            $this->program = $target;
+        }
         $this->email = mb_strtolower(trim($email));
         $this->createdAt = new \DateTimeImmutable();
         $this->renew($role, $plainToken);
@@ -93,6 +107,7 @@ class Invitation
     public function forTask(?Task $task): void
     {
         if (null !== $task && $task->getProject() !== $this->project) {
+            // Also refuses a task for a program invitation: tasks belong to projects.
             throw new \InvalidArgumentException('The task must belong to the invitation project.');
         }
 
@@ -128,9 +143,30 @@ class Invitation
         return $this->id;
     }
 
-    public function getProject(): Project
+    /**
+     * Null for an invitation to a whole program.
+     */
+    public function getProject(): ?Project
     {
         return $this->project;
+    }
+
+    public function getProgram(): ?Program
+    {
+        return $this->program;
+    }
+
+    public function getTarget(): Project|Program
+    {
+        return $this->project ?? $this->program ?? throw new \LogicException('An invitation targets a project or a program.');
+    }
+
+    /**
+     * CSRF token id of the members page this invitation is managed from.
+     */
+    public function getMembersTokenId(): string
+    {
+        return null !== $this->project ? 'members-'.$this->project->getId() : 'program-members-'.$this->getTarget()->getId();
     }
 
     public function getEmail(): string

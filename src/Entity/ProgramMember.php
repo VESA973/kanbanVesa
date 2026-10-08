@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use App\Enum\ProjectRole;
-use App\Repository\ProjectMemberRepository;
+use App\Repository\ProgramMemberRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: ProjectMemberRepository::class)]
-#[ORM\UniqueConstraint(name: 'UNIQ_PROJECT_MEMBER', fields: ['project', 'user'])]
-class ProjectMember
+#[ORM\Entity(repositoryClass: ProgramMemberRepository::class)]
+#[ORM\UniqueConstraint(name: 'UNIQ_PROGRAM_MEMBER', fields: ['program', 'user'])]
+class ProgramMember
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -24,15 +24,12 @@ class ProjectMember
     public function __construct(
         #[ORM\ManyToOne(inversedBy: 'members')]
         #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-        private Project $project,
+        private Program $program,
         #[ORM\ManyToOne]
         #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
         private User $user,
         #[ORM\Column(length: 20, enumType: ProjectRole::class)]
         private ProjectRole $role,
-        /** Given by the program of the project: follows the program membership, not managed here. */
-        #[ORM\Column(options: ['default' => false])]
-        private bool $inherited = false,
     ) {
         $this->joinedAt = new \DateTimeImmutable();
     }
@@ -42,9 +39,9 @@ class ProjectMember
         return $this->id;
     }
 
-    public function getProject(): Project
+    public function getProgram(): Program
     {
-        return $this->project;
+        return $this->program;
     }
 
     public function getUser(): User
@@ -53,8 +50,7 @@ class ProjectMember
     }
 
     /**
-     * Compares ids as well as instances: the same user may be loaded by
-     * another entity manager (e.g. after a kernel reboot in tests).
+     * Compares ids as well as instances (see ProjectMember::isFor()).
      */
     public function isFor(User $user): bool
     {
@@ -64,11 +60,6 @@ class ProjectMember
     public function getRole(): ProjectRole
     {
         return $this->role;
-    }
-
-    public function isInherited(): bool
-    {
-        return $this->inherited;
     }
 
     public function changeRole(ProjectRole $role): void

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Factory;
 
+use App\Entity\Program;
 use App\Entity\Project;
 use App\Entity\User;
 use App\Enum\ProjectColor;
@@ -18,6 +19,26 @@ final class ProjectFactory extends PersistentObjectFactory
     public static function class(): string
     {
         return Project::class;
+    }
+
+    /**
+     * Like ProjectCreator without a chosen program: each project goes to a new "Général" program of its owner.
+     */
+    protected function initialize(): static
+    {
+        return $this->afterInstantiate(static function (Project $project): void {
+            $project->placeIn(new Program('Général', $project->getOwner()));
+        });
+    }
+
+    /**
+     * Places the project in $program; inherited access of its members is not created (use ProgramAccess).
+     */
+    public function inProgram(Program $program): self
+    {
+        return $this->afterInstantiate(static function (Project $project) use ($program): void {
+            $project->placeIn($program);
+        });
     }
 
     public function withColumns(string ...$names): self

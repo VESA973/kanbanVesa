@@ -44,27 +44,33 @@ vendor/bin/phpstan analyse
 vendor/bin/rector process --dry-run
 php bin/phpunit
 4. Modèle de données
+User ──< ProgramMember >── Program ──< Project
+                              └──< Invitation
 User ──< ProjectMember >── Project ──< BoardColumn ──< Task
                               │                         ├──< Comment
-                              ├──< Category ──────────< ├──< ChecklistItem
+                              │                         ├──< ChecklistItem
                               │                         └──>< Label
                               ├──< Invitation
                               └──< ActivityLog
 EmailLog (journal des envois, indépendant)
 
-Hiérarchie fonctionnelle : le Project est le « projet global » ; il contient des catégories
-(Category) ; chaque tâche appartient à une catégorie (obligatoire) ET à une colonne (statut).
-Le tableau affiche une bande horizontale par catégorie, découpée en cases colonne × catégorie.
+Hiérarchie : un Program (« projet global » dans l'interface) regroupe des projets ; chaque projet
+appartient à exactement un programme (« Général » de son propriétaire par défaut).
+Les membres d'un programme sont recopiés sur chacun de ses projets comme ProjectMember « hérités »
+(inherited = true) par ProgramAccess : voters et requêtes ne lisent que ProjectMember.
+Une adhésion directe à un projet n'est jamais modifiée par le programme ; une adhésion héritée
+ne se gère que depuis le programme.
 User : email (unique), password, firstName, lastName, isVerified, createdAt.
-Project : name, description, color, owner (User), archivedAt, createdAt.
-ProjectMember : project, user, role (ProjectRole enum : OWNER, EDITOR, VIEWER), joinedAt.
+Project : program, name, description, color, owner (User), archivedAt, createdAt.
+ProjectMember : project, user, role (ProjectRole enum : OWNER, EDITOR, VIEWER), inherited (bool), joinedAt.
 BoardColumn : project, name, position (int).
-Category : project, name, position (int). Un projet garde toujours au moins une catégorie (« Général » à la création).
-Task : column, category, title, description, assignee (User, nullable), dueDate, position, priority (enum), completedAt, createdBy.
+Program : name, description, color, owner (User), createdAt.
+ProgramMember : program, user, role (ProjectRole), joinedAt.
+Task : column, title, description, assignee (User, nullable), dueDate, position, priority (enum), completedAt, createdBy.
 ChecklistItem : task, label, isDone, position.
 Comment : task, author, content, createdAt.
 Label : project, name, color.
-Invitation : project, email, role, tokenHash, expiresAt (+7 jours), acceptedAt, task (nullable) ; statut calculé (InvitationStatus : PENDING, ACCEPTED, EXPIRED).
+Invitation : project OU program (l'un des deux), email, role, tokenHash, expiresAt (+7 jours), acceptedAt, task (nullable) ; statut calculé (InvitationStatus : PENDING, ACCEPTED, EXPIRED).
 EmailLog : recipients, subject, status (EmailStatus : SENT, FAILED, NOT_CONFIGURED), messageId, error, createdAt.
 ActivityLog : project, user, action (enum), subject, payload (json), createdAt → permet au propriétaire de suivre qui a fait quoi.
 
@@ -72,9 +78,8 @@ Règles :
 
 Utiliser des enums PHP natives (backed enums) pour les rôles, priorités, actions.
 Utiliser DateTimeImmutable partout.
-Le champ position gère l'ordre des colonnes, des catégories et des cartes ; le réordonnancement passe par un service dédié (ColumnMover, CategoryMover, TaskMover).
-La position d'une tâche est comptée dans sa case (colonne + catégorie), pas dans toute la colonne.
-Avancement (CategoryProgress) : tâches terminées (completedAt) / total, par catégorie et pour le projet (pondéré par le nombre de tâches) ; une catégorie vide affiche « 0 tâche ».
+Le champ position gère l'ordre des colonnes et des cartes ; le réordonnancement passe par un service dédié (ColumnMover, TaskMover).
+Avancement (ProjectDirectory, TaskRepository::countByProject) : tâches terminées (completedAt) / total, par projet et pour le programme (pondéré par le nombre de tâches, pas une moyenne) ; un projet vide affiche « 0 tâche ».
 
 Spécificités MariaDB :
 
@@ -88,10 +93,12 @@ Voir le projet	✅	✅	✅
 Créer / déplacer / modifier une tâche	✅	✅	❌
 Cocher une tâche qui m'est assignée	✅	✅	✅
 Gérer les colonnes	✅	✅	❌
-Gérer les catégories	✅	✅	❌
 Inviter / retirer des membres	✅	❌	❌
 Archiver / supprimer le projet	✅	❌	❌
-Toute vérification d'accès passe par ProjectVoter / TaskVoter (#[IsGranted] ou denyAccessUnlessGranted).
+Programme : voir (et voir tous ses projets)	✅	✅	✅
+Programme : créer un projet dedans	✅	✅	❌
+Programme : modifier, supprimer (vide), gérer les membres	✅	❌	❌
+Toute vérification d'accès passe par ProjectVoter / TaskVoter / ProgramVoter / InvitationVoter (#[IsGranted] ou denyAccessUnlessGranted).
 Jamais de vérification de rôle codée en dur dans un contrôleur ou un template.
 Un utilisateur non membre reçoit une 404 (ne pas révéler l'existence du projet).
 6. Architecture du code
@@ -102,7 +109,7 @@ src/
 ├── Form/              # Un FormType par formulaire
 ├── Repository/        # Toutes les requêtes DQL / QueryBuilder ici
 ├── Security/Voter/
-├── Service/           # Logique métier (TaskMover, CategoryManager, CategoryProgress, InvitationManager…)
+├── Service/           # Logique métier (TaskMover, ProgramAccess, ProgramMembership, ProjectDirectory, InvitationManager…)
 ├── Mailer/            # Transport SMTP réglé dans l'admin (SettingsTransport) + journal des envois (EmailJournal)
 ├── EventSubscriber/   # Ex : journalisation automatique des actions
 ├── Twig/Components/   # Twig & Live Components

@@ -12,7 +12,11 @@ use App\Enum\InvitationStatus;
 use App\Enum\ProjectRole;
 use App\Exception\InvitationException;
 use App\Repository\InvitationRepository;
+use App\Repository\TaskRepository;
 use App\Service\InvitationManager;
+use App\Service\ProgramAccess;
+use App\Service\ProgramMembership;
+use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\MailerInterface;
@@ -201,6 +205,7 @@ final class InvitationManagerTest extends TestCase
             $mailer ?? $this->createStub(MailerInterface::class),
             $this->createStub(TranslatorInterface::class),
             new RecordingDispatcher(),
+            new ProgramMembership(new ProgramAccess($this->createStub(TaskRepository::class)), $this->createStub(EntityManagerInterface::class)),
         );
     }
 

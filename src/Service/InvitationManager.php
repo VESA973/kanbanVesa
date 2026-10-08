@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Entity\Invitation;
+use App\Entity\Program;
 use App\Entity\Project;
 use App\Entity\Task;
 use App\Entity\User;
@@ -25,24 +26,26 @@ final readonly class InvitationManager
         private MailerInterface $mailer,
         private TranslatorInterface $translator,
         private EventDispatcherInterface $dispatcher,
+        private ProgramMembership $programMembership,
     ) {
     }
 
     /**
-     * @param Task|null $task assigned to the invitee when they accept
+     * @param Project|Program $target a program gives access to all its projects
+     * @param Task|null       $task   assigned to the invitee when they accept (project invitations only)
      *
      * @throws InvitationException when the address already belongs to a member
      */
-    public function invite(Project $project, string $email, ProjectRole $role, User $invitedBy, ?Task $task = null): Invitation
+    public function invite(Project|Program $target, string $email, ProjectRole $role, User $invitedBy, ?Task $task = null): Invitation
     {
-        if ($this->isMember($project, $email)) {
+        if ($this->isMember($target, $email)) {
             throw InvitationException::alreadyMember();
         }
 
         $plainToken = bin2hex(random_bytes(32));
-        $invitation = $this->invitationRepository->findNotAcceptedFor($project, $email);
+        $invitation = $this->invitationRepository->findNotAcceptedFor($target, $email);
         if (null === $invitation) {
-            $invitation = new Invitation($project, $email, $role, $invitedBy, $plainToken);
+            $invitation = new Invitation($target, $email, $role, $invitedBy, $plainToken);
         } else {
             $invitation->renew($role, $plainToken);
         }
@@ -73,18 +76,15 @@ final readonly class InvitationManager
      * Receiving the link proves the address belongs to the user, so the account
      * is marked as verified at the same time.
      *
+     * @return Project|Program what the user just joined
+     *
      * @throws InvitationException
      */
-    public function accept(string $plainToken, User $user): Project
+    public function accept(string $plainToken, User $user): Project|Program
     {
         $invitation = $this->findValid($plainToken);
         if ($invitation->getEmail() !== $user->getEmail()) {
             throw InvitationException::emailMismatch();
-        }
-
-        $project = $invitation->getProject();
-        if (null === $project->getRoleOf($user)) {
-            $project->addMember($user, $invitation->getRole());
         }
 
         // Only a link received by e-mail proves the address belongs to the user.
@@ -92,13 +92,25 @@ final readonly class InvitationManager
             $user->markAsVerified();
         }
         $invitation->markAsAccepted();
+
+        $target = $invitation->getTarget();
+        if ($target instanceof Program) {
+            $this->programMembership->join($target, $user, $invitation->getRole());
+            $this->invitationRepository->save($invitation);
+
+            return $target;
+        }
+
+        if (null === $target->getRoleOf($user)) {
+            $target->addMember($user, $invitation->getRole());
+        }
         $this->assignInvitedTask($invitation, $user);
-        $this->dispatcher->dispatch(new ProjectActivityEvent($project, ActivityAction::MEMBER_JOINED, $user->getFullName(), [
+        $this->dispatcher->dispatch(new ProjectActivityEvent($target, ActivityAction::MEMBER_JOINED, $user->getFullName(), [
             'role' => $this->translator->trans($invitation->getRole()->translationKey()),
         ]));
         $this->invitationRepository->save($invitation);
 
-        return $project;
+        return $target;
     }
 
     /**
@@ -143,9 +155,13 @@ final readonly class InvitationManager
 
     private function send(Invitation $invitation, string $plainToken): void
     {
-        $this->dispatcher->dispatch(new ProjectActivityEvent($invitation->getProject(), ActivityAction::INVITATION_SENT, $invitation->getEmail(), [
-            'role' => $this->translator->trans($invitation->getRole()->translationKey()),
-        ]));
+        // The activity log belongs to projects; program invitations stay listed on the program members page.
+        $project = $invitation->getProject();
+        if (null !== $project) {
+            $this->dispatcher->dispatch(new ProjectActivityEvent($project, ActivityAction::INVITATION_SENT, $invitation->getEmail(), [
+                'role' => $this->translator->trans($invitation->getRole()->translationKey()),
+            ]));
+        }
         $this->invitationRepository->save($invitation);
         $this->sendEmail($invitation, $plainToken);
     }
@@ -163,10 +179,10 @@ final readonly class InvitationManager
         ], $task));
     }
 
-    private function isMember(Project $project, string $email): bool
+    private function isMember(Project|Program $target, string $email): bool
     {
         $email = mb_strtolower(trim($email));
-        foreach ($project->getMembers() as $member) {
+        foreach ($target->getMembers() as $member) {
             if ($member->getUser()->getEmail() === $email) {
                 return true;
             }
@@ -181,11 +197,12 @@ final readonly class InvitationManager
             ->to($invitation->getEmail())
             // A real person to answer to, rather than the no-reply sender.
             ->replyTo($invitation->getInvitedBy()->getEmail())
-            ->subject($this->translator->trans('email.invitation.subject', ['%project%' => $invitation->getProject()->getName()]))
+            ->subject($this->translator->trans('email.invitation.subject', ['%project%' => $invitation->getTarget()->getName()]))
             ->htmlTemplate('email/invitation.html.twig')
             ->context([
                 'inviterName' => $invitation->getInvitedBy()->getFullName(),
-                'projectName' => $invitation->getProject()->getName(),
+                'projectName' => $invitation->getTarget()->getName(),
+                'isProgram' => $invitation->getTarget() instanceof Program,
                 'roleKey' => $invitation->getRole()->translationKey(),
                 'token' => $plainToken,
                 'expiresAt' => $invitation->getExpiresAt(),

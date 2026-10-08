@@ -12,6 +12,7 @@ use App\Entity\User;
 use App\Enum\ProjectColor;
 use App\Enum\ProjectRole;
 use App\Enum\TaskPriority;
+use App\Factory\ProgramFactory;
 use App\Factory\ProjectFactory;
 use App\Factory\TaskFactory;
 use App\Factory\UserFactory;
@@ -29,7 +30,10 @@ final class AppStory extends Story
         $demo = UserFactory::new()->verified()->create(['email' => 'demo@kanban.lan', 'firstName' => 'Camille', 'lastName' => 'Martin']);
         [$alex, $sam] = UserFactory::new()->verified()->many(2)->create();
 
+        $agency = ProgramFactory::createOne(['name' => 'Agence web 2027', 'owner' => $demo, 'color' => ProjectColor::VIOLET, 'description' => 'Tous les chantiers numériques de l\'année.']);
+
         $website = ProjectFactory::new()
+            ->inProgram($agency)
             ->withColumns('À faire', 'En cours', 'Terminé')
             ->withMember($alex, ProjectRole::EDITOR)
             ->withMember($sam, ProjectRole::VIEWER)
@@ -45,7 +49,7 @@ final class AppStory extends Story
 
         $this->decorate($website, $demo, $alex);
 
-        ProjectFactory::new()->withColumns('À faire', 'En cours', 'Terminé')->create(['name' => 'Application mobile', 'owner' => $demo, 'color' => ProjectColor::EMERALD]);
+        ProjectFactory::new()->inProgram($agency)->withColumns('À faire', 'En cours', 'Terminé')->create(['name' => 'Application mobile', 'owner' => $demo, 'color' => ProjectColor::EMERALD]);
         ProjectFactory::new()
             ->withColumns('Idées', 'Validé')
             ->withMember($demo, ProjectRole::EDITOR)
