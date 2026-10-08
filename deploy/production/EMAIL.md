@@ -134,7 +134,7 @@ Dans **Administration → Serveur e-mail (SMTP)** :
 | Chiffrement           | Aucun (serveur local uniquement) |
 | Identifiant / mot de passe | vides |
 | Adresse d'expédition  | `noreply@addccayenne.fr` |
-| Nom d'expéditeur      | `TaskBoard` |
+| Nom d'expéditeur      | `Tableau de bord` |
 
 L'adresse d'expédition sert aussi d'expéditeur d'enveloppe (Return-Path). Les domaines du
 `From`, de SPF et de DKIM sont donc tous `addccayenne.fr`, ce qu'exige l'alignement DMARC.

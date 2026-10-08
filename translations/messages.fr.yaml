@@ -1,5 +1,5 @@
 app:
-    name: TaskBoard
+    name: Tableau de bord
 
 nav:
     main: Navigation principale
@@ -230,8 +230,8 @@ admin:
         test_help: Un e-mail de test est envoyé immédiatement à %email% ; en cas d'échec, l'erreur du serveur s'affiche.
         test_submit: Envoyer un e-mail de test
         test_email:
-            subject: Test d'envoi TaskBoard
-            body: "Bonjour %name%, la configuration SMTP de TaskBoard fonctionne."
+            subject: Test d'envoi – Tableau de bord
+            body: "Bonjour %name%, la configuration SMTP du Tableau de bord fonctionne."
     emails:
         title: E-mails envoyés
         intro: Les %count% derniers envois vers le serveur SMTP. « Envoyé » signifie que le serveur a accepté le message ; s'il n'arrive pas, cherchez son Message-ID dans les journaux du serveur ou dans « Afficher l'original » de Gmail.
@@ -350,7 +350,7 @@ invitation:
         copied: Copié !
         whatsapp: Partager sur WhatsApp
         whatsapp_message: |
-            Bonjour, je vous invite à rejoindre le chantier « %project% » sur TaskBoard. %task%
+            Bonjour, je vous invite à rejoindre le chantier « %project% » sur le Tableau de bord. %task%
             Créez votre compte avec l'adresse %email% en ouvrant ce lien : %link%
         warning: "Ce lien remplace celui envoyé par e-mail (qui ne fonctionne plus). Toute personne qui l'obtient peut l'utiliser en créant un compte avec l'adresse invitée : ne le partagez qu'avec la personne concernée."
     expires_on: expire le %date%
@@ -473,7 +473,7 @@ email:
     expires: Ce lien expirera %expires%.
     verify:
         subject: Confirmez votre adresse e-mail
-        intro: Merci pour votre inscription sur TaskBoard. Confirmez votre adresse e-mail en cliquant sur le bouton ci-dessous.
+        intro: Merci pour votre inscription sur le Tableau de bord. Confirmez votre adresse e-mail en cliquant sur le bouton ci-dessous.
         button: Confirmer mon adresse
     task_link: Voir la tâche
     task_assigned:
@@ -485,8 +485,8 @@ email:
         intro: "La tâche « %task% » du chantier « %project% » arrive à échéance demain (%date%)."
     invitation:
         subject: "Invitation : %project%"
-        intro: "%inviter% vous invite à rejoindre le chantier « %project% » sur TaskBoard en tant que %role%."
-        intro_program: "%inviter% vous invite à rejoindre le projet « %project% » sur TaskBoard (et tous ses chantiers) en tant que %role%."
+        intro: "%inviter% vous invite à rejoindre le chantier « %project% » sur le Tableau de bord en tant que %role%."
+        intro_program: "%inviter% vous invite à rejoindre le projet « %project% » sur le Tableau de bord (et tous ses chantiers) en tant que %role%."
         button: Voir l'invitation
         expires: Cette invitation expire le %date%.
     reset_password:

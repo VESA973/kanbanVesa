@@ -1,4 +1,4 @@
-CLAUDE.md — TaskBoard (gestion de projet type Trello)
+CLAUDE.md — Tableau de bord (gestion de projet type Trello)
 
 Ce fichier guide Claude Code sur ce projet. Lis-le en entier avant toute modification.
 
