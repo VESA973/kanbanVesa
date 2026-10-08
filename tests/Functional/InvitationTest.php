@@ -13,6 +13,7 @@ use App\Factory\TaskFactory;
 use App\Factory\UserFactory;
 use App\Repository\InvitationRepository;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
+use Symfony\Component\Mime\Email;
 
 use function Zenstruck\Foundry\force;
 use function Zenstruck\Foundry\Persistence\refresh;
@@ -209,7 +210,11 @@ final class InvitationTest extends FunctionalTestCase
         $client->submitForm("Envoyer l'invitation", ['invitation_form[email]' => $email, 'invitation_form[role]' => $role]);
         self::assertResponseRedirects('/projects/'.$project->getId().'/members');
 
-        $link = self::extractLink(self::getMailerMessage());
+        $message = self::getMailerMessage();
+        self::assertInstanceOf(Email::class, $message);
+        self::assertNotEmpty($message->getTextBody(), 'A plain-text part is sent along with the HTML (spam filters expect it).');
+        self::assertCount(1, $message->getReplyTo(), 'Replies go to the person who invited.');
+        $link = self::extractLink($message);
         self::assertStringContainsString('/invitations/', $link);
         self::assertSame(1, self::getContainer()->get(InvitationRepository::class)->count(['email' => $email]));
 

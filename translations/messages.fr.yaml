@@ -204,6 +204,7 @@ admin:
         password_keep: Laisser vide pour conserver le mot de passe enregistré (il est stocké chiffré).
         remove_password: Supprimer le mot de passe enregistré
         from_address: Adresse d'expédition
+        from_address_help: Une adresse de votre domaine (ex. noreply@votre-domaine.fr), dont les enregistrements SPF, DKIM et DMARC autorisent ce serveur.
         from_name: Nom d'expéditeur
         encryption:
             label: Chiffrement
@@ -216,6 +217,20 @@ admin:
         test_email:
             subject: Test d'envoi TaskBoard
             body: "Bonjour %name%, la configuration SMTP de TaskBoard fonctionne."
+    emails:
+        title: E-mails envoyés
+        intro: Les %count% derniers envois vers le serveur SMTP. « Envoyé » signifie que le serveur a accepté le message ; s'il n'arrive pas, cherchez son Message-ID dans les journaux du serveur ou dans « Afficher l'original » de Gmail.
+        empty: Aucun e-mail n'a encore été envoyé.
+        date: Date
+        recipients: Destinataire
+        subject: Objet
+        status_label: Statut
+        message_id: Message-ID
+        error: Erreur
+        status:
+            sent: Envoyé
+            failed: Échec
+            not_configured: Non envoyé (SMTP non configuré)
 
 search:
     title: Recherche

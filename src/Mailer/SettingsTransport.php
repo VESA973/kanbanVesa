@@ -8,6 +8,7 @@ use App\Entity\SmtpSettings;
 use App\Repository\SmtpSettingsRepository;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\Envelope;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\SentMessage;
 use Symfony\Component\Mailer\Transport;
 use Symfony\Component\Mailer\Transport\TransportInterface;
@@ -26,6 +27,7 @@ final readonly class SettingsTransport implements TransportInterface
         private SmtpSettingsRepository $settingsRepository,
         private SmtpDsnFactory $dsnFactory,
         private LoggerInterface $logger,
+        private EmailJournal $journal,
     ) {
     }
 
@@ -34,11 +36,26 @@ final readonly class SettingsTransport implements TransportInterface
         $settings = $this->settingsRepository->findCurrent();
         if (null === $settings || !$settings->isConfigured()) {
             $this->logger->warning('E-mail not sent: no SMTP server is configured in the administration.');
+            $this->journal->notConfigured($message, $envelope);
 
             return null;
         }
 
-        return self::forSettings($settings, $this->dsnFactory)->send(...self::withSender($settings, $message, $envelope));
+        [$message, $envelope] = self::withSender($settings, $message, $envelope);
+        try {
+            $sent = self::forSettings($settings, $this->dsnFactory)->send($message, $envelope);
+        } catch (TransportExceptionInterface $exception) {
+            // Logged, then rethrown so Messenger retries and finally keeps the message in "failed".
+            $this->journal->failed($message, $envelope, $exception);
+
+            throw $exception;
+        }
+
+        if (null !== $sent) {
+            $this->journal->sent($sent);
+        }
+
+        return $sent;
     }
 
     /**

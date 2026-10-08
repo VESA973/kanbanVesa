@@ -179,6 +179,8 @@ final readonly class InvitationManager
     {
         $this->mailer->send(new TemplatedEmail()
             ->to($invitation->getEmail())
+            // A real person to answer to, rather than the no-reply sender.
+            ->replyTo($invitation->getInvitedBy()->getEmail())
             ->subject($this->translator->trans('email.invitation.subject', ['%project%' => $invitation->getProject()->getName()]))
             ->htmlTemplate('email/invitation.html.twig')
             ->context([
