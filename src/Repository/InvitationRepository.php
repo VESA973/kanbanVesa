@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\Invitation;
+use App\Entity\Program;
 use App\Entity\Project;
 use App\Entity\Task;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -25,24 +26,30 @@ class InvitationRepository extends ServiceEntityRepository
         return $this->findOneBy(['tokenHash' => Invitation::hashToken($plainToken)]);
     }
 
-    public function findNotAcceptedFor(Project $project, string $email): ?Invitation
+    public function findNotAcceptedFor(Project|Program $target, string $email): ?Invitation
     {
-        return $this->findOneBy(['project' => $project, 'email' => mb_strtolower(trim($email)), 'acceptedAt' => null]);
+        return $this->findOneBy([
+            $target instanceof Project ? 'project' : 'program' => $target,
+            'email' => mb_strtolower(trim($email)),
+            'acceptedAt' => null,
+        ]);
     }
 
     /**
+     * Every invitation of the project (or program) whatever its status (pending, accepted, expired), most recent first.
+     *
      * @return list<Invitation>
      */
-    public function findPendingFor(Project $project): array
+    public function findAllFor(Project|Program $target, int $limit = 50): array
     {
         /** @var list<Invitation> */
         return $this->createQueryBuilder('i')
-            ->andWhere('i.project = :project')
-            ->andWhere('i.acceptedAt IS NULL')
-            ->andWhere('i.expiresAt > :now')
-            ->setParameter('project', $project)
-            ->setParameter('now', new \DateTimeImmutable())
+            ->leftJoin('i.task', 't')
+            ->addSelect('t')
+            ->andWhere($target instanceof Project ? 'i.project = :target' : 'i.program = :target')
+            ->setParameter('target', $target)
             ->orderBy('i.createdAt', 'DESC')
+            ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
     }

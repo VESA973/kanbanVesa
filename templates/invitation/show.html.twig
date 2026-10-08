@@ -9,9 +9,9 @@
             <twig:Link href="{{ path('app_home') }}">{{ 'invitation.back_home'|trans }}</twig:Link>
         {% else %}
             <p class="mb-6 text-slate-700 dark:text-slate-200">
-                {{ 'invitation.intro'|trans({
+                {{ (invitation.program ? 'invitation.intro_program' : 'invitation.intro')|trans({
                     '%inviter%': invitation.invitedBy.fullName,
-                    '%project%': invitation.project.name,
+                    '%project%': invitation.target.name,
                     '%role%': invitation.role.translationKey|trans,
                 }) }}
             </p>

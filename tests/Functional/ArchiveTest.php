@@ -23,12 +23,12 @@ final class ArchiveTest extends FunctionalTestCase
         $client->loginUser($owner);
 
         $client->request('GET', '/projects/'.$project->getId().'/edit');
-        $client->submitForm('Archiver le projet');
+        $client->submitForm('Archiver le chantier');
         self::assertResponseRedirects('/projects');
         self::assertTrue(refresh($project)->isArchived());
 
         $client->followRedirect();
-        self::assertSelectorCount(0, 'main article');
+        self::assertSelectorTextContains('main article', 'Aucun chantier', 'The project card no longer counts the archived chantier.');
         self::assertSelectorTextContains('details', 'Ancien site');
         $client->request('GET', '/my-tasks');
         self::assertSelectorTextNotContains('main', 'Tâche archivée');

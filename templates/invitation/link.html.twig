@@ -4,7 +4,7 @@
 
 {% block modal_body %}
     {% set message = 'invitation.link.whatsapp_message'|trans({
-        '%project%': invitation.project.name,
+        '%project%': invitation.target.name,
         '%task%': invitation.task ? invitation.task.title : '',
         '%email%': invitation.email,
         '%link%': link,

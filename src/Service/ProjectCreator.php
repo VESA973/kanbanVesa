@@ -21,16 +21,21 @@ final readonly class ProjectCreator
         private ProjectRepository $projectRepository,
         private TranslatorInterface $translator,
         private EventDispatcherInterface $dispatcher,
+        private ProgramManager $programManager,
+        private ProgramAccess $programAccess,
     ) {
     }
 
     /**
      * The owner automatically becomes a member with the OWNER role (see Project::__construct)
-     * and the board starts with the usual three columns.
+     * and the board starts with the usual three columns. The members of the program get
+     * access to the new project.
      */
     public function create(ProjectData $data, User $owner): Project
     {
         $project = new Project($data->name, $owner, $data->color, $data->description);
+        $project->placeIn($data->program ?? $this->programManager->defaultFor($owner));
+        $this->programAccess->shareWithProgramMembers($project);
         foreach (self::DEFAULT_COLUMNS as $name) {
             $project->addColumn($this->translator->trans($name));
         }

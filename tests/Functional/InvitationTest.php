@@ -13,6 +13,7 @@ use App\Factory\TaskFactory;
 use App\Factory\UserFactory;
 use App\Repository\InvitationRepository;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
+use Symfony\Component\Mime\Email;
 
 use function Zenstruck\Foundry\force;
 use function Zenstruck\Foundry\Persistence\refresh;
@@ -31,7 +32,7 @@ final class InvitationTest extends FunctionalTestCase
         $client->getCookieJar()->clear();
 
         $client->request('GET', $link);
-        self::assertSelectorTextContains('main', 'vous invite à rejoindre le projet');
+        self::assertSelectorTextContains('main', 'vous invite à rejoindre le chantier');
         $client->clickLink('Créer un compte');
         $client->submitForm('Créer mon compte', [
             'registration_form[firstName]' => 'Alex',
@@ -43,7 +44,7 @@ final class InvitationTest extends FunctionalTestCase
         self::assertResponseRedirects($link, message: 'After registering, the newcomer comes back to the invitation.');
 
         $client->followRedirect();
-        $client->submitForm('Rejoindre le projet');
+        $client->submitForm("Accepter l'invitation");
 
         self::assertResponseRedirects('/projects/'.$project->getId());
         $alex = UserFactory::repository()->findOneBy(['email' => 'alex@example.com']) ?? throw new \LogicException();
@@ -77,7 +78,7 @@ final class InvitationTest extends FunctionalTestCase
 
         $client->loginUser($alex);
         $client->request('GET', $link);
-        $client->submitForm('Rejoindre le projet');
+        $client->submitForm("Accepter l'invitation");
         $client->request('GET', $link);
 
         self::assertResponseStatusCodeSame(410);
@@ -94,7 +95,7 @@ final class InvitationTest extends FunctionalTestCase
         $client->submitForm("Envoyer l'invitation", ['invitation_form[email]' => $owner->getEmail()]);
 
         self::assertResponseStatusCodeSame(422);
-        self::assertSelectorTextContains('form[name="invitation_form"]', 'déjà membre du projet');
+        self::assertSelectorTextContains('form[name="invitation_form"]', 'en est déjà membre');
         self::assertQueuedEmailCount(0);
     }
 
@@ -110,6 +111,28 @@ final class InvitationTest extends FunctionalTestCase
 
         self::assertResponseRedirects('/projects/'.$project->getId().'/members');
         self::assertSame(0, self::getContainer()->get(InvitationRepository::class)->count());
+    }
+
+    public function testOwnerSeesTheStatusOfInvitationsAndResendsAnExpiredOne(): void
+    {
+        $client = self::createClient();
+        [$owner, $project] = $this->project();
+        $client->loginUser($owner);
+        $this->invite($client, $project, 'alex@example.com', 'editor');
+        $invitation = self::getContainer()->get(InvitationRepository::class)->findOneBy(['email' => 'alex@example.com']) ?? throw new \LogicException();
+        new \ReflectionProperty(Invitation::class, 'expiresAt')->setValue($invitation, new \DateTimeImmutable('-1 day'));
+        self::getContainer()->get(InvitationRepository::class)->save($invitation);
+
+        $crawler = $client->request('GET', '/projects/'.$project->getId().'/members');
+        self::assertSelectorTextContains('#invitations-heading + ul', 'Expirée');
+        self::assertCount(0, $crawler->filter('form[action$="/link"]'), 'An expired link is not shared any more.');
+
+        $client->submit($crawler->filter('form[action="/invitations/'.$invitation->getId().'/resend"]')->form());
+        self::assertResponseRedirects('/projects/'.$project->getId().'/members');
+        self::assertQueuedEmailCount(1);
+        $client->followRedirect();
+        self::assertSelectorTextContains('#invitations-heading + ul', 'En attente');
+        self::assertSelectorTextContains('main', 'renvoyée');
     }
 
     public function testEditorSeesMembersButCannotManageThem(): void
@@ -187,7 +210,11 @@ final class InvitationTest extends FunctionalTestCase
         $client->submitForm("Envoyer l'invitation", ['invitation_form[email]' => $email, 'invitation_form[role]' => $role]);
         self::assertResponseRedirects('/projects/'.$project->getId().'/members');
 
-        $link = self::extractLink(self::getMailerMessage());
+        $message = self::getMailerMessage();
+        self::assertInstanceOf(Email::class, $message);
+        self::assertNotEmpty($message->getTextBody(), 'A plain-text part is sent along with the HTML (spam filters expect it).');
+        self::assertCount(1, $message->getReplyTo(), 'Replies go to the person who invited.');
+        $link = self::extractLink($message);
         self::assertStringContainsString('/invitations/', $link);
         self::assertSame(1, self::getContainer()->get(InvitationRepository::class)->count(['email' => $email]));
 

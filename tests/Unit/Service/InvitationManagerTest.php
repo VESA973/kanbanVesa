@@ -8,10 +8,15 @@ use App\Entity\Invitation;
 use App\Entity\Project;
 use App\Entity\Task;
 use App\Entity\User;
+use App\Enum\InvitationStatus;
 use App\Enum\ProjectRole;
 use App\Exception\InvitationException;
 use App\Repository\InvitationRepository;
+use App\Repository\TaskRepository;
 use App\Service\InvitationManager;
+use App\Service\ProgramAccess;
+use App\Service\ProgramMembership;
+use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\MailerInterface;
@@ -152,6 +157,40 @@ final class InvitationManagerTest extends TestCase
         $this->manager($this->repositoryFinding(null))->findValid('unknown');
     }
 
+    public function testResendRenewsTheTokenAndTheDelayThenMailsAgain(): void
+    {
+        $invitation = new Invitation($this->project, 'alex@example.com', ProjectRole::VIEWER, $this->owner, 'old-token');
+        new \ReflectionProperty(Invitation::class, 'expiresAt')->setValue($invitation, new \DateTimeImmutable('-1 day'));
+        self::assertSame(InvitationStatus::EXPIRED, $invitation->getStatus());
+        $mailer = $this->createMock(MailerInterface::class);
+        $mailer->expects($this->once())->method('send');
+
+        $this->manager(mailer: $mailer)->resend($invitation);
+
+        self::assertSame(InvitationStatus::PENDING, $invitation->getStatus());
+        self::assertGreaterThan(new \DateTimeImmutable('+6 days'), $invitation->getExpiresAt());
+        self::assertNotSame(Invitation::hashToken('old-token'), new \ReflectionProperty(Invitation::class, 'tokenHash')->getValue($invitation));
+    }
+
+    public function testAnAcceptedInvitationCanBeNeitherResentNorRevoked(): void
+    {
+        $invitation = new Invitation($this->project, 'alex@example.com', ProjectRole::VIEWER, $this->owner, 'secret');
+        $invitation->markAsAccepted();
+        self::assertSame(InvitationStatus::ACCEPTED, $invitation->getStatus());
+        $repository = $this->createMock(InvitationRepository::class);
+        $repository->expects($this->never())->method('remove');
+        $repository->expects($this->never())->method('save');
+
+        foreach (['resend', 'revoke'] as $action) {
+            try {
+                $this->manager($repository)->{$action}($invitation);
+                self::fail($action.' should have been refused.');
+            } catch (InvitationException $exception) {
+                self::assertSame('invitation.error.already_used', $exception->getMessage());
+            }
+        }
+    }
+
     public function testNobodyCanBeInvitedAsOwner(): void
     {
         $this->expectException(\InvalidArgumentException::class);
@@ -166,6 +205,7 @@ final class InvitationManagerTest extends TestCase
             $mailer ?? $this->createStub(MailerInterface::class),
             $this->createStub(TranslatorInterface::class),
             new RecordingDispatcher(),
+            new ProgramMembership(new ProgramAccess($this->createStub(TaskRepository::class)), $this->createStub(EntityManagerInterface::class)),
         );
     }
 

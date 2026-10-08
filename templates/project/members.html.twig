@@ -20,7 +20,10 @@
                             <p class="truncate font-medium">{{ member.user.fullName }}</p>
                             <p class="truncate text-sm text-slate-500 dark:text-slate-400">{{ member.user.email }}</p>
                         </div>
-                        {% if can_manage and member.role.value != 'owner' %}
+                        {% if member.inherited %}
+                            <span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                                  title="{{ 'member.inherited_help'|trans }}">{{ member.role.translationKey|trans }} · {{ 'member.inherited'|trans }}</span>
+                        {% elseif can_manage and member.role.value != 'owner' %}
                             <form method="post" action="{{ path('app_member_role', {id: member.id}) }}" class="flex items-center gap-2">
                                 <input type="hidden" name="_token" value="{{ members_token }}">
                                 <label for="role-{{ member.id }}" class="sr-only">{{ 'member.role_of'|trans({'%name%': member.user.fullName}) }}</label>
@@ -58,32 +61,7 @@
                 {{ form_end(form) }}
             </section>
 
-            {% if invitations is not empty %}
-                <section aria-labelledby="pending-heading" class="mt-8">
-                    <h2 id="pending-heading" class="mb-3 text-lg font-semibold">{{ 'invitation.pending'|trans }}</h2>
-                    <ul class="divide-y divide-slate-200 rounded-lg bg-white shadow-sm ring-1 ring-slate-200 dark:divide-slate-800 dark:bg-slate-900 dark:ring-slate-800">
-                        {% for invitation in invitations %}
-                            <li class="flex flex-wrap items-center gap-3 p-4 text-sm">
-                                <div class="min-w-0 flex-1">
-                                    <p class="truncate font-medium">{{ invitation.email }}</p>
-                                    <p class="text-slate-500 dark:text-slate-400">
-                                        {{ invitation.role.translationKey|trans }} · {{ 'invitation.expires_on'|trans({'%date%': invitation.expiresAt|date('d/m/Y')}) }}
-                                        {% if invitation.task %}· {{ 'invitation.for_task'|trans({'%task%': invitation.task.title}) }}{% endif %}
-                                    </p>
-                                </div>
-                                <form method="post" action="{{ path('app_invitation_link', {id: invitation.id}) }}" data-turbo-frame="modal">
-                                    <input type="hidden" name="_token" value="{{ members_token }}">
-                                    <twig:Button type="submit" variant="ghost">🔗 {{ 'invitation.link.get'|trans }}<span class="sr-only"> {{ invitation.email }}</span></twig:Button>
-                                </form>
-                                <form method="post" action="{{ path('app_invitation_revoke', {id: invitation.id}) }}">
-                                    <input type="hidden" name="_token" value="{{ members_token }}">
-                                    <twig:Button type="submit" variant="ghost">{{ 'invitation.revoke'|trans }}<span class="sr-only"> {{ invitation.email }}</span></twig:Button>
-                                </form>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </section>
-            {% endif %}
+            {{ include('invitation/_list.html.twig') }}
         {% endif %}
     </div>
 {% endblock %}

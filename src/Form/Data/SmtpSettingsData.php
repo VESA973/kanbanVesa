@@ -29,9 +29,14 @@ final class SmtpSettingsData
 
     public bool $removePassword = false;
 
+    /**
+     * Free mailbox providers publish a strict DMARC policy: a message "From" their domain
+     * sent by another server is rejected or put in spam (Gmail in particular).
+     */
     #[Assert\NotBlank]
     #[Assert\Email]
     #[Assert\Length(max: 180)]
+    #[Assert\Regex('/@(gmail|googlemail|yahoo|ymail|hotmail|outlook|live|msn|icloud|aol|laposte|orange|wanadoo|free|sfr)\.[a-z.]+$/i', message: 'admin.smtp.from_free_provider', match: false)]
     public string $fromAddress = '';
 
     #[Assert\Length(max: 100)]

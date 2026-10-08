@@ -11,16 +11,20 @@ use App\Form\Data\ProjectData;
 use App\Form\ProjectFormType;
 use App\Model\BoardFilter;
 use App\Repository\BoardColumnRepository;
+use App\Repository\ProgramRepository;
 use App\Repository\ProjectRepository;
 use App\Repository\TaskRepository;
+use App\Security\Voter\ProgramVoter;
 use App\Security\Voter\ProjectVoter;
 use App\Service\BoardRefreshPublisher;
 use App\Service\ProjectArchiver;
 use App\Service\ProjectCreator;
+use App\Service\ProjectDirectory;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\ExpressionLanguage\Expression;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
@@ -40,19 +44,26 @@ final class ProjectController extends AbstractController
     }
 
     #[Route('', name: 'app_project_index', methods: ['GET'])]
-    public function index(#[CurrentUser] User $user): Response
+    public function index(ProjectDirectory $projectDirectory, #[CurrentUser] User $user): Response
     {
         return $this->render('project/index.html.twig', [
-            'projects' => $this->projectRepository->findActiveForMember($user),
+            'sections' => $projectDirectory->sectionsFor($user),
             'archivedProjects' => $this->projectRepository->findArchivedForMember($user),
         ]);
     }
 
+    /**
+     * ?program=ID preselects the program (from its page).
+     */
     #[Route('/new', name: 'app_project_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, ProjectCreator $projectCreator, #[CurrentUser] User $user): Response
+    public function new(Request $request, ProjectCreator $projectCreator, ProgramRepository $programRepository, #[CurrentUser] User $user, #[MapQueryParameter] ?int $program = null): Response
     {
         $data = new ProjectData();
-        $form = $this->createForm(ProjectFormType::class, $data);
+        $preselected = null === $program ? null : $programRepository->find($program);
+        if (null !== $preselected && $this->isGranted(ProgramVoter::CREATE_PROJECT, $preselected)) {
+            $data->program = $preselected;
+        }
+        $form = $this->createForm(ProjectFormType::class, $data, ['program_choices_for' => $user]);
         $form->handleRequest($request);
 
         if (!$form->isSubmitted() || !$form->isValid()) {

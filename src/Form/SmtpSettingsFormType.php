@@ -38,7 +38,7 @@ final class SmtpSettingsFormType extends AbstractType
                 'help' => $options['has_password'] ? 'admin.smtp.password_keep' : null,
                 'attr' => ['autocomplete' => 'new-password'],
             ])
-            ->add('fromAddress', EmailType::class, ['label' => 'admin.smtp.from_address', 'empty_data' => ''])
+            ->add('fromAddress', EmailType::class, ['label' => 'admin.smtp.from_address', 'help' => 'admin.smtp.from_address_help', 'empty_data' => ''])
             ->add('fromName', TextType::class, ['label' => 'admin.smtp.from_name', 'required' => false]);
 
         if ($options['has_password']) {

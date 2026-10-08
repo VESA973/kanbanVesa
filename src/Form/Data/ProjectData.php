@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Form\Data;
 
+use App\Entity\Program;
 use App\Entity\Project;
 use App\Enum\ProjectColor;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -18,6 +19,9 @@ final class ProjectData
     public ?string $description = null;
 
     public ProjectColor $color = ProjectColor::INDIGO;
+
+    /** Null: the creator's default program (created if needed). Restricted by ProjectFormType. */
+    public ?Program $program = null;
 
     public static function fromProject(Project $project): self
     {

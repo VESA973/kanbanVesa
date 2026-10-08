@@ -6,6 +6,9 @@ user:
 admin:
     smtp:
         host_invalid: Saisissez un nom de serveur ou une adresse IP (ex. smtp.example.com).
+        from_free_provider: Utilisez une adresse de votre propre domaine (ex. noreply@votre-domaine.fr) ; Gmail rejette les e-mails « de » Gmail, Outlook, Orange… envoyés par un autre serveur.
 label:
     name:
-        already_used: Une étiquette porte déjà ce nom dans ce projet.
+        already_used: Une étiquette porte déjà ce nom dans ce chantier.
+program:
+    image_invalid: Choisissez une image JPG, PNG ou WebP.

@@ -7,7 +7,9 @@
     {% set can_manage_columns = is_granted('PROJECT_MANAGE_COLUMNS', project) %}
     {% set board_token = csrf_token('board-' ~ project.id) %}
 
-    <div class="mb-6 flex flex-wrap items-start justify-between gap-4">
+    <twig:Link href="{{ path('app_program_show', {id: project.program.id}) }}" class="text-sm">← {{ 'program.back_to'|trans({'%name%': project.program.name}) }}</twig:Link>
+
+    <div class="mt-3 mb-6 flex flex-wrap items-start justify-between gap-4">
         <div class="flex items-start gap-3">
             <twig:ProjectColorSwatch :color="project.color.value" class="mt-1.5" />
             <div>

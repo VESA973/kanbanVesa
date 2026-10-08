@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use App\Entity\Program;
 use App\Entity\Project;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -30,12 +31,33 @@ class ProjectRepository extends ServiceEntityRepository
         /** @var list<Project> */
         return $this->createQueryBuilder('p')
             ->innerJoin('p.members', 'me', 'WITH', 'me.user = :user')
+            ->innerJoin('p.program', 'g')
             ->leftJoin('p.members', 'm')
             ->leftJoin('m.user', 'u')
-            ->addSelect('m', 'u')
+            ->addSelect('g', 'm', 'u')
             ->andWhere('p.archivedAt IS NULL')
             ->setParameter('user', $user)
             ->orderBy('p.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Active projects of a program by name, with their members (for the cards).
+     *
+     * @return list<Project>
+     */
+    public function findActiveInProgram(Program $program): array
+    {
+        /** @var list<Project> */
+        return $this->createQueryBuilder('p')
+            ->leftJoin('p.members', 'm')
+            ->leftJoin('m.user', 'u')
+            ->addSelect('m', 'u')
+            ->andWhere('p.program = :program')
+            ->andWhere('p.archivedAt IS NULL')
+            ->setParameter('program', $program)
+            ->orderBy('p.name', 'ASC')
             ->getQuery()
             ->getResult();
     }

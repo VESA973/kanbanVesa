@@ -36,6 +36,11 @@ class Project
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $archivedAt = null;
 
+    /** Set right after construction (ProjectCreator, ProgramFactory): every project belongs to a program. */
+    #[ORM\ManyToOne(cascade: ['persist'], inversedBy: 'projects')]
+    #[ORM\JoinColumn(nullable: false)]
+    private Program $program;
+
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private \DateTimeImmutable $createdAt;
 
@@ -107,6 +112,22 @@ class Project
         $this->color = $color;
     }
 
+    public function getProgram(): Program
+    {
+        return $this->program;
+    }
+
+    public function placeIn(Program $program): void
+    {
+        if (isset($this->program) && $this->program !== $program) {
+            $this->program->getProjects()->removeElement($this);
+        }
+        $this->program = $program;
+        if (!$program->getProjects()->contains($this)) {
+            $program->getProjects()->add($this);
+        }
+    }
+
     public function getOwner(): User
     {
         return $this->owner;
@@ -145,13 +166,16 @@ class Project
         return $this->members;
     }
 
-    public function addMember(User $user, ProjectRole $role): ProjectMember
+    /**
+     * @param bool $inherited the membership comes from the program (managed by ProgramAccess)
+     */
+    public function addMember(User $user, ProjectRole $role, bool $inherited = false): ProjectMember
     {
         if (null !== $this->getRoleOf($user)) {
             throw new \LogicException(\sprintf('User "%s" is already a member of this project.', $user->getEmail()));
         }
 
-        $member = new ProjectMember($this, $user, $role);
+        $member = new ProjectMember($this, $user, $role, $inherited);
         $this->members->add($member);
 
         return $member;
@@ -202,7 +226,7 @@ class Project
 
     public function removeMember(ProjectMember $member): void
     {
-        if (ProjectRole::OWNER === $member->getRole()) {
+        if (ProjectRole::OWNER === $member->getRole() && !$member->isInherited()) {
             throw new \LogicException('The owner cannot be removed from the project.');
         }
 

@@ -1,0 +1,27 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'program.edit.title'|trans }} · {{ parent() }}{% endblock %}
+
+{% block body %}
+    <div class="mx-auto max-w-2xl">
+        <h1 class="mb-6 text-2xl font-bold tracking-tight">{{ 'program.edit.title'|trans }}</h1>
+        <div class="rounded-lg bg-white p-6 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
+            {{ include('project/_form.html.twig', {submit_label: 'action.save', cancel_path: path('app_program_show', {id: program.id})}) }}
+        </div>
+
+        {% if is_granted('PROGRAM_DELETE', program) %}
+            <section class="mt-8 rounded-lg p-6 ring-1 ring-rose-200 dark:ring-rose-900" aria-labelledby="delete-zone">
+                <h2 id="delete-zone" class="text-lg font-semibold">{{ 'program.delete.title'|trans }}</h2>
+                {% if program.projects is empty %}
+                    <form method="post" action="{{ path('app_program_delete', {id: program.id}) }}" class="mt-4"
+                          data-controller="confirm" data-action="confirm#ask" data-confirm-message-value="{{ 'program.delete.confirm'|trans }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete-program-' ~ program.id) }}">
+                        <twig:Button type="submit" variant="danger">{{ 'program.delete.submit'|trans }}</twig:Button>
+                    </form>
+                {% else %}
+                    <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">{{ 'program.error.not_empty'|trans }}</p>
+                {% endif %}
+            </section>
+        {% endif %}
+    </div>
+{% endblock %}

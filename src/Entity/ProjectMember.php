@@ -30,6 +30,9 @@ class ProjectMember
         private User $user,
         #[ORM\Column(length: 20, enumType: ProjectRole::class)]
         private ProjectRole $role,
+        /** Given by the program of the project: follows the program membership, not managed here. */
+        #[ORM\Column(options: ['default' => false])]
+        private bool $inherited = false,
     ) {
         $this->joinedAt = new \DateTimeImmutable();
     }
@@ -61,6 +64,11 @@ class ProjectMember
     public function getRole(): ProjectRole
     {
         return $this->role;
+    }
+
+    public function isInherited(): bool
+    {
+        return $this->inherited;
     }
 
     public function changeRole(ProjectRole $role): void

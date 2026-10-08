@@ -1,4 +1,4 @@
-CLAUDE.md — TaskBoard (gestion de projet type Trello)
+CLAUDE.md — Tableau de bord (gestion de projet type Trello)
 
 Ce fichier guide Claude Code sur ce projet. Lis-le en entier avant toute modification.
 
@@ -44,28 +44,48 @@ vendor/bin/phpstan analyse
 vendor/bin/rector process --dry-run
 php bin/phpunit
 4. Modèle de données
+User ──< ProgramMember >── Program ──< Project
+                              └──< Invitation
 User ──< ProjectMember >── Project ──< BoardColumn ──< Task
                               │                         ├──< Comment
                               │                         ├──< ChecklistItem
                               │                         └──>< Label
                               ├──< Invitation
                               └──< ActivityLog
+EmailLog (journal des envois, indépendant)
+
+Vocabulaire : dans le code Program / Project, dans l'interface « Projet » / « Chantier ».
+Hiérarchie : un Program (« Projet ») regroupe des projets (« Chantiers », chacun avec son tableau Kanban) ;
+chaque projet appartient à exactement un programme (« Général » de son propriétaire par défaut).
+« Mes projets » n'affiche que les programmes ; leur page liste les chantiers. Une personne invitée sur un
+seul chantier voit la carte du programme mais seulement ses chantiers (ProgramVoter::VIEW), pas les
+membres (ProgramVoter::VIEW_MEMBERS).
+Image d'un programme : ProgramImageStorage, dans var/uploads/<env>/programs (hors public/, servie par
+ProgramController::image() après contrôle d'accès ; nom aléatoire, ancienne image supprimée).
+Les membres d'un programme sont recopiés sur chacun de ses projets comme ProjectMember « hérités »
+(inherited = true) par ProgramAccess : voters et requêtes ne lisent que ProjectMember.
+Une adhésion directe à un projet n'est jamais modifiée par le programme ; une adhésion héritée
+ne se gère que depuis le programme.
 User : email (unique), password, firstName, lastName, isVerified, createdAt.
-Project : name, description, color, owner (User), archivedAt, createdAt.
-ProjectMember : project, user, role (ProjectRole enum : OWNER, EDITOR, VIEWER), joinedAt.
+Project : program, name, description, color, owner (User), archivedAt, createdAt.
+ProjectMember : project, user, role (ProjectRole enum : OWNER, EDITOR, VIEWER), inherited (bool), joinedAt.
 BoardColumn : project, name, position (int).
+Program : name, description, color, imageFilename (nullable), owner (User), createdAt.
+ProgramMember : program, user, role (ProjectRole), joinedAt.
 Task : column, title, description, assignee (User, nullable), dueDate, position, priority (enum), completedAt, createdBy.
 ChecklistItem : task, label, isDone, position.
 Comment : task, author, content, createdAt.
 Label : project, name, color.
-Invitation : project, email, role, token, expiresAt, acceptedAt.
+Invitation : project OU program (l'un des deux), email, role, tokenHash, expiresAt (+7 jours), acceptedAt, task (nullable) ; statut calculé (InvitationStatus : PENDING, ACCEPTED, EXPIRED).
+EmailLog : recipients, subject, status (EmailStatus : SENT, FAILED, NOT_CONFIGURED), messageId, error, createdAt.
 ActivityLog : project, user, action (enum), subject, payload (json), createdAt → permet au propriétaire de suivre qui a fait quoi.
 
 Règles :
 
 Utiliser des enums PHP natives (backed enums) pour les rôles, priorités, actions.
 Utiliser DateTimeImmutable partout.
-Le champ position gère l'ordre des colonnes et des cartes ; le réordonnancement passe par un service dédié.
+Le champ position gère l'ordre des colonnes et des cartes ; le réordonnancement passe par un service dédié (ColumnMover, TaskMover).
+Avancement (ProjectDirectory, TaskRepository::countByProject) : tâches terminées (completedAt) / total, par projet et pour le programme (pondéré par le nombre de tâches, pas une moyenne) ; un projet vide affiche « 0 tâche ».
 
 Spécificités MariaDB :
 
@@ -81,7 +101,10 @@ Cocher une tâche qui m'est assignée	✅	✅	✅
 Gérer les colonnes	✅	✅	❌
 Inviter / retirer des membres	✅	❌	❌
 Archiver / supprimer le projet	✅	❌	❌
-Toute vérification d'accès passe par ProjectVoter / TaskVoter (#[IsGranted] ou denyAccessUnlessGranted).
+Programme : voir (et voir tous ses projets)	✅	✅	✅
+Programme : créer un projet dedans	✅	✅	❌
+Programme : modifier, supprimer (vide), gérer les membres	✅	❌	❌
+Toute vérification d'accès passe par ProjectVoter / TaskVoter / ProgramVoter / InvitationVoter (#[IsGranted] ou denyAccessUnlessGranted).
 Jamais de vérification de rôle codée en dur dans un contrôleur ou un template.
 Un utilisateur non membre reçoit une 404 (ne pas révéler l'existence du projet).
 6. Architecture du code
@@ -92,7 +115,8 @@ src/
 ├── Form/              # Un FormType par formulaire
 ├── Repository/        # Toutes les requêtes DQL / QueryBuilder ici
 ├── Security/Voter/
-├── Service/           # Logique métier (TaskMover, InvitationManager, ActivityLogger…)
+├── Service/           # Logique métier (TaskMover, ProgramAccess, ProgramMembership, ProjectDirectory, InvitationManager…)
+├── Mailer/            # Transport SMTP réglé dans l'admin (SettingsTransport) + journal des envois (EmailJournal)
 ├── EventSubscriber/   # Ex : journalisation automatique des actions
 ├── Twig/Components/   # Twig & Live Components
 └── DataFixtures/ + Factory/ (Foundry)
@@ -126,7 +150,8 @@ Pas de framework JS lourd (React/Vue) : Stimulus + Turbo suffisent.
 Protection CSRF sur tous les formulaires et requêtes de modification.
 Validation côté serveur systématique (contraintes Assert), même si le front valide aussi.
 Mots de passe hashés avec l'algorithme auto.
-Tokens d'invitation aléatoires (random_bytes), à usage unique, avec expiration.
+Tokens d'invitation aléatoires (random_bytes), stockés hachés, à usage unique, avec expiration ; renvoyer une invitation régénère le jeton.
+E-mails : expéditeur sur notre domaine (jamais @gmail.com…, refusé par la validation), SPF/DKIM/DMARC alignés ; procédure dans deploy/production/EMAIL.md.
 Limiter les tentatives de connexion (login_throttling).
 Échapper toute donnée utilisateur (Twig le fait par défaut : ne jamais utiliser |raw sur du contenu utilisateur).
 10. Tests

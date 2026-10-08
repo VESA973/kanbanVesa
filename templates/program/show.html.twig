@@ -1,0 +1,59 @@
+{% extends 'base.html.twig' %}
+
+{% set program = section.program %}
+
+{% block title %}{{ program.name }} · {{ parent() }}{% endblock %}
+
+{% block body %}
+    <twig:Link href="{{ path('app_project_index') }}" class="text-sm">← {{ 'project.index.title'|trans }}</twig:Link>
+
+    {% if program.imageFilename %}
+        <img src="{{ path('app_program_image', {id: program.id, v: program.imageFilename}) }}" alt=""
+             class="mt-3 mb-6 aspect-[21/9] w-full rounded-lg object-cover sm:aspect-[4/1]">
+    {% endif %}
+
+    <div class="mt-3 mb-6 flex flex-wrap items-start justify-between gap-4">
+        <div class="flex items-start gap-3">
+            <twig:ProjectColorSwatch :color="program.color.value" class="mt-1.5" />
+            <div>
+                <p class="text-sm font-medium text-slate-500 dark:text-slate-400">{{ 'program.label'|trans }}</p>
+                <h1 class="text-2xl font-bold tracking-tight">{{ program.name }}</h1>
+                {% if program.description %}
+                    <p class="mt-1 max-w-3xl whitespace-pre-line text-slate-600 dark:text-slate-300">{{ program.description }}</p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="flex flex-wrap items-center gap-3">
+            {% if is_granted('PROGRAM_CREATE_PROJECT', program) %}
+                <twig:Button href="{{ path('app_project_new', {program: program.id}) }}"><span aria-hidden="true">+</span> {{ 'project.new.title'|trans }}</twig:Button>
+            {% endif %}
+            {% if is_granted('PROGRAM_VIEW_MEMBERS', program) %}
+                <twig:Button variant="secondary" href="{{ path('app_program_members', {id: program.id}) }}">{{ 'member.title'|trans }}</twig:Button>
+            {% endif %}
+            {% if is_granted('PROGRAM_EDIT', program) %}
+                <twig:Button variant="secondary" href="{{ path('app_program_edit', {id: program.id}) }}">{{ 'program.edit.title'|trans }}</twig:Button>
+            {% endif %}
+        </div>
+    </div>
+
+    <section class="mb-8 max-w-xl" aria-labelledby="overall-progress-title">
+        <h2 id="overall-progress-title" class="mb-1 text-sm font-medium text-slate-600 dark:text-slate-300">{{ 'progress.overall'|trans }}</h2>
+        <twig:ProgressBar :progress="section.overall()" :label="'progress.overall_of'|trans({'%name%': program.name})" />
+    </section>
+
+    {% if not section.isMember %}
+        <p class="mb-4 text-sm text-slate-600 dark:text-slate-300">{{ 'program.partial_access'|trans }}</p>
+    {% endif %}
+
+    {% if section.projects is empty %}
+        <div class="rounded-lg border-2 border-dashed border-slate-300 p-10 text-center dark:border-slate-700">
+            <p class="text-slate-600 dark:text-slate-300">{{ 'program.empty'|trans }}</p>
+        </div>
+    {% else %}
+        <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-label="{{ 'program.projects_of'|trans({'%name%': program.name}) }}">
+            {% for project in section.projects %}
+                <li><twig:ProjectCard :project="project" :progress="section.progress.of(project)" /></li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endblock %}

@@ -7,6 +7,7 @@ namespace App\Repository;
 use App\Entity\Project;
 use App\Entity\Task;
 use App\Entity\User;
+use App\Model\Progress;
 use App\Service\PositionList;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -126,6 +127,39 @@ class TaskRepository extends ServiceEntityRepository
                 'completed' => (int) $row['completed'],
                 'overdue' => (int) $row['overdue'],
             ];
+        }
+
+        return $counters;
+    }
+
+    /**
+     * Completed / total tasks per project id, in a single query. Projects without tasks are absent.
+     *
+     * @param list<Project> $projects
+     *
+     * @return array<int, Progress>
+     */
+    public function countByProject(array $projects): array
+    {
+        if ([] === $projects) {
+            return [];
+        }
+
+        /** @var list<array{projectId: int|string, total: int|string, completed: int|string|null}> $rows */
+        $rows = $this->createQueryBuilder('t')
+            ->select('IDENTITY(c.project) AS projectId')
+            ->addSelect('COUNT(t.id) AS total')
+            ->addSelect('SUM(CASE WHEN t.completedAt IS NOT NULL THEN 1 ELSE 0 END) AS completed')
+            ->innerJoin('t.column', 'c')
+            ->andWhere('c.project IN (:projects)')
+            ->setParameter('projects', $projects)
+            ->groupBy('c.project')
+            ->getQuery()
+            ->getArrayResult();
+
+        $counters = [];
+        foreach ($rows as $row) {
+            $counters[(int) $row['projectId']] = new Progress((int) $row['total'], (int) $row['completed']);
         }
 
         return $counters;
