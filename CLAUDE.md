@@ -46,26 +46,35 @@ php bin/phpunit
 4. Modèle de données
 User ──< ProjectMember >── Project ──< BoardColumn ──< Task
                               │                         ├──< Comment
-                              │                         ├──< ChecklistItem
+                              ├──< Category ──────────< ├──< ChecklistItem
                               │                         └──>< Label
                               ├──< Invitation
                               └──< ActivityLog
+EmailLog (journal des envois, indépendant)
+
+Hiérarchie fonctionnelle : le Project est le « projet global » ; il contient des catégories
+(Category) ; chaque tâche appartient à une catégorie (obligatoire) ET à une colonne (statut).
+Le tableau affiche une bande horizontale par catégorie, découpée en cases colonne × catégorie.
 User : email (unique), password, firstName, lastName, isVerified, createdAt.
 Project : name, description, color, owner (User), archivedAt, createdAt.
 ProjectMember : project, user, role (ProjectRole enum : OWNER, EDITOR, VIEWER), joinedAt.
 BoardColumn : project, name, position (int).
-Task : column, title, description, assignee (User, nullable), dueDate, position, priority (enum), completedAt, createdBy.
+Category : project, name, position (int). Un projet garde toujours au moins une catégorie (« Général » à la création).
+Task : column, category, title, description, assignee (User, nullable), dueDate, position, priority (enum), completedAt, createdBy.
 ChecklistItem : task, label, isDone, position.
 Comment : task, author, content, createdAt.
 Label : project, name, color.
-Invitation : project, email, role, token, expiresAt, acceptedAt.
+Invitation : project, email, role, tokenHash, expiresAt (+7 jours), acceptedAt, task (nullable) ; statut calculé (InvitationStatus : PENDING, ACCEPTED, EXPIRED).
+EmailLog : recipients, subject, status (EmailStatus : SENT, FAILED, NOT_CONFIGURED), messageId, error, createdAt.
 ActivityLog : project, user, action (enum), subject, payload (json), createdAt → permet au propriétaire de suivre qui a fait quoi.
 
 Règles :
 
 Utiliser des enums PHP natives (backed enums) pour les rôles, priorités, actions.
 Utiliser DateTimeImmutable partout.
-Le champ position gère l'ordre des colonnes et des cartes ; le réordonnancement passe par un service dédié.
+Le champ position gère l'ordre des colonnes, des catégories et des cartes ; le réordonnancement passe par un service dédié (ColumnMover, CategoryMover, TaskMover).
+La position d'une tâche est comptée dans sa case (colonne + catégorie), pas dans toute la colonne.
+Avancement (CategoryProgress) : tâches terminées (completedAt) / total, par catégorie et pour le projet (pondéré par le nombre de tâches) ; une catégorie vide affiche « 0 tâche ».
 
 Spécificités MariaDB :
 
@@ -79,6 +88,7 @@ Voir le projet	✅	✅	✅
 Créer / déplacer / modifier une tâche	✅	✅	❌
 Cocher une tâche qui m'est assignée	✅	✅	✅
 Gérer les colonnes	✅	✅	❌
+Gérer les catégories	✅	✅	❌
 Inviter / retirer des membres	✅	❌	❌
 Archiver / supprimer le projet	✅	❌	❌
 Toute vérification d'accès passe par ProjectVoter / TaskVoter (#[IsGranted] ou denyAccessUnlessGranted).
@@ -92,7 +102,8 @@ src/
 ├── Form/              # Un FormType par formulaire
 ├── Repository/        # Toutes les requêtes DQL / QueryBuilder ici
 ├── Security/Voter/
-├── Service/           # Logique métier (TaskMover, InvitationManager, ActivityLogger…)
+├── Service/           # Logique métier (TaskMover, CategoryManager, CategoryProgress, InvitationManager…)
+├── Mailer/            # Transport SMTP réglé dans l'admin (SettingsTransport) + journal des envois (EmailJournal)
 ├── EventSubscriber/   # Ex : journalisation automatique des actions
 ├── Twig/Components/   # Twig & Live Components
 └── DataFixtures/ + Factory/ (Foundry)
@@ -126,7 +137,8 @@ Pas de framework JS lourd (React/Vue) : Stimulus + Turbo suffisent.
 Protection CSRF sur tous les formulaires et requêtes de modification.
 Validation côté serveur systématique (contraintes Assert), même si le front valide aussi.
 Mots de passe hashés avec l'algorithme auto.
-Tokens d'invitation aléatoires (random_bytes), à usage unique, avec expiration.
+Tokens d'invitation aléatoires (random_bytes), stockés hachés, à usage unique, avec expiration ; renvoyer une invitation régénère le jeton.
+E-mails : expéditeur sur notre domaine (jamais @gmail.com…, refusé par la validation), SPF/DKIM/DMARC alignés ; procédure dans deploy/production/EMAIL.md.
 Limiter les tentatives de connexion (login_throttling).
 Échapper toute donnée utilisateur (Twig le fait par défaut : ne jamais utiliser |raw sur du contenu utilisateur).
 10. Tests
