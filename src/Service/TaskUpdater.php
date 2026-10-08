@@ -49,8 +49,8 @@ final readonly class TaskUpdater
 
     private function save(Task $task, TaskData $data): void
     {
-        if ($data->column !== $task->getColumn()) {
-            $this->taskMover->moveToEnd($task, $data->column);
+        if ($data->column !== $task->getColumn() || $data->category !== $task->getCategory()) {
+            $this->taskMover->moveToEnd($task, $data->column, $data->category);
 
             return;
         }

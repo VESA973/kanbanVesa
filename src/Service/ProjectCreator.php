@@ -26,7 +26,7 @@ final readonly class ProjectCreator
 
     /**
      * The owner automatically becomes a member with the OWNER role (see Project::__construct)
-     * and the board starts with the usual three columns.
+     * and the board starts with the usual three columns and one category.
      */
     public function create(ProjectData $data, User $owner): Project
     {
@@ -34,6 +34,7 @@ final readonly class ProjectCreator
         foreach (self::DEFAULT_COLUMNS as $name) {
             $project->addColumn($this->translator->trans($name));
         }
+        $project->addCategory($this->translator->trans('category.default'));
 
         $this->dispatcher->dispatch(new ProjectActivityEvent($project, ActivityAction::PROJECT_CREATED, $project->getName()));
         $this->projectRepository->save($project);

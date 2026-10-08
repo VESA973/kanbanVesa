@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Form\Data;
 
 use App\Entity\BoardColumn;
+use App\Entity\Category;
 use App\Entity\Label;
 use App\Entity\Task;
 use App\Entity\User;
@@ -33,12 +34,14 @@ final class TaskData
     public function __construct(
         #[Assert\NotNull]
         public BoardColumn $column,
+        #[Assert\NotNull]
+        public Category $category,
     ) {
     }
 
     public static function fromTask(Task $task): self
     {
-        $data = new self($task->getColumn());
+        $data = new self($task->getColumn(), $task->getCategory());
         $data->title = $task->getTitle();
         $data->description = $task->getDescription();
         $data->assignee = $task->getAssignee();

@@ -5,15 +5,19 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Service;
 
 use App\Entity\BoardColumn;
+use App\Entity\Category;
 use App\Entity\Project;
 use App\Entity\Task;
 use App\Entity\User;
 use App\Service\TaskMover;
+use App\Tests\Unit\BuildsTasks;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 
 final class TaskMoverTest extends TestCase
 {
+    use BuildsTasks;
+
     private User $owner;
     private Project $project;
 
@@ -63,6 +67,36 @@ final class TaskMoverTest extends TestCase
         self::assertSame(2, $this->mover()->moveToEnd($a, $done));
     }
 
+    public function testMovesATaskToAnotherCategoryOfTheSameColumn(): void
+    {
+        $todo = $this->project->addColumn('À faire');
+        $design = $this->project->addCategory('Design');
+        $dev = $this->project->addCategory('Développement');
+        [$a, $b] = $this->tasksIn($todo, $design, 'a', 'b');
+        [$x] = $this->tasksIn($todo, $dev, 'x');
+
+        $position = $this->mover()->move($a, $todo, 0, $dev);
+
+        self::assertSame(0, $position);
+        self::assertSame($dev, $a->getCategory());
+        self::assertSame([0, 1], [$a->getPosition(), $x->getPosition()], 'Positions are counted within the target cell.');
+        self::assertSame(0, $b->getPosition(), 'The source cell has no gap.');
+        self::assertTrue($dev->getTasks()->contains($a));
+        self::assertFalse($design->getTasks()->contains($a));
+        self::assertSame(['from' => 'Design / À faire', 'to' => 'Développement / À faire'], $this->dispatcher->last()->payload);
+    }
+
+    public function testRefusesToMoveATaskToACategoryOfAnotherProject(): void
+    {
+        $todo = $this->project->addColumn('À faire');
+        [$task] = $this->tasks($todo, 'a');
+        $otherCategory = new Project('Autre', $this->owner)->addCategory('Général');
+
+        $this->expectException(\InvalidArgumentException::class);
+
+        $this->mover()->move($task, $todo, 0, $otherCategory);
+    }
+
     public function testRefusesToMoveATaskToAnotherProject(): void
     {
         [$task] = $this->tasks($this->project->addColumn('À faire'), 'a');
@@ -87,13 +121,14 @@ final class TaskMoverTest extends TestCase
      */
     private function tasks(BoardColumn $column, string ...$titles): array
     {
-        $tasks = [];
-        foreach ($titles as $title) {
-            $task = new Task($column, $title, $column->getTasks()->count(), $this->owner);
-            $column->getTasks()->add($task);
-            $tasks[] = $task;
-        }
+        return array_values(array_map(static fn (string $title): Task => self::newTask($column, $title), $titles));
+    }
 
-        return $tasks;
+    /**
+     * @return list<Task>
+     */
+    private function tasksIn(BoardColumn $column, Category $category, string ...$titles): array
+    {
+        return array_values(array_map(static fn (string $title): Task => self::newTask($column, $title, null, $category), $titles));
     }
 }

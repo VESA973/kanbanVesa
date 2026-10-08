@@ -7,15 +7,15 @@ namespace App\Controller\Payload;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * JSON body sent by the drag & drop (sortable_controller.js).
+ * Quick task form at the bottom of a board cell (a column within a category).
  */
-final readonly class MovePayload
+final readonly class NewTaskPayload
 {
     public function __construct(
-        #[Assert\PositiveOrZero]
-        public int $position,
-        #[Assert\Positive]
-        public ?int $columnId = null,
+        #[Assert\NotBlank]
+        #[Assert\Length(max: 255)]
+        public string $name = '',
+        #[Assert\NotNull]
         #[Assert\Positive]
         public ?int $categoryId = null,
     ) {

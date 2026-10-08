@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Security;
 
 use App\Entity\Project;
-use App\Entity\Task;
 use App\Entity\User;
 use App\Enum\ProjectRole;
 use App\Security\Voter\TaskVoter;
+use App\Tests\Unit\BuildsTasks;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Security\Core\Authentication\Token\NullToken;
@@ -17,6 +17,8 @@ use Symfony\Component\Security\Core\Authorization\Voter\VoterInterface;
 
 final class TaskVoterTest extends TestCase
 {
+    use BuildsTasks;
+
     private const int GRANTED = VoterInterface::ACCESS_GRANTED;
     private const int DENIED = VoterInterface::ACCESS_DENIED;
 
@@ -44,7 +46,7 @@ final class TaskVoterTest extends TestCase
     {
         $owner = new User('owner@example.com', 'Olivia', 'Owner');
         $project = new Project('Projet', $owner);
-        $task = new Task($project->addColumn('À faire'), 'Tâche', 0, $owner);
+        $task = self::newTask($project->addColumn('À faire'), 'Tâche', $owner);
         $user = match ($role) {
             ProjectRole::OWNER => $owner,
             null => new User('stranger@example.com', 'Sam', 'Stranger'),
@@ -60,7 +62,7 @@ final class TaskVoterTest extends TestCase
     {
         $owner = new User('owner@example.com', 'Olivia', 'Owner');
         $project = new Project('Projet', $owner);
-        $task = new Task($project->addColumn('À faire'), 'Tâche', 0, $owner);
+        $task = self::newTask($project->addColumn('À faire'), 'Tâche', $owner);
         $viewer = $this->member($project, ProjectRole::VIEWER);
         $token = new UsernamePasswordToken($viewer, 'main', $viewer->getRoles());
 
@@ -75,7 +77,7 @@ final class TaskVoterTest extends TestCase
     {
         $owner = new User('owner@example.com', 'Olivia', 'Owner');
         $project = new Project('Projet', $owner);
-        $task = new Task($project->addColumn('À faire'), 'Tâche', 0, $owner);
+        $task = self::newTask($project->addColumn('À faire'), 'Tâche', $owner);
         $project->archive();
         $token = new UsernamePasswordToken($owner, 'main', $owner->getRoles());
 
@@ -88,7 +90,7 @@ final class TaskVoterTest extends TestCase
     public function testAnonymousUserIsDenied(): void
     {
         $owner = new User('owner@example.com', 'Olivia', 'Owner');
-        $task = new Task(new Project('Projet', $owner)->addColumn('À faire'), 'Tâche', 0, $owner);
+        $task = self::newTask(new Project('Projet', $owner)->addColumn('À faire'), 'Tâche', $owner);
 
         self::assertSame(self::DENIED, new TaskVoter()->vote(new NullToken(), $task, [TaskVoter::VIEW]));
     }

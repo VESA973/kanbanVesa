@@ -5,7 +5,8 @@ import Sortable from 'sortablejs';
  * Drag & drop of board columns or task cards.
  *
  * Each draggable child carries data-sortable-url (PATCH endpoint). Lists of tasks
- * carry data-column-id so a card dropped in another column sends its new column.
+ * carry data-column-id and data-category-id so a card dropped in another cell of
+ * the board sends its new column and category.
  * The server answers with the confirmed position; on failure the element goes back
  * to where it was and the error is announced to screen readers.
  */
@@ -40,6 +41,9 @@ export default class extends Controller {
         const payload = { position: newDraggableIndex };
         if (to.dataset.columnId) {
             payload.columnId = Number(to.dataset.columnId);
+        }
+        if (to.dataset.categoryId) {
+            payload.categoryId = Number(to.dataset.categoryId);
         }
 
         try {

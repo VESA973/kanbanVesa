@@ -12,6 +12,9 @@ enum ActivityAction: string
     case COLUMN_CREATED = 'column_created';
     case COLUMN_RENAMED = 'column_renamed';
     case COLUMN_DELETED = 'column_deleted';
+    case CATEGORY_CREATED = 'category_created';
+    case CATEGORY_RENAMED = 'category_renamed';
+    case CATEGORY_DELETED = 'category_deleted';
     case TASK_CREATED = 'task_created';
     case TASK_UPDATED = 'task_updated';
     case TASK_MOVED = 'task_moved';

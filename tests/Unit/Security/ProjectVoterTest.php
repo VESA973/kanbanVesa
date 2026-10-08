@@ -30,6 +30,7 @@ final class ProjectVoterTest extends TestCase
             ProjectVoter::ARCHIVE => ['owner' => self::GRANTED, 'editor' => self::DENIED, 'viewer' => self::DENIED, 'none' => self::DENIED],
             ProjectVoter::DELETE => ['owner' => self::GRANTED, 'editor' => self::DENIED, 'viewer' => self::DENIED, 'none' => self::DENIED],
             ProjectVoter::MANAGE_COLUMNS => ['owner' => self::GRANTED, 'editor' => self::GRANTED, 'viewer' => self::DENIED, 'none' => self::DENIED],
+            ProjectVoter::MANAGE_CATEGORIES => ['owner' => self::GRANTED, 'editor' => self::GRANTED, 'viewer' => self::DENIED, 'none' => self::DENIED],
             ProjectVoter::MANAGE_MEMBERS => ['owner' => self::GRANTED, 'editor' => self::DENIED, 'viewer' => self::DENIED, 'none' => self::DENIED],
             ProjectVoter::TRACK => ['owner' => self::GRANTED, 'editor' => self::DENIED, 'viewer' => self::DENIED, 'none' => self::DENIED],
             ProjectVoter::MANAGE_LABELS => ['owner' => self::GRANTED, 'editor' => self::GRANTED, 'viewer' => self::DENIED, 'none' => self::DENIED],
@@ -70,7 +71,7 @@ final class ProjectVoterTest extends TestCase
         foreach ([ProjectVoter::VIEW, ProjectVoter::TRACK, ProjectVoter::ARCHIVE, ProjectVoter::DELETE] as $allowed) {
             self::assertSame(self::GRANTED, $voter->vote($token, $project, [$allowed]), $allowed);
         }
-        foreach ([ProjectVoter::EDIT, ProjectVoter::MANAGE_COLUMNS, ProjectVoter::CREATE_TASK, ProjectVoter::MANAGE_MEMBERS, ProjectVoter::MANAGE_LABELS] as $denied) {
+        foreach ([ProjectVoter::EDIT, ProjectVoter::MANAGE_COLUMNS, ProjectVoter::MANAGE_CATEGORIES, ProjectVoter::CREATE_TASK, ProjectVoter::MANAGE_MEMBERS, ProjectVoter::MANAGE_LABELS] as $denied) {
             self::assertSame(self::DENIED, $voter->vote($token, $project, [$denied]), $denied);
         }
     }

@@ -4,14 +4,18 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-use App\Repository\BoardColumnRepository;
+use App\Repository\CategoryRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: BoardColumnRepository::class)]
-#[ORM\Index(name: 'IDX_BOARD_COLUMN_POSITION', fields: ['project', 'position'])]
-class BoardColumn implements Positionable
+/**
+ * A sub-division of a project (shown as a horizontal lane on the board).
+ * Every task belongs to exactly one category.
+ */
+#[ORM\Entity(repositoryClass: CategoryRepository::class)]
+#[ORM\Index(name: 'IDX_CATEGORY_POSITION', fields: ['project', 'position'])]
+class Category implements Positionable
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -21,12 +25,12 @@ class BoardColumn implements Positionable
     /**
      * @var Collection<int, Task>
      */
-    #[ORM\OneToMany(targetEntity: Task::class, mappedBy: 'column', orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: Task::class, mappedBy: 'category')]
     #[ORM\OrderBy(['position' => 'ASC'])]
     private Collection $tasks;
 
     public function __construct(
-        #[ORM\ManyToOne(inversedBy: 'columns')]
+        #[ORM\ManyToOne(inversedBy: 'categories')]
         #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
         private Project $project,
         #[ORM\Column(length: 50)]
@@ -73,15 +77,5 @@ class BoardColumn implements Positionable
     public function getTasks(): Collection
     {
         return $this->tasks;
-    }
-
-    /**
-     * Tasks of one cell of the board (this column within $category), in display order.
-     *
-     * @return list<Task>
-     */
-    public function getTasksIn(Category $category): array
-    {
-        return array_values($this->tasks->filter(static fn (Task $task): bool => $task->getCategory() === $category)->toArray());
     }
 }

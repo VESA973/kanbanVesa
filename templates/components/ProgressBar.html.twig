@@ -1,0 +1,17 @@
+{# Completion of a category or a project; an empty one shows "0 tâche" instead of 0 %. #}
+{% props progress, label %}
+<div class="flex items-center gap-2 {{ attributes.render('class') }}" {{ attributes }}>
+    {% if progress.isEmpty() %}
+        <span class="text-xs text-slate-500 dark:text-slate-400">{{ 'progress.task_count'|trans({'%count%': 0}) }}</span>
+    {% else %}
+        <div class="h-2 flex-1 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700" role="progressbar"
+             aria-valuenow="{{ progress.percent() }}" aria-valuemin="0" aria-valuemax="100" aria-label="{{ label }}"
+             aria-valuetext="{{ 'progress.value_text'|trans({'%percent%': progress.percent(), '%completed%': progress.completed, '%total%': progress.total}) }}">
+            <div class="h-full rounded-full bg-emerald-500 transition-[width]" style="width: {{ progress.percent() }}%"></div>
+        </div>
+        <span class="shrink-0 text-xs tabular-nums text-slate-600 dark:text-slate-300">
+            <span class="font-semibold">{{ progress.percent() }} %</span>
+            ({{ 'progress.done_of'|trans({'%completed%': progress.completed, '%total%': progress.total}) }})
+        </span>
+    {% endif %}
+</div>

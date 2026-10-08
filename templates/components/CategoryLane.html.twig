@@ -1,0 +1,57 @@
+{# A horizontal lane of the board: one category across all the columns. #}
+{% props category, columns, progress, boardToken, filter, commentCounts = {}, canManageCategories = false %}
+{% set others = category.project.categories|filter(other => other != category) %}
+{% set task_count = progress.total %}
+<section class="flex flex-col gap-2" aria-labelledby="category-{{ category.id }}-title"
+         {% if canManageCategories and not filter.active %}data-sortable-url="{{ path('app_category_move', {id: category.id}) }}"{% endif %}>
+    {# Sticky so the name and progress stay visible while scrolling the columns horizontally. #}
+    <header class="sticky left-0 flex w-full max-w-[calc(100vw-2rem)] flex-wrap items-center gap-x-4 gap-y-1 sm:max-w-xl">
+        <h2 id="category-{{ category.id }}-title" class="min-w-0 truncate text-base font-semibold {{ canManageCategories ? 'cursor-grab' }}" {{ canManageCategories ? 'data-category-handle' }}>
+            {{ category.name }}
+        </h2>
+        <twig:ProgressBar :progress="progress" :label="'progress.category_label'|trans({'%name%': category.name})" class="min-w-40 flex-1" />
+        {% if canManageCategories %}
+            <details class="relative">
+                <summary class="cursor-pointer list-none rounded px-2 py-1 text-slate-500 hover:bg-slate-200 focus-visible:outline-2 focus-visible:outline-indigo-600 dark:hover:bg-slate-800">
+                    <span aria-hidden="true">⋯</span><span class="sr-only">{{ 'category.actions'|trans({'%name%': category.name}) }}</span>
+                </summary>
+                <div class="absolute left-0 z-20 mt-1 w-72 space-y-3 rounded-md bg-white p-3 shadow-lg ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
+                    <form method="post" action="{{ path('app_category_rename', {id: category.id}) }}">
+                        <input type="hidden" name="_token" value="{{ boardToken }}">
+                        <label for="rename-category-{{ category.id }}" class="mb-1 block text-xs font-medium">{{ 'category.rename'|trans }}</label>
+                        <div class="flex gap-2">
+                            <input id="rename-category-{{ category.id }}" name="name" value="{{ category.name }}" required maxlength="50"
+                                   class="block w-full rounded-md border border-slate-300 bg-white px-2 py-1 text-sm focus:outline-2 focus:outline-indigo-500 dark:border-slate-700 dark:bg-slate-900">
+                            <twig:Button type="submit" variant="secondary">{{ 'action.save'|trans }}</twig:Button>
+                        </div>
+                    </form>
+                    {% if others is empty %}
+                        <p class="text-xs text-slate-500 dark:text-slate-400">{{ 'category.error.last'|trans }}</p>
+                    {% else %}
+                        <form method="post" action="{{ path('app_category_delete', {id: category.id}) }}" class="space-y-2"
+                              data-controller="confirm" data-action="confirm#ask"
+                              data-confirm-message-value="{{ 'category.delete_confirm'|trans({'%name%': category.name, '%count%': task_count}) }}">
+                            <input type="hidden" name="_token" value="{{ boardToken }}">
+                            {% if task_count > 0 %}
+                                <label for="delete-category-target-{{ category.id }}" class="block text-xs font-medium">{{ 'category.move_tasks_to'|trans({'%count%': task_count}) }}</label>
+                                <select id="delete-category-target-{{ category.id }}" name="targetId" required
+                                        class="block w-full rounded-md border border-slate-300 bg-white px-2 py-1 text-sm focus:outline-2 focus:outline-indigo-500 dark:border-slate-700 dark:bg-slate-900">
+                                    {% for other in others %}
+                                        <option value="{{ other.id }}">{{ other.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            {% endif %}
+                            <twig:Button type="submit" variant="danger" fullWidth>{{ 'category.delete'|trans }}</twig:Button>
+                        </form>
+                    {% endif %}
+                </div>
+            </details>
+        {% endif %}
+    </header>
+
+    <div class="flex items-stretch gap-4">
+        {% for column in columns %}
+            <twig:BoardCell :column="column" :category="category" :boardToken="boardToken" :filter="filter" :commentCounts="commentCounts" />
+        {% endfor %}
+    </div>
+</section>

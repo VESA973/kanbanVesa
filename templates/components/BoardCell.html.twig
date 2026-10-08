@@ -1,0 +1,34 @@
+{# The tasks of one column within one category, with the quick "add a card" form. #}
+{% props column, category, boardToken, filter, commentCounts = {} %}
+{% set can_create_task = is_granted('PROJECT_CREATE_TASK', column.project) %}
+{# With a filter, hidden cards would make the drag & drop positions wrong. #}
+{% set sortable = can_create_task and not filter.active %}
+{% set cell_tasks = column.tasksIn(category) %}
+{% set tasks = filter.active ? cell_tasks|filter(task => filter.matches(task, date())) : cell_tasks %}
+<div class="flex w-72 shrink-0 flex-col rounded-lg bg-slate-100 dark:bg-slate-900">
+    <ul class="flex min-h-12 flex-1 flex-col gap-2 p-3 pb-2"
+        data-column-id="{{ column.id }}"
+        data-category-id="{{ category.id }}"
+        aria-label="{{ 'board.cell_label'|trans({'%column%': column.name, '%category%': category.name}) }}"
+        {% if sortable %}
+            data-controller="sortable"
+            data-sortable-group-value="tasks"
+            data-sortable-csrf-token-value="{{ boardToken }}"
+            data-sortable-error-message-value="{{ 'board.move_error'|trans }}"
+        {% endif %}>
+        {% for task in tasks %}
+            <twig:TaskCard :task="task" :commentCount="commentCounts[task.id] ?? 0" :sortable="sortable" />
+        {% endfor %}
+    </ul>
+
+    {% if can_create_task %}
+        {% set field_id = 'new-task-' ~ category.id ~ '-' ~ column.id %}
+        <form method="post" action="{{ path('app_task_new', {id: column.id}) }}" class="px-3 pb-3">
+            <input type="hidden" name="_token" value="{{ boardToken }}">
+            <input type="hidden" name="categoryId" value="{{ category.id }}">
+            <label for="{{ field_id }}" class="sr-only">{{ 'task.new_in_cell'|trans({'%column%': column.name, '%category%': category.name}) }}</label>
+            <input id="{{ field_id }}" name="name" required maxlength="255" placeholder="+ {{ 'task.add'|trans }}"
+                   class="block w-full rounded-md border border-transparent bg-transparent px-2 py-1.5 text-sm placeholder:text-slate-500 hover:bg-slate-200 focus:border-indigo-500 focus:bg-white focus:outline-2 focus:outline-indigo-500 dark:hover:bg-slate-800 dark:focus:bg-slate-800">
+        </form>
+    {% endif %}
+</div>

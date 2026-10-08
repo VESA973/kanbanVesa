@@ -14,11 +14,14 @@ use App\Form\Data\TaskData;
 use App\Service\TaskCompleter;
 use App\Service\TaskMover;
 use App\Service\TaskUpdater;
+use App\Tests\Unit\BuildsTasks;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 
 final class TaskUpdaterTest extends TestCase
 {
+    use BuildsTasks;
+
     private User $owner;
     private Project $project;
     private Task $task;
@@ -29,8 +32,7 @@ final class TaskUpdaterTest extends TestCase
         $this->owner = new User('owner@example.com', 'Olivia', 'Owner');
         $this->project = new Project('Projet', $this->owner);
         $column = $this->project->addColumn('À faire');
-        $this->task = new Task($column, 'Tâche', 0, $this->owner);
-        $column->getTasks()->add($this->task);
+        $this->task = self::newTask($column, 'Tâche', $this->owner);
         $this->dispatcher = new RecordingDispatcher();
     }
 

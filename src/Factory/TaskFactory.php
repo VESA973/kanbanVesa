@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Factory;
 
 use App\Entity\BoardColumn;
+use App\Entity\Category;
 use App\Entity\Task;
 use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
@@ -19,15 +20,19 @@ final class TaskFactory extends PersistentObjectFactory
     }
 
     /**
-     * Required: appends the task at the bottom of the column, like TaskCreator does
-     * (Foundry adds the task to $column->getTasks() itself).
+     * Required: appends the task at the bottom of the cell, like TaskCreator does
+     * (Foundry adds the task to the collections of the column and the category itself).
+     * Without $category, the first category of the project is used.
      */
-    public function inColumn(BoardColumn $column): self
+    public function inColumn(BoardColumn $column, ?Category $category = null): self
     {
+        $project = $column->getProject();
+        $category ??= $project->getCategories()->first() ?: throw new \LogicException('The project has no category.');
+
         return $this
-            ->with(['column' => $column, 'createdBy' => $column->getProject()->getOwner()])
+            ->with(['column' => $column, 'category' => $category, 'createdBy' => $project->getOwner()])
             // Evaluated for each task, so many() produces positions 0, 1, 2…
-            ->with(static fn (): array => ['position' => $column->getTasks()->count()]);
+            ->with(static fn (): array => ['position' => \count($column->getTasksIn($category))]);
     }
 
     /**

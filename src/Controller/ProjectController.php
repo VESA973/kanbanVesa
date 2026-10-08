@@ -15,6 +15,7 @@ use App\Repository\ProjectRepository;
 use App\Repository\TaskRepository;
 use App\Security\Voter\ProjectVoter;
 use App\Service\BoardRefreshPublisher;
+use App\Service\CategoryProgress;
 use App\Service\ProjectArchiver;
 use App\Service\ProjectCreator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -67,7 +68,7 @@ final class ProjectController extends AbstractController
 
     #[Route('/{id}', name: 'app_project_show', requirements: ['id' => '\d+'], methods: ['GET'])]
     #[IsGranted(ProjectVoter::VIEW, 'project', statusCode: 404)]
-    public function show(Project $project, BoardColumnRepository $columnRepository, TaskRepository $taskRepository, #[MapQueryString] BoardFilter $filter = new BoardFilter()): Response
+    public function show(Project $project, BoardColumnRepository $columnRepository, TaskRepository $taskRepository, CategoryProgress $categoryProgress, #[MapQueryString] BoardFilter $filter = new BoardFilter()): Response
     {
         $columns = $columnRepository->findBoard($project);
         $tasks = array_merge(...array_map(static fn (BoardColumn $column): array => $column->getTasks()->getValues(), $columns));
@@ -77,6 +78,7 @@ final class ProjectController extends AbstractController
             'project' => $project,
             'columns' => $columns,
             'filter' => $filter,
+            'progress' => $categoryProgress->of($project),
             'commentCounts' => $taskRepository->countCommentsByTask($tasks),
             'realtimeTopic' => BoardRefreshPublisher::topicFor($project),
         ]);

@@ -22,6 +22,7 @@ final class ProjectVoter extends Voter
     /** Archive or unarchive. */
     public const string ARCHIVE = 'PROJECT_ARCHIVE';
     public const string MANAGE_COLUMNS = 'PROJECT_MANAGE_COLUMNS';
+    public const string MANAGE_CATEGORIES = 'PROJECT_MANAGE_CATEGORIES';
     public const string CREATE_TASK = 'PROJECT_CREATE_TASK';
     public const string MANAGE_MEMBERS = 'PROJECT_MANAGE_MEMBERS';
     public const string MANAGE_LABELS = 'PROJECT_MANAGE_LABELS';
@@ -31,7 +32,7 @@ final class ProjectVoter extends Voter
     /** What stays possible on an archived (read-only) project. */
     private const array ARCHIVED_ATTRIBUTES = [self::VIEW, self::TRACK, self::ARCHIVE, self::DELETE];
 
-    private const array ATTRIBUTES = [self::VIEW, self::EDIT, self::DELETE, self::ARCHIVE, self::MANAGE_COLUMNS, self::CREATE_TASK, self::MANAGE_MEMBERS, self::TRACK, self::MANAGE_LABELS];
+    private const array ATTRIBUTES = [self::VIEW, self::EDIT, self::DELETE, self::ARCHIVE, self::MANAGE_COLUMNS, self::MANAGE_CATEGORIES, self::CREATE_TASK, self::MANAGE_MEMBERS, self::TRACK, self::MANAGE_LABELS];
 
     protected function supports(string $attribute, mixed $subject): bool
     {
@@ -62,7 +63,7 @@ final class ProjectVoter extends Voter
         return match ($attribute) {
             self::VIEW => true,
             self::EDIT, self::DELETE, self::ARCHIVE, self::MANAGE_MEMBERS, self::TRACK => ProjectRole::OWNER === $role,
-            self::MANAGE_COLUMNS, self::CREATE_TASK, self::MANAGE_LABELS => ProjectRole::VIEWER !== $role,
+            self::MANAGE_COLUMNS, self::MANAGE_CATEGORIES, self::CREATE_TASK, self::MANAGE_LABELS => ProjectRole::VIEWER !== $role,
             default => false,
         };
     }

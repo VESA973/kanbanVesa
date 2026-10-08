@@ -71,6 +71,9 @@ class Task implements Positionable
         #[ORM\ManyToOne(inversedBy: 'tasks')]
         #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
         private BoardColumn $column,
+        #[ORM\ManyToOne(inversedBy: 'tasks')]
+        #[ORM\JoinColumn(nullable: false)]
+        private Category $category,
         #[ORM\Column(length: 255)]
         private string $title,
         #[ORM\Column]
@@ -80,6 +83,7 @@ class Task implements Positionable
         #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
         private ?User $createdBy,
     ) {
+        $this->assertSameProject($column, $category);
         $this->createdAt = new \DateTimeImmutable();
         $this->comments = new ArrayCollection();
         $this->checklistItems = new ArrayCollection();
@@ -101,9 +105,19 @@ class Task implements Positionable
         return $this->column->getProject();
     }
 
-    public function moveTo(BoardColumn $column, int $position): void
+    public function getCategory(): Category
     {
+        return $this->category;
+    }
+
+    /**
+     * Places the task in the cell ($column, $category) of the board.
+     */
+    public function moveTo(BoardColumn $column, Category $category, int $position): void
+    {
+        $this->assertSameProject($column, $category);
         $this->column = $column;
+        $this->category = $category;
         $this->position = $position;
     }
 
@@ -274,6 +288,13 @@ class Task implements Positionable
             }
 
             $this->labels->add($label);
+        }
+    }
+
+    private function assertSameProject(BoardColumn $column, Category $category): void
+    {
+        if ($column->getProject() !== $category->getProject()) {
+            throw new \InvalidArgumentException('The column and the category must belong to the same project.');
         }
     }
 }

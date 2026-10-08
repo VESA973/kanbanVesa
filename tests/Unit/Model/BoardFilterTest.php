@@ -10,10 +10,13 @@ use App\Entity\Task;
 use App\Entity\User;
 use App\Enum\ProjectColor;
 use App\Model\BoardFilter;
+use App\Tests\Unit\BuildsTasks;
 use PHPUnit\Framework\TestCase;
 
 final class BoardFilterTest extends TestCase
 {
+    use BuildsTasks;
+
     private User $alex;
     private Project $project;
     private \DateTimeImmutable $now;
@@ -78,7 +81,7 @@ final class BoardFilterTest extends TestCase
 
     private function task(?string $dueDate = null): Task
     {
-        $task = new Task($this->project->getColumns()->first() ?: $this->project->addColumn('À faire'), 'Tâche', 0, $this->alex);
+        $task = self::newTask($this->project->getColumns()->first() ?: $this->project->addColumn('À faire'), 'Tâche', $this->alex);
         $task->schedule(null === $dueDate ? null : new \DateTimeImmutable($dueDate));
 
         return $task;

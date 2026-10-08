@@ -163,7 +163,7 @@ final class TrackingTest extends FunctionalTestCase
 
         $client->request('GET', '/projects/'.$project->getId().'/activity');
         self::assertSelectorTextContains('ol li:first-child', 'a terminé « Rédiger le cahier des charges »');
-        self::assertSelectorTextContains('ol li:last-child', 'a créé la tâche « Rédiger le cahier des charges » dans « À faire »');
+        self::assertSelectorTextContains('ol li:last-child', 'a créé la tâche « Rédiger le cahier des charges » dans « Général / À faire »');
     }
 
     /**

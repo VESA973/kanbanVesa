@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Controller\Payload\MovePayload;
-use App\Controller\Payload\NamePayload;
+use App\Controller\Payload\NewTaskPayload;
 use App\Entity\BoardColumn;
 use App\Entity\Task;
 use App\Entity\User;
 use App\Form\Data\TaskData;
 use App\Form\TaskFormType;
 use App\Repository\BoardColumnRepository;
+use App\Repository\CategoryRepository;
 use App\Repository\InvitationRepository;
 use App\Security\Voter\ProjectVoter;
 use App\Security\Voter\TaskVoter;
@@ -38,9 +39,11 @@ final class TaskController extends AbstractController
     #[IsGranted(ProjectVoter::VIEW, new Expression('args["column"].getProject()'), statusCode: 404)]
     #[IsGranted(ProjectVoter::CREATE_TASK, new Expression('args["column"].getProject()'))]
     #[IsCsrfTokenValid(new Expression('"board-" ~ args["column"].getProject().getId()'))]
-    public function new(BoardColumn $column, #[MapRequestPayload] NamePayload $payload, TaskCreator $taskCreator, #[CurrentUser] User $user): Response
+    public function new(BoardColumn $column, #[MapRequestPayload] NewTaskPayload $payload, CategoryRepository $categoryRepository, TaskCreator $taskCreator, #[CurrentUser] User $user): Response
     {
-        $taskCreator->create($column, $payload->name, $user);
+        $category = $categoryRepository->findInProject($column->getProject(), $payload->categoryId)
+            ?? throw new UnprocessableEntityHttpException('Unknown category for this project.');
+        $taskCreator->create($column, $category, $payload->name, $user);
 
         return $this->redirectToRoute('app_project_show', ['id' => $column->getProject()->getId()]);
     }
@@ -107,15 +110,16 @@ final class TaskController extends AbstractController
     #[IsGranted(TaskVoter::VIEW, 'task', statusCode: 404)]
     #[IsGranted(TaskVoter::EDIT, 'task')]
     #[IsCsrfTokenValid(new Expression('"board-" ~ args["task"].getProject().getId()'), tokenKey: 'X-CSRF-Token', tokenSource: IsCsrfTokenValid::SOURCE_HEADER)]
-    public function move(Task $task, #[MapRequestPayload] MovePayload $payload, BoardColumnRepository $columnRepository, TaskMover $taskMover): JsonResponse
+    public function move(Task $task, #[MapRequestPayload] MovePayload $payload, BoardColumnRepository $columnRepository, CategoryRepository $categoryRepository, TaskMover $taskMover): JsonResponse
     {
         $target = null === $payload->columnId ? $task->getColumn() : $columnRepository->find($payload->columnId);
-        if (null === $target || $target->getProject() !== $task->getProject()) {
-            throw new UnprocessableEntityHttpException('Unknown column for this project.');
+        $category = null === $payload->categoryId ? $task->getCategory() : $categoryRepository->findInProject($task->getProject(), $payload->categoryId);
+        if (null === $target || null === $category || $target->getProject() !== $task->getProject()) {
+            throw new UnprocessableEntityHttpException('Unknown column or category for this project.');
         }
 
-        $position = $taskMover->move($task, $target, $payload->position);
+        $position = $taskMover->move($task, $target, $payload->position, $category);
 
-        return $this->json(['columnId' => $target->getId(), 'position' => $position]);
+        return $this->json(['columnId' => $target->getId(), 'categoryId' => $category->getId(), 'position' => $position]);
     }
 }
