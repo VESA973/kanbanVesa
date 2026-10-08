@@ -14,6 +14,7 @@ use App\Repository\ProgramRepository;
 use App\Repository\ProjectRepository;
 use App\Repository\TaskRepository;
 use App\Service\ProgramAccess;
+use App\Service\ProgramImageStorage;
 use App\Service\ProgramManager;
 use App\Service\ProjectCreator;
 use PHPUnit\Framework\TestCase;
@@ -35,7 +36,7 @@ final class ProjectCreatorTest extends TestCase
         $translator = $this->createStub(TranslatorInterface::class);
         $translator->method('trans')->willReturnArgument(0);
 
-        $programManager = new ProgramManager($this->createStub(ProgramRepository::class), $translator);
+        $programManager = new ProgramManager($this->createStub(ProgramRepository::class), $translator, new ProgramImageStorage(sys_get_temp_dir()));
         $programAccess = new ProgramAccess($this->createStub(TaskRepository::class));
         $project = new ProjectCreator($repository, $translator, $dispatcher = new RecordingDispatcher(), $programManager, $programAccess)->create($data, $owner);
 

@@ -62,10 +62,10 @@ task:
         urgent: Urgente
 
 project:
-    name: Nom du projet
-    program: Projet global
-    program_help: Les membres de ce projet global auront aussi accès à ce projet.
-    program_default: Général (mon projet global par défaut)
+    name: Nom du chantier
+    program: Projet
+    program_help: Le chantier est rangé dans ce projet ; les membres du projet y auront accès.
+    program_default: Général (mon projet par défaut)
     description: Description
     color:
         label: Couleur
@@ -82,48 +82,54 @@ project:
         viewer: Lecteur
     index:
         title: Mes projets
-        empty: Vous n'avez encore aucun projet. Créez le premier pour commencer !
+        empty: Vous n'avez encore aucun projet. Créez le premier, puis ajoutez-y des chantiers !
+    new:
+        title: Nouveau chantier
+        submit: Créer le chantier
+    edit:
+        title: Modifier le chantier
+    archive:
+        title: Archiver le chantier
+        help: Le chantier disparaît de « Mes projets » et de « Mes tâches » et passe en lecture seule pour tous. Vous pourrez le désarchiver à tout moment.
+        submit: Archiver le chantier
+        unarchive: Désarchiver
+        confirm: Archiver ce chantier ? Il passera en lecture seule.
+        banner: Ce chantier est archivé depuis le %date% et ne peut plus être modifié.
+        list: "Chantiers archivés (%count%)"
+        archived_on: archivé le %date%
+    delete:
+        title: Supprimer le chantier
+        warning: Le chantier, ses colonnes et ses tâches seront définitivement supprimés. Cette action est irréversible.
+        confirm: Supprimer définitivement ce chantier ?
+        submit: Supprimer le chantier
+
+program:
+    label: Projet
+    name: Nom du projet
+    default_name: Général
+    empty: Aucun chantier dans ce projet pour l'instant.
+    projects_of: Chantiers de %name%
+    chantier_count: "{0} Aucun chantier|{1} 1 chantier|]1,Inf[ %count% chantiers"
+    partial_access: Vous voyez uniquement les chantiers auxquels vous avez été invité.
+    image: Image d'illustration
+    image_help: JPG, PNG ou WebP, 3 Mo maximum. Elle s'affiche sur la carte et en tête du projet.
+    remove_image: Retirer l'image actuelle
+    back_to: "Projet : %name%"
+    back: Retour à %name%
+    members_help: Les membres d'un projet ont accès à tous ses chantiers, présents et futurs, avec le rôle choisi ici.
+    remove_member_confirm: Retirer %name% du projet ? Cette personne perdra l'accès à tous ses chantiers (sauf ceux où elle a été invitée directement).
     new:
         title: Nouveau projet
+        help: Un projet regroupe plusieurs chantiers ; vous verrez leur avancement d'un coup d'œil.
         submit: Créer le projet
     edit:
         title: Modifier le projet
-    archive:
-        title: Archiver le projet
-        help: Le projet disparaît de « Mes projets » et de « Mes tâches » et passe en lecture seule pour tous. Vous pourrez le désarchiver à tout moment.
-        submit: Archiver le projet
-        unarchive: Désarchiver
-        confirm: Archiver ce projet ? Il passera en lecture seule.
-        banner: Ce projet est archivé depuis le %date% et ne peut plus être modifié.
-        list: "Projets archivés (%count%)"
-        archived_on: archivé le %date%
     delete:
         title: Supprimer le projet
-        warning: Le projet, ses colonnes et ses tâches seront définitivement supprimés. Cette action est irréversible.
         confirm: Supprimer définitivement ce projet ?
         submit: Supprimer le projet
-
-program:
-    label: Projet global
-    name: Nom du projet global
-    default_name: Général
-    empty: Aucun projet dans ce projet global pour l'instant.
-    projects_of: Projets de %name%
-    back: Retour à %name%
-    members_help: Les membres d'un projet global ont accès à tous ses projets, présents et futurs, avec le rôle choisi ici.
-    remove_member_confirm: Retirer %name% du projet global ? Cette personne perdra l'accès à tous ses projets (sauf ceux où elle a été invitée directement).
-    new:
-        title: Nouveau projet global
-        help: Un projet global regroupe plusieurs projets ; vous verrez leur avancement d'un coup d'œil.
-        submit: Créer le projet global
-    edit:
-        title: Modifier le projet global
-    delete:
-        title: Supprimer le projet global
-        confirm: Supprimer définitivement ce projet global ?
-        submit: Supprimer le projet global
     error:
-        not_empty: Ce projet global contient encore des projets ; supprimez-les ou archivez-les d'abord.
+        not_empty: Ce projet contient encore des chantiers ; supprimez-les ou archivez-les d'abord.
 
 progress:
     overall: Avancement global
@@ -178,7 +184,7 @@ admin:
         search: Nom ou adresse e-mail
         user: Utilisateur
         status: Statut
-        projects: Projets possédés
+        projects: Chantiers possédés
         created_at: Inscription
         actions: Actions
         you: vous
@@ -193,8 +199,8 @@ admin:
         deactivate_confirm: Désactiver le compte de %name% ? Cette personne sera déconnectée et ne pourra plus se connecter.
         delete: Supprimer
         delete_confirm: Supprimer définitivement le compte de %name% ? Ses tâches restent, sans auteur ni assignation.
-        delete_blocked: Supprimez ou confiez d'abord ses projets pour pouvoir supprimer ce compte.
-        owner: Propriétaire de projets
+        delete_blocked: Supprimez ou confiez d'abord ses chantiers pour pouvoir supprimer ce compte.
+        owner: Propriétaire de chantiers
         badge:
             admin: Admin
             disabled: Désactivé
@@ -243,13 +249,13 @@ admin:
 
 search:
     title: Recherche
-    label: Rechercher une tâche ou un projet
+    label: Rechercher une tâche ou un chantier
     placeholder: Rechercher…
     submit: Rechercher
-    too_short: Saisissez au moins 2 caractères pour rechercher dans vos projets et vos tâches.
+    too_short: Saisissez au moins 2 caractères pour rechercher dans vos chantiers et vos tâches.
     no_result: Aucun résultat pour « %term% ».
     result_count: "{1}1 résultat|]1,Inf[%count% résultats"
-    projects: Projets
+    projects: Chantiers
     tasks: Tâches
     archived: archivé
 
@@ -264,8 +270,8 @@ my_tasks:
         completed: Terminées ces 7 derniers jours
 
 tracking:
-    title: Suivi du projet
-    nav: Suivi du projet
+    title: Suivi du chantier
+    nav: Suivi du chantier
     progress: Avancement
     activity: Journal d'activité
     progress_caption: Avancement des tâches par membre
@@ -292,9 +298,9 @@ tracking:
 
 activity:
     action:
-        project_created: a créé le projet « %subject% »
-        project_archived: a archivé le projet
-        project_unarchived: a désarchivé le projet
+        project_created: a créé le chantier « %subject% »
+        project_archived: a archivé le chantier
+        project_unarchived: a désarchivé le chantier
         column_created: a ajouté la colonne « %subject% »
         column_renamed: a renommé la colonne « %previous% » en « %subject% »
         column_deleted: a supprimé la colonne « %subject% » (%count% tâche(s))
@@ -307,9 +313,9 @@ activity:
         task_reopened: a rouvert « %subject% »
         task_deleted: a supprimé la tâche « %subject% » de « %column% »
         invitation_sent: a invité %subject% en tant que %role%
-        member_joined: a rejoint le projet en tant que %role%
+        member_joined: a rejoint le chantier en tant que %role%
         member_role_changed: a changé le rôle de %subject% en %role%
-        member_removed: a retiré %subject% du projet
+        member_removed: a retiré %subject% du chantier
         comment_added: a commenté « %subject% »
 
 member:
@@ -317,9 +323,9 @@ member:
     back_to_board: Retour au tableau %project%
     role_of: Rôle de %name%
     remove: Retirer
-    remove_confirm: Retirer %name% du projet ? Ses tâches ne lui seront plus assignées.
-    inherited: via le projet global
-    inherited_help: Accès donné par le projet global ; il se gère depuis la page des membres du projet global.
+    remove_confirm: Retirer %name% du chantier ? Ses tâches ne lui seront plus assignées.
+    inherited: via le projet
+    inherited_help: Accès donné par le projet ; il se gère depuis la page des membres du projet.
 
 invitation:
     title: Inviter une personne
@@ -334,7 +340,7 @@ invitation:
         role_viewer: Lecteur (cocher sa tâche, commenter)
         role_editor: Éditeur (modifier le tableau)
         submit: Inviter
-        intro: "La tâche « %task% » vous sera confiée dès que vous aurez rejoint le projet."
+        intro: "La tâche « %task% » vous sera confiée dès que vous aurez rejoint le chantier."
     link:
         get: Obtenir le lien
         title: Lien d'invitation pour %email%
@@ -344,7 +350,7 @@ invitation:
         copied: Copié !
         whatsapp: Partager sur WhatsApp
         whatsapp_message: |
-            Bonjour, je vous invite à rejoindre le projet « %project% » sur TaskBoard. %task%
+            Bonjour, je vous invite à rejoindre le chantier « %project% » sur TaskBoard. %task%
             Créez votre compte avec l'adresse %email% en ouvrant ce lien : %link%
         warning: "Ce lien remplace celui envoyé par e-mail (qui ne fonctionne plus). Toute personne qui l'obtient peut l'utiliser en créant un compte avec l'adresse invitée : ne le partagez qu'avec la personne concernée."
     expires_on: expire le %date%
@@ -358,18 +364,18 @@ invitation:
     resend: Renvoyer
     revoke: Annuler
     page_title: Invitation
-    intro: "%inviter% vous invite à rejoindre le projet « %project% » en tant que %role%."
-    intro_program: "%inviter% vous invite à rejoindre le projet global « %project% » (et tous ses projets) en tant que %role%."
-    accept: Rejoindre le projet
+    intro: "%inviter% vous invite à rejoindre le chantier « %project% » en tant que %role%."
+    intro_program: "%inviter% vous invite à rejoindre le projet « %project% » (et tous ses chantiers) en tant que %role%."
+    accept: Accepter l'invitation
     login_first: Connectez-vous ou créez un compte avec l'adresse %email% pour accepter l'invitation.
     wrong_account: Déconnectez-vous puis reconnectez-vous avec l'adresse %email%.
     back_home: Retour à l'accueil
     error:
         not_found: Cette invitation n'existe pas ou a été annulée.
         already_used: Cette invitation a déjà été utilisée.
-        expired: Cette invitation a expiré. Demandez au propriétaire du projet de vous en renvoyer une.
+        expired: Cette invitation a expiré. Demandez à la personne qui vous a invité de vous en renvoyer une.
         email_mismatch: Cette invitation a été envoyée à une autre adresse e-mail que celle de votre compte.
-        already_member: Cette personne est déjà membre du projet.
+        already_member: Cette personne en est déjà membre.
 
 user:
     email: Adresse e-mail
@@ -430,16 +436,16 @@ flash:
         sent: L'invitation a été envoyée.
         revoked: L'invitation a été annulée.
         resent: L'invitation a été renvoyée ; elle est valable 7 jours.
-        accepted: Bienvenue dans le projet !
+        accepted: Bienvenue, vous avez rejoint l'équipe !
         sent_for_task: L'invitation a été créée. Utilisez « Obtenir le lien » pour la partager par WhatsApp si l'e-mail n'est pas configuré.
     program:
-        created: Le projet global a été créé.
-        updated: Le projet global a été modifié.
-        deleted: Le projet global a été supprimé.
-        member_removed: Cette personne n'a plus accès au projet global ni à ses projets.
+        created: Le projet a été créé.
+        updated: Le projet a été modifié.
+        deleted: Le projet a été supprimé.
+        member_removed: Cette personne n'a plus accès au projet ni à ses chantiers.
     member:
         role_changed: Le rôle a été modifié.
-        removed: Le membre a été retiré du projet.
+        removed: Le membre a été retiré du chantier.
     column:
         deleted: La colonne a été supprimée.
     task:
@@ -447,11 +453,11 @@ flash:
         completed: Tâche terminée. Bravo !
         reopened: La tâche a été rouverte.
     project:
-        created: Le projet a été créé.
-        updated: Le projet a été mis à jour.
-        deleted: Le projet a été supprimé.
-        archived: Le projet a été archivé.
-        unarchived: Le projet a été désarchivé.
+        created: Le chantier a été créé.
+        updated: Le chantier a été mis à jour.
+        deleted: Le chantier a été supprimé.
+        archived: Le chantier a été archivé.
+        unarchived: Le chantier a été désarchivé.
     registration:
         success: Bienvenue ! Un e-mail de confirmation vient de vous être envoyé.
     verify_email:
@@ -472,15 +478,15 @@ email:
     task_link: Voir la tâche
     task_assigned:
         subject: "Nouvelle tâche pour vous : %task%"
-        intro_by: "%user% vous a assigné la tâche « %task% » dans le projet « %project% »."
-        intro: "La tâche « %task% » du projet « %project% » vous a été assignée."
+        intro_by: "%user% vous a assigné la tâche « %task% » dans le chantier « %project% »."
+        intro: "La tâche « %task% » du chantier « %project% » vous a été assignée."
     due_reminder:
         subject: "Échéance demain : %task%"
-        intro: "La tâche « %task% » du projet « %project% » arrive à échéance demain (%date%)."
+        intro: "La tâche « %task% » du chantier « %project% » arrive à échéance demain (%date%)."
     invitation:
-        subject: Invitation au projet « %project% »
-        intro: "%inviter% vous invite à rejoindre le projet « %project% » sur TaskBoard en tant que %role%."
-        intro_program: "%inviter% vous invite à rejoindre le projet global « %project% » sur TaskBoard (et tous ses projets) en tant que %role%."
+        subject: "Invitation : %project%"
+        intro: "%inviter% vous invite à rejoindre le chantier « %project% » sur TaskBoard en tant que %role%."
+        intro_program: "%inviter% vous invite à rejoindre le projet « %project% » sur TaskBoard (et tous ses chantiers) en tant que %role%."
         button: Voir l'invitation
         expires: Cette invitation expire le %date%.
     reset_password:

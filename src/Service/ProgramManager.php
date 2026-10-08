@@ -16,6 +16,7 @@ final readonly class ProgramManager
     public function __construct(
         private ProgramRepository $programRepository,
         private TranslatorInterface $translator,
+        private ProgramImageStorage $imageStorage,
     ) {
     }
 
@@ -25,6 +26,7 @@ final readonly class ProgramManager
     public function create(ProgramData $data, User $owner): Program
     {
         $program = new Program($data->name, $owner, $data->color, $data->description);
+        $this->applyImage($program, $data);
         $this->programRepository->save($program);
 
         return $program;
@@ -33,6 +35,7 @@ final readonly class ProgramManager
     public function update(Program $program, ProgramData $data): void
     {
         $program->update($data->name, $data->description, $data->color);
+        $this->applyImage($program, $data);
         $this->programRepository->save($program);
     }
 
@@ -56,6 +59,16 @@ final readonly class ProgramManager
             throw ProgramException::notEmpty();
         }
 
+        $this->imageStorage->remove($program);
         $this->programRepository->remove($program);
+    }
+
+    private function applyImage(Program $program, ProgramData $data): void
+    {
+        if (null !== $data->image) {
+            $this->imageStorage->store($program, $data->image);
+        } elseif ($data->removeImage) {
+            $this->imageStorage->remove($program);
+        }
     }
 }

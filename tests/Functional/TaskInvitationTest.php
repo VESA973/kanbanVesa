@@ -48,7 +48,7 @@ final class TaskInvitationTest extends FunctionalTestCase
             'registration_form[plainPassword][second]' => 'motdepasse',
         ]);
         $client->followRedirect();
-        $client->submitForm('Rejoindre le projet');
+        $client->submitForm("Accepter l'invitation");
 
         self::assertResponseRedirects('/my-tasks');
         $client->followRedirect();

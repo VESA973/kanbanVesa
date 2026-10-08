@@ -22,7 +22,7 @@ final class BoardTest extends FunctionalTestCase
         $client = self::createClient();
         $client->loginUser(UserFactory::createOne());
         $client->request('GET', '/projects/new');
-        $client->submitForm('Créer le projet', ['project_form[name]' => 'Kanban']);
+        $client->submitForm('Créer le chantier', ['project_form[name]' => 'Kanban']);
         $client->followRedirect();
 
         self::assertSelectorCount(3, 'main section h2');

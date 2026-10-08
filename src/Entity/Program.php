@@ -13,7 +13,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * A "projet global": groups several projects. Its members get the same role
+ * Shown as a "Projet" in the interface: groups several projects (shown as "Chantiers"). Its members get the same role
  * on every project it contains (see App\Service\ProgramAccess).
  */
 #[ORM\Entity(repositoryClass: ProgramRepository::class)]
@@ -39,6 +39,10 @@ class Program
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private \DateTimeImmutable $createdAt;
+
+    /** Illustration stored by ProgramImageStorage (random name, outside the public directory). */
+    #[ORM\Column(length: 64, nullable: true)]
+    private ?string $imageFilename = null;
 
     /**
      * @var Collection<int, ProgramMember>
@@ -96,6 +100,16 @@ class Program
         $this->name = $name;
         $this->description = '' === $description ? null : $description;
         $this->color = $color;
+    }
+
+    public function getImageFilename(): ?string
+    {
+        return $this->imageFilename;
+    }
+
+    public function setImageFilename(?string $imageFilename): void
+    {
+        $this->imageFilename = $imageFilename;
     }
 
     public function getOwner(): User

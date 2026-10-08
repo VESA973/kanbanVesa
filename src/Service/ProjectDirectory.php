@@ -54,12 +54,17 @@ final readonly class ProjectDirectory
     }
 
     /**
-     * The active projects of a program (its page is only shown to its members, who see them all).
+     * The active projects of a program the user can open: all of them for a program member,
+     * only those they were invited to otherwise.
      */
-    public function projectsOf(Program $program): ProgramSection
+    public function projectsOf(Program $program, User $user): ProgramSection
     {
+        $isMember = null !== $program->getRoleOf($user);
         $projects = $this->projectRepository->findActiveInProgram($program);
+        if (!$isMember) {
+            $projects = array_values(array_filter($projects, static fn (Project $project): bool => null !== $project->getRoleOf($user)));
+        }
 
-        return new ProgramSection($program, $projects, new ProjectsProgress($this->taskRepository->countByProject($projects)), true);
+        return new ProgramSection($program, $projects, new ProjectsProgress($this->taskRepository->countByProject($projects)), $isMember);
     }
 }

@@ -54,8 +54,14 @@ User ──< ProjectMember >── Project ──< BoardColumn ──< Task
                               └──< ActivityLog
 EmailLog (journal des envois, indépendant)
 
-Hiérarchie : un Program (« projet global » dans l'interface) regroupe des projets ; chaque projet
-appartient à exactement un programme (« Général » de son propriétaire par défaut).
+Vocabulaire : dans le code Program / Project, dans l'interface « Projet » / « Chantier ».
+Hiérarchie : un Program (« Projet ») regroupe des projets (« Chantiers », chacun avec son tableau Kanban) ;
+chaque projet appartient à exactement un programme (« Général » de son propriétaire par défaut).
+« Mes projets » n'affiche que les programmes ; leur page liste les chantiers. Une personne invitée sur un
+seul chantier voit la carte du programme mais seulement ses chantiers (ProgramVoter::VIEW), pas les
+membres (ProgramVoter::VIEW_MEMBERS).
+Image d'un programme : ProgramImageStorage, dans var/uploads/<env>/programs (hors public/, servie par
+ProgramController::image() après contrôle d'accès ; nom aléatoire, ancienne image supprimée).
 Les membres d'un programme sont recopiés sur chacun de ses projets comme ProjectMember « hérités »
 (inherited = true) par ProgramAccess : voters et requêtes ne lisent que ProjectMember.
 Une adhésion directe à un projet n'est jamais modifiée par le programme ; une adhésion héritée
@@ -64,7 +70,7 @@ User : email (unique), password, firstName, lastName, isVerified, createdAt.
 Project : program, name, description, color, owner (User), archivedAt, createdAt.
 ProjectMember : project, user, role (ProjectRole enum : OWNER, EDITOR, VIEWER), inherited (bool), joinedAt.
 BoardColumn : project, name, position (int).
-Program : name, description, color, owner (User), createdAt.
+Program : name, description, color, imageFilename (nullable), owner (User), createdAt.
 ProgramMember : program, user, role (ProjectRole), joinedAt.
 Task : column, title, description, assignee (User, nullable), dueDate, position, priority (enum), completedAt, createdBy.
 ChecklistItem : task, label, isDone, position.

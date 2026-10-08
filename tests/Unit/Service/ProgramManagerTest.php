@@ -9,6 +9,7 @@ use App\Entity\Project;
 use App\Entity\User;
 use App\Exception\ProgramException;
 use App\Repository\ProgramRepository;
+use App\Service\ProgramImageStorage;
 use App\Service\ProgramManager;
 use PHPUnit\Framework\TestCase;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -47,6 +48,6 @@ final class ProgramManagerTest extends TestCase
         $translator = $this->createStub(TranslatorInterface::class);
         $translator->method('trans')->willReturnArgument(0);
 
-        return new ProgramManager($repository, $translator);
+        return new ProgramManager($repository, $translator, new ProgramImageStorage(sys_get_temp_dir()));
     }
 }

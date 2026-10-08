@@ -27,14 +27,14 @@ final class ProgramTest extends FunctionalTestCase
         $client->loginUser($owner);
 
         $client->request('GET', '/programs/new');
-        $client->submitForm('Créer le projet global', ['project_form[name]' => 'Mairie 2027']);
+        $client->submitForm('Créer le projet', ['project_form[name]' => 'Mairie 2027']);
         $program = self::getContainer()->get(ProgramRepository::class)->findOneBy(['name' => 'Mairie 2027']) ?? throw new \LogicException();
         self::assertResponseRedirects('/programs/'.$program->getId());
 
         $crawler = $client->followRedirect();
-        $client->click($crawler->selectLink('Nouveau projet')->link());
+        $client->click($crawler->selectLink('Nouveau chantier')->link());
         self::assertSelectorExists('select[name="project_form[program]"] option[value="'.$program->getId().'"][selected]');
-        $client->submitForm('Créer le projet', ['project_form[name]' => 'Voirie']);
+        $client->submitForm('Créer le chantier', ['project_form[name]' => 'Voirie']);
         $client->followRedirect();
 
         $project = self::getContainer()->get(ProjectRepository::class)->findOneBy(['name' => 'Voirie']) ?? throw new \LogicException();
@@ -50,7 +50,7 @@ final class ProgramTest extends FunctionalTestCase
         $client->loginUser($owner);
 
         $client->request('GET', '/projects/new');
-        $client->submitForm('Créer le projet', ['project_form[name]' => 'Kanban']);
+        $client->submitForm('Créer le chantier', ['project_form[name]' => 'Kanban']);
 
         $project = self::getContainer()->get(ProjectRepository::class)->findOneBy(['name' => 'Kanban']) ?? throw new \LogicException();
         self::assertSame('Général', $project->getProgram()->getName());
@@ -96,8 +96,8 @@ final class ProgramTest extends FunctionalTestCase
         $alex = UserFactory::createOne(['email' => 'alex@example.com']);
         $client->loginUser($alex);
         $client->request('GET', $link);
-        self::assertSelectorTextContains('main', 'projet global « Mairie 2027 »');
-        $client->submitForm('Rejoindre le projet');
+        self::assertSelectorTextContains('main', 'projet « Mairie 2027 »');
+        $client->submitForm("Accepter l'invitation");
         self::assertResponseRedirects('/programs/'.$program->getId());
 
         self::assertSame(ProjectRole::EDITOR, refresh($roads)->getRoleOf($alex));
@@ -107,7 +107,7 @@ final class ProgramTest extends FunctionalTestCase
         // A project created afterwards by the owner is shared too.
         $client->loginUser($owner);
         $client->request('GET', '/projects/new?program='.$program->getId());
-        $client->submitForm('Créer le projet', ['project_form[name]' => 'Écoles']);
+        $client->submitForm('Créer le chantier', ['project_form[name]' => 'Écoles']);
         $schools = self::getContainer()->get(ProjectRepository::class)->findOneBy(['name' => 'Écoles']) ?? throw new \LogicException();
         self::assertSame(ProjectRole::EDITOR, $schools->getRoleOf($alex));
     }
@@ -121,7 +121,7 @@ final class ProgramTest extends FunctionalTestCase
         $client->loginUser($owner);
 
         $crawler = $client->request('GET', '/projects/'.$roads->getId().'/members');
-        self::assertSelectorTextContains('main', 'via le projet global');
+        self::assertSelectorTextContains('main', 'via le projet');
         self::assertCount(0, $crawler->filter('form[action$="/remove"]'), 'Inherited access is managed from the program.');
 
         $crawler = $client->request('GET', '/programs/'.$program->getId().'/members');
@@ -131,20 +131,23 @@ final class ProgramTest extends FunctionalTestCase
         self::assertNull(refresh($roads)->getRoleOf($alex));
     }
 
-    public function testProjectsAreGroupedByProgramOnMyProjects(): void
+    public function testMyProjectsShowsOnlyProjectsAndAClickShowsTheirChantiers(): void
     {
         $client = self::createClient();
         [$owner, $program] = $this->program();
         ProjectFactory::new()->inProgram($program)->create(['name' => 'Voirie', 'owner' => $owner]);
-        ProjectFactory::createOne(['name' => 'Perso', 'owner' => $owner]);
+        ProjectFactory::new()->inProgram($program)->create(['name' => 'Écoles', 'owner' => $owner]);
         $client->loginUser($owner);
 
         $crawler = $client->request('GET', '/projects');
 
-        $sections = $crawler->filter('main section[aria-labelledby^="program-"]');
-        self::assertSame(['Général', 'Mairie 2027'], $sections->each(static fn ($section): string => trim($section->filter('h2')->text())));
-        self::assertStringContainsString('Voirie', $sections->eq(1)->text());
-        self::assertStringContainsString('Perso', $sections->eq(0)->text());
+        self::assertSame(['Mairie 2027'], $crawler->filter('main article h2')->each(static fn ($title): string => trim($title->text())));
+        self::assertSelectorTextContains('main article', '2 chantiers');
+        self::assertSelectorTextNotContains('main', 'Voirie');
+
+        $client->click($crawler->selectLink('Mairie 2027')->link());
+        self::assertSelectorTextContains('main ul', 'Voirie');
+        self::assertSelectorTextContains('main ul', 'Écoles');
     }
 
     public function testViewerCannotCreateProjectsAndNonMemberGetsA404(): void
@@ -177,7 +180,7 @@ final class ProgramTest extends FunctionalTestCase
         $crawler = $client->request('GET', '/programs/'.$program->getId().'/edit');
 
         self::assertCount(0, $crawler->filter('form[action$="/delete"]'));
-        self::assertSelectorTextContains('main', 'contient encore des projets');
+        self::assertSelectorTextContains('main', 'contient encore des chantiers');
     }
 
     /**

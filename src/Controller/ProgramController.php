@@ -10,10 +10,12 @@ use App\Exception\ProgramException;
 use App\Form\Data\ProgramData;
 use App\Form\ProjectFormType;
 use App\Security\Voter\ProgramVoter;
+use App\Service\ProgramImageStorage;
 use App\Service\ProgramManager;
 use App\Service\ProjectDirectory;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\ExpressionLanguage\Expression;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -22,7 +24,7 @@ use Symfony\Component\Security\Http\Attribute\IsCsrfTokenValid;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
- * "Projets globaux": a program groups projects. Non-members get a 404.
+ * Programs ("Projets" in the interface) group projects ("Chantiers"). Non-members get a 404.
  */
 #[Route('/programs')]
 final class ProgramController extends AbstractController
@@ -36,7 +38,7 @@ final class ProgramController extends AbstractController
     public function new(Request $request, #[CurrentUser] User $user): Response
     {
         $data = new ProgramData();
-        $form = $this->createForm(ProjectFormType::class, $data, ['data_class' => ProgramData::class, 'name_label' => 'program.name'])->handleRequest($request);
+        $form = $this->createForm(ProjectFormType::class, $data, $this->formOptions())->handleRequest($request);
         if (!$form->isSubmitted() || !$form->isValid()) {
             return $this->render('program/new.html.twig', ['form' => $form]);
         }
@@ -49,9 +51,29 @@ final class ProgramController extends AbstractController
 
     #[Route('/{id}', name: 'app_program_show', requirements: ['id' => '\d+'], methods: ['GET'])]
     #[IsGranted(ProgramVoter::VIEW, 'program', statusCode: 404)]
-    public function show(Program $program, ProjectDirectory $projectDirectory): Response
+    public function show(Program $program, ProjectDirectory $projectDirectory, #[CurrentUser] User $user): Response
     {
-        return $this->render('program/show.html.twig', ['section' => $projectDirectory->projectsOf($program)]);
+        return $this->render('program/show.html.twig', ['section' => $projectDirectory->projectsOf($program, $user)]);
+    }
+
+    /**
+     * Served by PHP rather than from public/: only people with access to the program see it.
+     */
+    #[Route('/{id}/image', name: 'app_program_image', requirements: ['id' => '\d+'], methods: ['GET'])]
+    #[IsGranted(ProgramVoter::VIEW, 'program', statusCode: 404)]
+    public function image(Program $program, ProgramImageStorage $imageStorage): Response
+    {
+        $path = $imageStorage->pathOf($program);
+        if (null === $path || !is_file($path)) {
+            throw $this->createNotFoundException();
+        }
+
+        $response = new BinaryFileResponse($path);
+        // The URL changes with each new image (?v=filename), so it can be cached for long.
+        $response->setPrivate();
+        $response->setMaxAge(2592000);
+
+        return $response;
     }
 
     #[Route('/{id}/edit', name: 'app_program_edit', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
@@ -60,7 +82,7 @@ final class ProgramController extends AbstractController
     public function edit(Request $request, Program $program): Response
     {
         $data = ProgramData::fromProgram($program);
-        $form = $this->createForm(ProjectFormType::class, $data, ['data_class' => ProgramData::class, 'name_label' => 'program.name'])->handleRequest($request);
+        $form = $this->createForm(ProjectFormType::class, $data, $this->formOptions($program))->handleRequest($request);
         if (!$form->isSubmitted() || !$form->isValid()) {
             return $this->render('program/edit.html.twig', ['program' => $program, 'form' => $form]);
         }
@@ -87,5 +109,18 @@ final class ProgramController extends AbstractController
         $this->addFlash('success', 'flash.program.deleted');
 
         return $this->redirectToRoute('app_project_index');
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function formOptions(?Program $program = null): array
+    {
+        return [
+            'data_class' => ProgramData::class,
+            'name_label' => 'program.name',
+            'with_image' => true,
+            'has_image' => null !== $program?->getImageFilename(),
+        ];
     }
 }

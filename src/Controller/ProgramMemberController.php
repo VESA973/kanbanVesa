@@ -41,14 +41,14 @@ final class ProgramMemberController extends AbstractController
     }
 
     #[Route('/programs/{id}/members', name: 'app_program_members', requirements: ['id' => '\d+'], methods: ['GET'])]
-    #[IsGranted(ProgramVoter::VIEW, 'program', statusCode: 404)]
+    #[IsGranted(ProgramVoter::VIEW_MEMBERS, 'program', statusCode: 404)]
     public function index(Program $program): Response
     {
         return $this->renderMembers($program, $this->createForm(InvitationFormType::class, new InvitationData()));
     }
 
     #[Route('/programs/{id}/invitations', name: 'app_program_invitation_new', requirements: ['id' => '\d+'], methods: ['POST'])]
-    #[IsGranted(ProgramVoter::VIEW, 'program', statusCode: 404)]
+    #[IsGranted(ProgramVoter::VIEW_MEMBERS, 'program', statusCode: 404)]
     #[IsGranted(ProgramVoter::MANAGE_MEMBERS, 'program')]
     public function invite(Request $request, Program $program, InvitationManager $invitationManager, TranslatorInterface $translator, #[CurrentUser] User $user): Response
     {
@@ -71,7 +71,7 @@ final class ProgramMemberController extends AbstractController
     }
 
     #[Route('/program-members/{id}/role', name: 'app_program_member_role', requirements: ['id' => '\d+'], methods: ['POST'])]
-    #[IsGranted(ProgramVoter::VIEW, new Expression('args["member"].getProgram()'), statusCode: 404)]
+    #[IsGranted(ProgramVoter::VIEW_MEMBERS, new Expression('args["member"].getProgram()'), statusCode: 404)]
     #[IsGranted(ProgramVoter::MANAGE_MEMBERS, new Expression('args["member"].getProgram()'))]
     #[IsCsrfTokenValid(new Expression('"program-members-" ~ args["member"].getProgram().getId()'))]
     public function changeRole(ProgramMember $member, #[MapRequestPayload] RolePayload $payload): Response
@@ -84,7 +84,7 @@ final class ProgramMemberController extends AbstractController
     }
 
     #[Route('/program-members/{id}/remove', name: 'app_program_member_remove', requirements: ['id' => '\d+'], methods: ['POST'])]
-    #[IsGranted(ProgramVoter::VIEW, new Expression('args["member"].getProgram()'), statusCode: 404)]
+    #[IsGranted(ProgramVoter::VIEW_MEMBERS, new Expression('args["member"].getProgram()'), statusCode: 404)]
     #[IsGranted(ProgramVoter::MANAGE_MEMBERS, new Expression('args["member"].getProgram()'))]
     #[IsCsrfTokenValid(new Expression('"program-members-" ~ args["member"].getProgram().getId()'))]
     public function remove(ProgramMember $member): Response

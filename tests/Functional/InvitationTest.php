@@ -32,7 +32,7 @@ final class InvitationTest extends FunctionalTestCase
         $client->getCookieJar()->clear();
 
         $client->request('GET', $link);
-        self::assertSelectorTextContains('main', 'vous invite à rejoindre le projet');
+        self::assertSelectorTextContains('main', 'vous invite à rejoindre le chantier');
         $client->clickLink('Créer un compte');
         $client->submitForm('Créer mon compte', [
             'registration_form[firstName]' => 'Alex',
@@ -44,7 +44,7 @@ final class InvitationTest extends FunctionalTestCase
         self::assertResponseRedirects($link, message: 'After registering, the newcomer comes back to the invitation.');
 
         $client->followRedirect();
-        $client->submitForm('Rejoindre le projet');
+        $client->submitForm("Accepter l'invitation");
 
         self::assertResponseRedirects('/projects/'.$project->getId());
         $alex = UserFactory::repository()->findOneBy(['email' => 'alex@example.com']) ?? throw new \LogicException();
@@ -78,7 +78,7 @@ final class InvitationTest extends FunctionalTestCase
 
         $client->loginUser($alex);
         $client->request('GET', $link);
-        $client->submitForm('Rejoindre le projet');
+        $client->submitForm("Accepter l'invitation");
         $client->request('GET', $link);
 
         self::assertResponseStatusCodeSame(410);
@@ -95,7 +95,7 @@ final class InvitationTest extends FunctionalTestCase
         $client->submitForm("Envoyer l'invitation", ['invitation_form[email]' => $owner->getEmail()]);
 
         self::assertResponseStatusCodeSame(422);
-        self::assertSelectorTextContains('form[name="invitation_form"]', 'déjà membre du projet');
+        self::assertSelectorTextContains('form[name="invitation_form"]', 'en est déjà membre');
         self::assertQueuedEmailCount(0);
     }
 

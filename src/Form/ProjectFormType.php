@@ -13,7 +13,9 @@ use App\Repository\ProgramRepository;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\EnumType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -59,6 +61,18 @@ final class ProjectFormType extends AbstractType
                 'choice_label' => static fn (ProjectColor $color): string => $color->translationKey(),
                 'block_prefix' => 'project_color',
             ]);
+
+        if ($options['with_image']) {
+            $builder->add('image', FileType::class, [
+                'label' => 'program.image',
+                'help' => 'program.image_help',
+                'required' => false,
+                'attr' => ['accept' => 'image/jpeg,image/png,image/webp'],
+            ]);
+        }
+        if ($options['with_image'] && $options['has_image']) {
+            $builder->add('removeImage', CheckboxType::class, ['label' => 'program.remove_image', 'required' => false]);
+        }
     }
 
     public function configureOptions(OptionsResolver $resolver): void
@@ -68,7 +82,12 @@ final class ProjectFormType extends AbstractType
             'name_label' => 'project.name',
             // The user creating the project: adds the choice of its program.
             'program_choices_for' => null,
+            // Programs only: an illustration, and whether one is already stored.
+            'with_image' => false,
+            'has_image' => false,
         ]);
+        $resolver->setAllowedTypes('with_image', 'bool');
+        $resolver->setAllowedTypes('has_image', 'bool');
         $resolver->setAllowedTypes('name_label', 'string');
         $resolver->setAllowedTypes('program_choices_for', ['null', User::class]);
     }

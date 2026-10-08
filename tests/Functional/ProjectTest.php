@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Functional;
 
 use App\Enum\ProjectRole;
+use App\Factory\ProgramFactory;
 use App\Factory\ProjectFactory;
 use App\Factory\UserFactory;
 
@@ -29,7 +30,7 @@ final class ProjectTest extends FunctionalTestCase
         $client->loginUser($user);
         $client->request('GET', '/projects/new');
 
-        $client->submitForm('Créer le projet', [
+        $client->submitForm('Créer le chantier', [
             'project_form[name]' => 'Refonte du site 🚀',
             'project_form[description]' => 'Nouvelle charte graphique',
             'project_form[color]' => 'emerald',
@@ -49,27 +50,38 @@ final class ProjectTest extends FunctionalTestCase
         $client->loginUser(UserFactory::createOne());
         $client->request('GET', '/projects/new');
 
-        $client->submitForm('Créer le projet', ['project_form[name]' => '']);
+        $client->submitForm('Créer le chantier', ['project_form[name]' => '']);
 
         self::assertResponseStatusCodeSame(422);
         self::assertSame(0, ProjectFactory::repository()->count());
     }
 
-    public function testMyProjectsListsOnlyProjectsIAmAMemberOf(): void
+    public function testMyProjectsListsOnlyTheProjectsIHaveAccessTo(): void
     {
         $client = self::createClient();
         $user = UserFactory::createOne();
-        ProjectFactory::createOne(['name' => 'Mon projet', 'owner' => $user]);
-        ProjectFactory::new()->withMember($user, ProjectRole::VIEWER)->create(['name' => 'Projet partagé']);
-        ProjectFactory::createOne(['name' => 'Projet secret']);
+        $bob = UserFactory::createOne();
+        ProjectFactory::new()->inProgram(ProgramFactory::createOne(['name' => 'Mon projet', 'owner' => $user]))->create(['owner' => $user]);
+        $bobsProgram = ProgramFactory::createOne(['name' => 'Projet de Bob', 'owner' => $bob]);
+        ProjectFactory::new()->inProgram($bobsProgram)->withMember($user, ProjectRole::VIEWER)->create(['name' => 'Chantier partagé', 'owner' => $bob]);
+        ProjectFactory::new()->inProgram($bobsProgram)->create(['name' => 'Chantier privé', 'owner' => $bob]);
+        ProjectFactory::new()->inProgram(ProgramFactory::createOne(['name' => 'Projet secret']))->create();
         $client->loginUser($user);
 
         $client->request('GET', '/projects');
 
         self::assertSelectorCount(2, 'main article');
         self::assertAnySelectorTextContains('main article', 'Mon projet');
-        self::assertAnySelectorTextContains('main article', 'Projet partagé');
+        self::assertAnySelectorTextContains('main article', 'Projet de Bob');
         self::assertAnySelectorTextNotContains('main article', 'Projet secret');
+
+        // Invited to one chantier only: the project page shows that chantier, nothing else.
+        $client->request('GET', '/programs/'.$bobsProgram->getId());
+        self::assertSelectorTextContains('main', 'Chantier partagé');
+        self::assertSelectorTextNotContains('main', 'Chantier privé');
+        self::assertSelectorNotExists('a[href$="/members"]');
+        $client->request('GET', '/programs/'.$bobsProgram->getId().'/members');
+        self::assertResponseStatusCodeSame(404);
     }
 
     public function testNonMemberGetsA404(): void
@@ -121,7 +133,7 @@ final class ProjectTest extends FunctionalTestCase
         $client->loginUser($owner);
         $client->request('GET', '/projects/'.$project->getId().'/edit');
 
-        $client->submitForm('Supprimer le projet');
+        $client->submitForm('Supprimer le chantier');
 
         self::assertResponseRedirects('/projects');
         self::assertSame(0, ProjectFactory::repository()->count());
