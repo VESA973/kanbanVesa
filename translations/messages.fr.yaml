@@ -10,6 +10,22 @@ nav:
     projects: Mes projets
     my_tasks: Mes tâches
     admin: Administration
+    account: Mon compte
+
+account:
+    title: Mon compte
+    info: Informations
+    role: Rôle sur le site
+    role_admin: Administrateur
+    role_user: Utilisateur
+    role_help: Seul un administrateur peut nommer d'autres administrateurs (Administration → Utilisateurs).
+    email_status: Adresse e-mail
+    member_since: Inscrit le
+    profile: Nom affiché
+    password:
+        title: Changer de mot de passe
+        current: Mot de passe actuel
+        submit: Changer le mot de passe
 
 action:
     save: Enregistrer
@@ -537,6 +553,9 @@ flash:
     pole:
         deleted: Le pôle a été supprimé ; ses projets sont maintenant « Sans pôle ».
         classified: Le classement du projet a été enregistré.
+    account:
+        profile_updated: Votre nom a été mis à jour.
+        password_changed: Votre mot de passe a été changé.
     program:
         created: Le projet a été créé.
         updated: Le projet a été modifié.

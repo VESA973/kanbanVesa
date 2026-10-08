@@ -12,3 +12,6 @@ label:
         already_used: Une étiquette porte déjà ce nom dans ce chantier.
 program:
     image_invalid: Choisissez une image JPG, PNG ou WebP.
+account:
+    password:
+        wrong_current: Le mot de passe actuel est incorrect.
