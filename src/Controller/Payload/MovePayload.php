@@ -16,8 +16,6 @@ final readonly class MovePayload
         public int $position,
         #[Assert\Positive]
         public ?int $columnId = null,
-        #[Assert\Positive]
-        public ?int $categoryId = null,
     ) {
     }
 }

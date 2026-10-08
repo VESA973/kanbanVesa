@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Form;
 
 use App\Entity\BoardColumn;
-use App\Entity\Category;
 use App\Entity\Label;
 use App\Entity\Project;
 use App\Entity\ProjectMember;
@@ -13,7 +12,6 @@ use App\Entity\User;
 use App\Enum\TaskPriority;
 use App\Form\Data\TaskData;
 use App\Repository\BoardColumnRepository;
-use App\Repository\CategoryRepository;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
@@ -79,16 +77,6 @@ final class TaskFormType extends AbstractType
                 'class' => BoardColumn::class,
                 'choice_label' => 'name',
                 'query_builder' => static fn (BoardColumnRepository $repository): QueryBuilder => $repository
-                    ->createQueryBuilder('c')
-                    ->andWhere('c.project = :project')
-                    ->setParameter('project', $project)
-                    ->orderBy('c.position', 'ASC'),
-            ])
-            ->add('category', EntityType::class, [
-                'label' => 'task.category',
-                'class' => Category::class,
-                'choice_label' => 'name',
-                'query_builder' => static fn (CategoryRepository $repository): QueryBuilder => $repository
                     ->createQueryBuilder('c')
                     ->andWhere('c.project = :project')
                     ->setParameter('project', $project)

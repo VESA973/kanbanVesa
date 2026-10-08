@@ -74,14 +74,4 @@ class BoardColumn implements Positionable
     {
         return $this->tasks;
     }
-
-    /**
-     * Tasks of one cell of the board (this column within $category), in display order.
-     *
-     * @return list<Task>
-     */
-    public function getTasksIn(Category $category): array
-    {
-        return array_values($this->tasks->filter(static fn (Task $task): bool => $task->getCategory() === $category)->toArray());
-    }
 }

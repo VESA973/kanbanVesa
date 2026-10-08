@@ -8,13 +8,10 @@ use App\Entity\Project;
 use App\Entity\Task;
 use App\Entity\User;
 use App\Service\TaskAgenda;
-use App\Tests\Unit\BuildsTasks;
 use PHPUnit\Framework\TestCase;
 
 final class TaskAgendaTest extends TestCase
 {
-    use BuildsTasks;
-
     public function testGroupsTasksByUrgency(): void
     {
         $now = new \DateTimeImmutable('2026-10-06 15:00');
@@ -45,7 +42,7 @@ final class TaskAgendaTest extends TestCase
     private function task(?string $dueDate, ?string $completedAt = null): Task
     {
         $owner = new User('owner@example.com', 'Olivia', 'Owner');
-        $task = self::newTask(new Project('Projet', $owner)->addColumn('À faire'), 'Tâche', $owner);
+        $task = new Task(new Project('Projet', $owner)->addColumn('À faire'), 'Tâche', 0, $owner);
         $task->schedule(null === $dueDate ? null : new \DateTimeImmutable($dueDate));
         if (null !== $completedAt) {
             new \ReflectionProperty(Task::class, 'completedAt')->setValue($task, new \DateTimeImmutable($completedAt));

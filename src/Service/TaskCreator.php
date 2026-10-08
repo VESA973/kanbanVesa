@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Entity\BoardColumn;
-use App\Entity\Category;
 use App\Entity\Task;
 use App\Entity\User;
 use App\Enum\ActivityAction;
@@ -22,14 +21,13 @@ final readonly class TaskCreator
     }
 
     /**
-     * New tasks are appended at the bottom of their cell (the column within the category).
+     * New tasks are appended at the bottom of the column.
      */
-    public function create(BoardColumn $column, Category $category, string $title, User $author): Task
+    public function create(BoardColumn $column, string $title, User $author): Task
     {
-        $task = new Task($column, $category, $title, \count($column->getTasksIn($category)), $author);
+        $task = new Task($column, $title, $column->getTasks()->count(), $author);
         $column->getTasks()->add($task);
-        $category->getTasks()->add($task);
-        $this->dispatcher->dispatch(new ProjectActivityEvent($column->getProject(), ActivityAction::TASK_CREATED, $title, ['column' => \sprintf('%s / %s', $category->getName(), $column->getName())]));
+        $this->dispatcher->dispatch(new ProjectActivityEvent($column->getProject(), ActivityAction::TASK_CREATED, $title, ['column' => $column->getName()]));
         $this->taskRepository->save($task);
 
         return $task;

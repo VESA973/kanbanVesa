@@ -25,9 +25,9 @@ final class BoardTest extends FunctionalTestCase
         $client->submitForm('Créer le projet', ['project_form[name]' => 'Kanban']);
         $client->followRedirect();
 
-        self::assertSelectorCount(3, 'main h2[id^="column-"]');
-        self::assertAnySelectorTextContains('main h2[id^="column-"]', 'À faire');
-        self::assertAnySelectorTextContains('main h2[id^="column-"]', 'Terminé');
+        self::assertSelectorCount(3, 'main section h2');
+        self::assertAnySelectorTextContains('main section h2', 'À faire');
+        self::assertAnySelectorTextContains('main section h2', 'Terminé');
     }
 
     public function testBoardShowsColumnsAndTasksInOrder(): void
@@ -87,7 +87,7 @@ final class BoardTest extends FunctionalTestCase
         $this->patch($client, '/tasks/'.$task->getId().'/move', ['columnId' => $doing->getId(), 'position' => 0], $this->boardToken($client, $project));
 
         self::assertResponseIsSuccessful();
-        self::assertSame(['columnId' => $doing->getId(), 'categoryId' => $task->getCategory()->getId(), 'position' => 0], json_decode((string) $client->getResponse()->getContent(), true));
+        self::assertSame(['columnId' => $doing->getId(), 'position' => 0], json_decode((string) $client->getResponse()->getContent(), true));
         self::assertSame($doing->getId(), refresh($task)->getColumn()->getId());
     }
 
@@ -231,12 +231,12 @@ final class BoardTest extends FunctionalTestCase
         $crawler = $client->request('GET', '/projects/'.$project->getId());
         $client->submit($crawler->filter('form[action$="/columns/'.$todo->getId().'/rename"]')->form(['name' => 'Backlog']));
         $crawler = $client->followRedirect();
-        self::assertAnySelectorTextContains('main h2[id^="column-"]', 'Backlog');
-        self::assertAnySelectorTextContains('main h2[id^="column-"]', 'Recette');
+        self::assertAnySelectorTextContains('main section h2', 'Backlog');
+        self::assertAnySelectorTextContains('main section h2', 'Recette');
 
         $client->submit($crawler->filter('form[action$="/columns/'.$todo->getId().'/delete"]')->form());
         $client->followRedirect();
-        self::assertSelectorCount(3, 'main h2[id^="column-"]');
+        self::assertSelectorCount(3, 'main section h2');
         self::assertSame(0, TaskFactory::repository()->count(), 'Tasks of a deleted column are deleted too.');
     }
 

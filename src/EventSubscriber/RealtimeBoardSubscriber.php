@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\EventSubscriber;
 
 use App\Entity\BoardColumn;
-use App\Entity\Category;
 use App\Entity\ChecklistItem;
 use App\Entity\Comment;
 use App\Entity\Label;
@@ -77,7 +76,7 @@ final class RealtimeBoardSubscriber implements ResetInterface
     {
         return match (true) {
             $entity instanceof Project => $entity,
-            $entity instanceof Task, $entity instanceof BoardColumn, $entity instanceof Category, $entity instanceof Label, $entity instanceof ProjectMember => $entity->getProject(),
+            $entity instanceof Task, $entity instanceof BoardColumn, $entity instanceof Label, $entity instanceof ProjectMember => $entity->getProject(),
             $entity instanceof Comment, $entity instanceof ChecklistItem => $entity->getTask()->getProject(),
             default => null,
         };

@@ -13,7 +13,6 @@ use App\EventSubscriber\TaskAssignedSubscriber;
 use App\Repository\TaskRepository;
 use App\Service\DueDateReminder;
 use App\Service\TaskNotifier;
-use App\Tests\Unit\BuildsTasks;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
@@ -24,8 +23,6 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class NotificationTest extends TestCase
 {
-    use BuildsTasks;
-
     private User $owner;
     private User $alex;
     private Task $task;
@@ -34,7 +31,7 @@ final class NotificationTest extends TestCase
     {
         $this->owner = new User('owner@example.com', 'Olivia', 'Owner');
         $this->alex = new User('alex@example.com', 'Alex', 'Martin');
-        $this->task = self::newTask(new Project('Projet', $this->owner)->addColumn('À faire'), 'Tâche', $this->owner);
+        $this->task = new Task(new Project('Projet', $this->owner)->addColumn('À faire'), 'Tâche', 0, $this->owner);
     }
 
     public function testAssigneeIsNotifiedWhenSomeoneElseAssignsThem(): void

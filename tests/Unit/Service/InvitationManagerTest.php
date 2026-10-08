@@ -6,13 +6,13 @@ namespace App\Tests\Unit\Service;
 
 use App\Entity\Invitation;
 use App\Entity\Project;
+use App\Entity\Task;
 use App\Entity\User;
 use App\Enum\InvitationStatus;
 use App\Enum\ProjectRole;
 use App\Exception\InvitationException;
 use App\Repository\InvitationRepository;
 use App\Service\InvitationManager;
-use App\Tests\Unit\BuildsTasks;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\MailerInterface;
@@ -20,8 +20,6 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class InvitationManagerTest extends TestCase
 {
-    use BuildsTasks;
-
     private User $owner;
     private Project $project;
 
@@ -82,7 +80,7 @@ final class InvitationManagerTest extends TestCase
 
     public function testAcceptingAnInvitationForATaskAssignsIt(): void
     {
-        $task = self::newTask($this->project->addColumn('À faire'), 'Distribuer les flyers', $this->owner);
+        $task = new Task($this->project->addColumn('À faire'), 'Distribuer les flyers', 0, $this->owner);
         $invitation = new Invitation($this->project, 'alex@example.com', ProjectRole::VIEWER, $this->owner, 'secret');
         $invitation->forTask($task);
         $alex = new User('alex@example.com', 'Alex', 'Martin');
@@ -111,7 +109,7 @@ final class InvitationManagerTest extends TestCase
 
     public function testATaskOfAnotherProjectIsRefused(): void
     {
-        $otherTask = self::newTask(new Project('Autre', $this->owner)->addColumn('À faire'), 'Tâche', $this->owner);
+        $otherTask = new Task(new Project('Autre', $this->owner)->addColumn('À faire'), 'Tâche', 0, $this->owner);
         $invitation = new Invitation($this->project, 'alex@example.com', ProjectRole::VIEWER, $this->owner, 'secret');
 
         $this->expectException(\InvalidArgumentException::class);

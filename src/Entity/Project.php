@@ -53,13 +53,6 @@ class Project
     private Collection $columns;
 
     /**
-     * @var Collection<int, Category>
-     */
-    #[ORM\OneToMany(targetEntity: Category::class, mappedBy: 'project', cascade: ['persist'], orphanRemoval: true)]
-    #[ORM\OrderBy(['position' => 'ASC'])]
-    private Collection $categories;
-
-    /**
      * @var Collection<int, Invitation>
      */
     #[ORM\OneToMany(targetEntity: Invitation::class, mappedBy: 'project', orphanRemoval: true)]
@@ -82,7 +75,6 @@ class Project
         $this->createdAt = new \DateTimeImmutable();
         $this->members = new ArrayCollection();
         $this->columns = new ArrayCollection();
-        $this->categories = new ArrayCollection();
         $this->invitations = new ArrayCollection();
         $this->labels = new ArrayCollection();
         $this->addMember($owner, ProjectRole::OWNER);
@@ -179,22 +171,6 @@ class Project
         $this->columns->add($column);
 
         return $column;
-    }
-
-    /**
-     * @return Collection<int, Category>
-     */
-    public function getCategories(): Collection
-    {
-        return $this->categories;
-    }
-
-    public function addCategory(string $name): Category
-    {
-        $category = new Category($this, $name, $this->categories->count());
-        $this->categories->add($category);
-
-        return $category;
     }
 
     /**

@@ -5,7 +5,6 @@
 
 {% block body %}
     {% set can_manage_columns = is_granted('PROJECT_MANAGE_COLUMNS', project) %}
-    {% set can_manage_categories = is_granted('PROJECT_MANAGE_CATEGORIES', project) %}
     {% set board_token = csrf_token('board-' ~ project.id) %}
 
     <div class="mb-6 flex flex-wrap items-start justify-between gap-4">
@@ -51,61 +50,28 @@
 
     <p id="board-status" class="sr-only" role="status" aria-live="polite"></p>
 
-    <section class="mb-4 max-w-xl" aria-labelledby="overall-progress-title">
-        <h2 id="overall-progress-title" class="mb-1 text-sm font-medium text-slate-600 dark:text-slate-300">{{ 'progress.overall'|trans }}</h2>
-        <twig:ProgressBar :progress="progress.overall()" :label="'progress.overall'|trans" />
-    </section>
-
     {{ include('project/_board_filters.html.twig') }}
 
-    <div class="overflow-x-auto pb-4">
-        <div class="flex w-max min-w-full flex-col gap-6">
-            <div class="flex items-start gap-4"
-                 {% if can_manage_columns and not filter.active %}
-                     data-controller="sortable"
-                     data-sortable-group-value="columns"
-                     data-sortable-handle-value="[data-column-handle]"
-                     data-sortable-csrf-token-value="{{ board_token }}"
-                     data-sortable-error-message-value="{{ 'board.move_error'|trans }}"
-                 {% endif %}>
-                {% for column in columns %}
-                    <twig:KanbanColumnHeader :column="column" :boardToken="board_token" :canManageColumns="can_manage_columns" :filter="filter" />
-                {% endfor %}
+    <div class="flex items-start gap-4 overflow-x-auto pb-4"
+         {% if can_manage_columns and not filter.active %}
+             data-controller="sortable"
+             data-sortable-group-value="columns"
+             data-sortable-handle-value="[data-column-handle]"
+             data-sortable-csrf-token-value="{{ board_token }}"
+             data-sortable-error-message-value="{{ 'board.move_error'|trans }}"
+         {% endif %}>
+        {% for column in columns %}
+            <twig:KanbanColumn :column="column" :boardToken="board_token" :canManageColumns="can_manage_columns" :filter="filter" :commentCounts="commentCounts" />
+        {% endfor %}
 
-                {% if can_manage_columns %}
-                    <form method="post" action="{{ path('app_column_new', {id: project.id}) }}" class="flex w-72 shrink-0 gap-2">
-                        <input type="hidden" name="_token" value="{{ board_token }}">
-                        <label for="new-column" class="sr-only">{{ 'column.new'|trans }}</label>
-                        <input id="new-column" name="name" required maxlength="50" placeholder="{{ 'column.new'|trans }}"
-                               class="block w-full rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm focus:border-indigo-500 focus:outline-2 focus:outline-indigo-500 dark:border-slate-700 dark:bg-slate-800">
-                        <twig:Button type="submit" variant="secondary">{{ 'column.add'|trans }}</twig:Button>
-                    </form>
-                {% endif %}
-            </div>
-
-            <div class="flex flex-col gap-6"
-                 {% if can_manage_categories and not filter.active %}
-                     data-controller="sortable"
-                     data-sortable-group-value="categories"
-                     data-sortable-handle-value="[data-category-handle]"
-                     data-sortable-csrf-token-value="{{ board_token }}"
-                     data-sortable-error-message-value="{{ 'board.move_error'|trans }}"
-                 {% endif %}>
-                {% for category in project.categories %}
-                    <twig:CategoryLane :category="category" :columns="columns" :progress="progress.of(category)" :boardToken="board_token"
-                                       :filter="filter" :commentCounts="commentCounts" :canManageCategories="can_manage_categories" />
-                {% endfor %}
-            </div>
-
-            {% if can_manage_categories %}
-                <form method="post" action="{{ path('app_category_new', {id: project.id}) }}" class="sticky left-0 flex w-full max-w-md gap-2">
-                    <input type="hidden" name="_token" value="{{ board_token }}">
-                    <label for="new-category" class="sr-only">{{ 'category.new'|trans }}</label>
-                    <input id="new-category" name="name" required maxlength="50" placeholder="{{ 'category.new'|trans }}"
-                           class="block w-full rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm focus:border-indigo-500 focus:outline-2 focus:outline-indigo-500 dark:border-slate-700 dark:bg-slate-800">
-                    <twig:Button type="submit" variant="secondary">{{ 'category.add'|trans }}</twig:Button>
-                </form>
-            {% endif %}
-        </div>
+        {% if can_manage_columns %}
+            <form method="post" action="{{ path('app_column_new', {id: project.id}) }}" class="w-72 shrink-0 rounded-lg bg-slate-100 p-3 dark:bg-slate-900">
+                <input type="hidden" name="_token" value="{{ board_token }}">
+                <label for="new-column" class="sr-only">{{ 'column.new'|trans }}</label>
+                <input id="new-column" name="name" required maxlength="50" placeholder="{{ 'column.new'|trans }}"
+                       class="mb-2 block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:border-indigo-500 focus:outline-2 focus:outline-indigo-500 dark:border-slate-700 dark:bg-slate-800">
+                <twig:Button type="submit" variant="secondary" fullWidth>{{ 'column.add'|trans }}</twig:Button>
+            </form>
+        {% endif %}
     </div>
 {% endblock %}

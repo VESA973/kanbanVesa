@@ -18,27 +18,6 @@ action:
 
 board:
     move_error: Le déplacement n'a pas pu être enregistré, l'élément a repris sa place.
-    cell_label: Tâches « %category% » de la colonne %column%
-
-category:
-    default: Général
-    new: Nouvelle catégorie
-    add: Ajouter la catégorie
-    actions: Actions de la catégorie %name%
-    rename: Renommer la catégorie
-    delete: Supprimer la catégorie
-    delete_confirm: "{0} Supprimer la catégorie « %name% » ?|{1} Supprimer la catégorie « %name% » ? Sa tâche sera déplacée vers la catégorie choisie.|]1,Inf[ Supprimer la catégorie « %name% » ? Ses %count% tâches seront déplacées vers la catégorie choisie."
-    move_tasks_to: "{1} Déplacer sa tâche vers|]1,Inf[ Déplacer ses %count% tâches vers"
-    error:
-        last: Un projet garde au moins une catégorie.
-        invalid_target: Choisissez une autre catégorie de ce projet pour y déplacer les tâches.
-
-progress:
-    overall: Avancement global
-    category_label: Avancement de la catégorie %name%
-    task_count: "{0} 0 tâche|{1} 1 tâche|]1,Inf[ %count% tâches"
-    done_of: "%completed%/%total%"
-    value_text: "%percent% % (%completed% tâche(s) terminée(s) sur %total%)"
 
 column:
     default:
@@ -57,12 +36,10 @@ task:
     title: Titre
     description: Description
     column: Colonne
-    category: Catégorie
     created_by: Créée par
     created_at: Créée le
     add: Ajouter une carte
     new_in: Nouvelle tâche dans %name%
-    new_in_cell: Nouvelle tâche dans %column% (catégorie %category%)
     has_description: Cette tâche a une description
     no_description: Aucune description.
     delete: Supprimer la tâche
@@ -289,9 +266,6 @@ activity:
         column_created: a ajouté la colonne « %subject% »
         column_renamed: a renommé la colonne « %previous% » en « %subject% »
         column_deleted: a supprimé la colonne « %subject% » (%count% tâche(s))
-        category_created: a ajouté la catégorie « %subject% »
-        category_renamed: a renommé la catégorie « %previous% » en « %subject% »
-        category_deleted: a supprimé la catégorie « %subject% » (%count% tâche(s) déplacée(s) vers « %target% »)
         task_created: a créé la tâche « %subject% » dans « %column% »
         task_updated: a modifié la tâche « %subject% »
         task_moved: a déplacé « %subject% » de « %from% » vers « %to% »
@@ -428,8 +402,6 @@ flash:
         removed: Le membre a été retiré du projet.
     column:
         deleted: La colonne a été supprimée.
-    category:
-        deleted: La catégorie a été supprimée.
     task:
         deleted: La tâche a été supprimée.
         completed: Tâche terminée. Bravo !

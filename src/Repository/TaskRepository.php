@@ -30,9 +30,8 @@ class TaskRepository extends ServiceEntityRepository
     public function remove(Task $task): void
     {
         $column = $task->getColumn();
-        PositionList::remove($column->getTasksIn($task->getCategory()), $task);
         $column->getTasks()->removeElement($task);
-        $task->getCategory()->getTasks()->removeElement($task);
+        PositionList::remove($column->getTasks(), $task);
         $this->getEntityManager()->remove($task);
         $this->getEntityManager()->flush();
     }

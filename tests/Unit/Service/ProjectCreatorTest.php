@@ -17,7 +17,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class ProjectCreatorTest extends TestCase
 {
-    public function testCreatesTheProjectWithItsOwnerAsMemberDefaultColumnsAndCategory(): void
+    public function testCreatesTheProjectWithItsOwnerAsMemberAndDefaultColumns(): void
     {
         $owner = new User('owner@example.com', 'Olivia', 'Owner');
         $repository = $this->createMock(ProjectRepository::class);
@@ -44,6 +44,5 @@ final class ProjectCreatorTest extends TestCase
             ['column.default.todo', 'column.default.in_progress', 'column.default.done'],
             $project->getColumns()->map(static fn ($column): string => $column->getName())->getValues(),
         );
-        self::assertSame(['category.default'], $project->getCategories()->map(static fn ($category): string => $category->getName())->getValues());
     }
 }

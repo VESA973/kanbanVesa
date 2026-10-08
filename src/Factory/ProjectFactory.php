@@ -20,30 +20,11 @@ final class ProjectFactory extends PersistentObjectFactory
         return Project::class;
     }
 
-    /**
-     * Like ProjectCreator, every project starts with one category (tasks need one).
-     */
-    protected function initialize(): static
-    {
-        return $this->afterInstantiate(static function (Project $project): void {
-            $project->addCategory('Général');
-        });
-    }
-
     public function withColumns(string ...$names): self
     {
         return $this->afterInstantiate(static function (Project $project) use ($names): void {
             foreach ($names as $name) {
                 $project->addColumn($name);
-            }
-        });
-    }
-
-    public function withCategories(string ...$names): self
-    {
-        return $this->afterInstantiate(static function (Project $project) use ($names): void {
-            foreach ($names as $name) {
-                $project->addCategory($name);
             }
         });
     }
