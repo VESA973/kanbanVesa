@@ -159,6 +159,7 @@ pole:
     unfiled_empty: Tous vos projets sont rangés dans un pôle. 👍
     projects_in: Projets du pôle %name%
     new_card: Nouveau pôle
+    name: Nom du pôle
     new_placeholder: ex. Évangélisation
     create: Créer
     invite: "Classez vos projets par pôle (Évangélisation, Social…) : créez votre premier pôle."

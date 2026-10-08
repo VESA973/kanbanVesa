@@ -7,10 +7,33 @@
         <h1 class="text-2xl font-bold tracking-tight">{{ 'project.index.title'|trans }}</h1>
         <div class="flex flex-wrap gap-3">
             <twig:Button variant="secondary" href="{{ path('app_pole_index') }}">{{ 'pole.manage'|trans }}</twig:Button>
+            <button type="button" popovertarget="pole-new-popover"
+                    class="inline-flex items-center justify-center gap-2 rounded-md bg-white px-3 py-2 text-sm font-semibold text-slate-900 shadow-xs ring-1 ring-slate-300 hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-slate-800 dark:text-slate-100 dark:ring-slate-700 dark:hover:bg-slate-700">
+                <span aria-hidden="true">+</span> {{ 'pole.new_card'|trans }}
+            </button>
             <twig:Button href="{{ path('app_program_new') }}">
                 <span aria-hidden="true">+</span> {{ 'program.new.title'|trans }}
             </twig:Button>
         </div>
+    </div>
+
+    {# Opened by the "+ Nouveau pôle" button above; the new pole opens right away. #}
+    <div id="pole-new-popover" popover aria-labelledby="pole-new-popover-title"
+         class="m-auto w-96 max-w-[90vw] rounded-lg bg-white p-5 shadow-xl ring-1 ring-slate-200 backdrop:bg-slate-900/30 dark:bg-slate-900 dark:text-slate-100 dark:ring-slate-700">
+        <div class="mb-3 flex items-center justify-between gap-2">
+            <h2 id="pole-new-popover-title" class="text-lg font-semibold">{{ 'pole.new_card'|trans }}</h2>
+            <button type="button" popovertarget="pole-new-popover" popovertargetaction="hide" class="rounded p-1 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800">
+                <span aria-hidden="true">✕</span><span class="sr-only">{{ 'action.close'|trans }}</span>
+            </button>
+        </div>
+        <form method="post" action="{{ path('app_pole_new') }}" class="space-y-3">
+            <input type="hidden" name="_token" value="{{ csrf_token('poles') }}">
+            <input type="hidden" name="_open" value="1">
+            <label for="pole-new-name" class="block text-sm font-medium">{{ 'pole.name'|trans }}</label>
+            <input id="pole-new-name" name="name" required maxlength="50" placeholder="{{ 'pole.new_placeholder'|trans }}" autofocus
+                   class="block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-2 focus:outline-indigo-500 dark:border-slate-700 dark:bg-slate-800">
+            <twig:Button type="submit" fullWidth>{{ 'pole.create'|trans }}</twig:Button>
+        </form>
     </div>
 
     {% set has_poles = groups|filter(group => group.pole)|length > 0 %}
@@ -21,19 +44,6 @@
             {% for group in groups %}
                 <li><twig:PoleCard :group="group" /></li>
             {% endfor %}
-            <li>
-                <form method="post" action="{{ path('app_pole_new') }}"
-                      class="flex h-full flex-col justify-center gap-2 rounded-lg border-2 border-dashed border-slate-300 p-4 dark:border-slate-700">
-                    <input type="hidden" name="_token" value="{{ csrf_token('poles') }}">
-                    <input type="hidden" name="_open" value="1">
-                    <label for="pole-new-card" class="text-sm font-semibold">+ {{ 'pole.new_card'|trans }}</label>
-                    <div class="flex gap-2">
-                        <input id="pole-new-card" name="name" required maxlength="50" placeholder="{{ 'pole.new_placeholder'|trans }}"
-                               class="block w-full min-w-0 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm focus:outline-2 focus:outline-indigo-500 dark:border-slate-700 dark:bg-slate-800">
-                        <twig:Button type="submit" variant="secondary">{{ 'pole.create'|trans }}</twig:Button>
-                    </div>
-                </form>
-            </li>
         </ul>
     {% elseif project_count == 0 %}
         <div class="rounded-lg border-2 border-dashed border-slate-300 p-10 text-center dark:border-slate-700">
