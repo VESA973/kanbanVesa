@@ -1,0 +1,27 @@
+{# A pole on "Mes projets" (group.pole null: "Sans pôle"); a click opens its projects. #}
+{% props group %}
+{% set name = group.pole ? group.pole.name : 'pole.unfiled'|trans %}
+<article class="relative flex h-full flex-col gap-3 overflow-hidden rounded-lg bg-white p-4 shadow-sm ring-1 ring-slate-200 transition hover:shadow-md hover:ring-indigo-300 focus-within:ring-2 focus-within:ring-indigo-500 dark:bg-slate-900 dark:ring-slate-800">
+    <div class="flex items-center gap-3">
+        <span aria-hidden="true" class="flex size-10 shrink-0 items-center justify-center rounded-lg text-xl {{ group.pole ? 'bg-indigo-100 dark:bg-indigo-950' : 'bg-slate-100 dark:bg-slate-800' }}">{{ group.pole ? '🗂️' : '📥' }}</span>
+        <div class="min-w-0">
+            <h2 class="truncate text-base font-semibold">
+                <a href="{{ group.pole ? path('app_pole_show', {id: group.pole.id}) : path('app_pole_unfiled') }}" class="after:absolute after:inset-0 focus-visible:outline-none">{{ name }}</a>
+            </h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400">{{ 'pole.count'|trans({'%count%': group.sections|length}) }}</p>
+        </div>
+    </div>
+    {% if group.sections is not empty %}
+        <twig:ProgressBar :progress="group.overall()" :label="'progress.overall_of'|trans({'%name%': name})" />
+        <ul class="flex flex-wrap gap-1 text-xs" aria-label="{{ 'pole.projects_in'|trans({'%name%': name}) }}">
+            {% for section in group.sections|slice(0, 4) %}
+                <li class="max-w-full truncate rounded-full bg-slate-100 px-2 py-0.5 text-slate-700 dark:bg-slate-800 dark:text-slate-200">{{ section.program.name }}</li>
+            {% endfor %}
+            {% if group.sections|length > 4 %}
+                <li class="px-1 text-slate-500 dark:text-slate-400">+{{ group.sections|length - 4 }}</li>
+            {% endif %}
+        </ul>
+    {% else %}
+        <p class="text-sm text-slate-500 dark:text-slate-400">{{ 'pole.empty_short'|trans }}</p>
+    {% endif %}
+</article>

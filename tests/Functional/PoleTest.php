@@ -11,7 +11,7 @@ use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 
 final class PoleTest extends FunctionalTestCase
 {
-    public function testAUserSortsTheirProjectsByPole(): void
+    public function testAUserCreatesPolesClicksOneAndFillsIt(): void
     {
         $client = self::createClient();
         $user = UserFactory::createOne();
@@ -19,27 +19,30 @@ final class PoleTest extends FunctionalTestCase
         ProgramFactory::createOne(['name' => 'Repas solidaires', 'owner' => $user]);
         $client->loginUser($user);
 
-        $this->createPole($client, 'Évangélisation');
-        $this->createPole($client, 'Social');
-        $social = self::getContainer()->get(PoleRepository::class)->findOneBy(['name' => 'Social']) ?? throw new \LogicException();
-
-        $crawler = $client->request('GET', '/programs/'.$town->getId());
-        $client->submit($crawler->filter('form[action$="/pole"]')->form(['poleId' => (string) $social->getId()]));
-        self::assertResponseRedirects('/programs/'.$town->getId());
-
+        // Without poles: the project cards and an invitation to create one, which opens it.
         $crawler = $client->request('GET', '/projects');
-        self::assertSame(['Évangélisation', 'Social', 'Sans pôle'], $crawler->filter('main section > header h2')->each(static fn ($title): string => trim($title->text())));
-        self::assertStringContainsString('Mairie 2027', $crawler->filter('section[aria-labelledby="pole-'.$social->getId().'-title"]')->text());
-        self::assertStringContainsString('Repas solidaires', $crawler->filter('section[aria-labelledby="pole-none-title"]')->text());
+        self::assertSelectorTextContains('main', 'créez votre premier pôle');
+        $client->submit($crawler->filter('form[action="/poles"]')->form(['name' => 'Social']));
+        $social = self::getContainer()->get(PoleRepository::class)->findOneBy(['name' => 'Social']) ?? throw new \LogicException();
+        self::assertResponseRedirects('/poles/'.$social->getId());
 
-        $crawler = $client->request('GET', '/projects?pole='.$social->getId());
-        self::assertSame(['Mairie 2027'], $crawler->filter('main article h2')->each(static fn ($title): string => trim($title->text())));
+        $crawler = $client->followRedirect();
+        $client->submit($crawler->filter('form[action$="/programs"]')->form()->setValues(['programIds' => [(string) $town->getId()]]));
+        $crawler = $client->followRedirect();
+        self::assertSame(['Mairie 2027'], $crawler->filter('main ul article h2')->each(static fn ($title): string => trim($title->text())));
 
-        $crawler = $client->request('GET', '/programs/'.$town->getId());
-        $client->submit($crawler->filter('form[action$="/pole"]')->form(['poleId' => '']));
-        self::assertResponseRedirects('/programs/'.$town->getId());
-        $crawler = $client->request('GET', '/projects?pole=none');
-        self::assertSame(['Mairie 2027', 'Repas solidaires'], $crawler->filter('main article h2')->each(static fn ($title): string => trim($title->text())));
+        // "Mes projets" now shows pole cards; a click on one shows its projects.
+        $crawler = $client->request('GET', '/projects');
+        self::assertSame(['Social', 'Sans pôle'], $crawler->filter('main article h2')->each(static fn ($title): string => trim($title->text())));
+        self::assertSelectorTextContains('main article', '1 projet');
+        $crawler = $client->click($crawler->selectLink('Sans pôle')->link());
+        self::assertSelectorTextContains('main ul', 'Repas solidaires');
+
+        // Filing straight from a project card, back on the same page.
+        $client->submit($crawler->filter('form[action$="/pole"]')->form(['poleId' => (string) $social->getId()]));
+        self::assertResponseRedirects('/poles/none');
+        $crawler = $client->request('GET', '/poles/'.$social->getId());
+        self::assertSame(['Mairie 2027', 'Repas solidaires'], $crawler->filter('main ul article h2')->each(static fn ($title): string => trim($title->text())));
     }
 
     public function testDeletingAPoleKeepsItsProjects(): void
@@ -57,9 +60,8 @@ final class PoleTest extends FunctionalTestCase
         $client->submit($crawler->filter('form[action$="/delete"]')->form());
         $client->followRedirect();
 
-        self::assertSelectorTextContains('main', 'Sans pôle');
         $client->request('GET', '/projects');
-        self::assertSelectorTextContains('main article', 'Mairie 2027');
+        self::assertSelectorTextContains('main article', 'Mairie 2027', 'No pole left: the project cards are back.');
     }
 
     public function testPolesArePersonal(): void

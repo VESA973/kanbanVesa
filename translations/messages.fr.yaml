@@ -153,7 +153,19 @@ pole:
     delete: Supprimer le pôle %name%
     delete_confirm: Supprimer le pôle « %name% » ? Ses projets ne sont pas supprimés, ils passent dans « Sans pôle ».
     count: "{0} aucun projet|{1} 1 projet|]1,Inf[ %count% projets"
-    empty: Aucun projet dans ce pôle. Ouvrez un projet pour le classer ici.
+    empty: Aucun projet dans ce pôle pour l'instant. Cochez-en ci-dessous pour les y ajouter.
+    empty_short: Aucun projet pour l'instant.
+    unfiled_help: Les projets que vous n'avez rangés dans aucun pôle. Choisissez un pôle sous chaque carte pour les ranger.
+    unfiled_empty: Tous vos projets sont rangés dans un pôle. 👍
+    projects_in: Projets du pôle %name%
+    new_card: Nouveau pôle
+    new_placeholder: ex. Évangélisation
+    create: Créer
+    invite: "Classez vos projets par pôle (Évangélisation, Social…) : créez votre premier pôle."
+    add_programs: Ajouter des projets à « %name% »
+    add_programs_help: Cochez les projets à ranger dans ce pôle. Un projet déjà rangé ailleurs y sera déplacé.
+    add_selected: Ajouter les projets cochés
+    currently_in: actuellement dans « %name% »
 
 progress:
     overall: Avancement global

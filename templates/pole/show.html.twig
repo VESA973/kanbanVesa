@@ -1,0 +1,59 @@
+{% extends 'base.html.twig' %}
+
+{% set pole = group.pole %}
+{% set name = pole ? pole.name : 'pole.unfiled'|trans %}
+
+{% block title %}{{ name }} · {{ parent() }}{% endblock %}
+
+{% block body %}
+    <twig:Link href="{{ path('app_project_index') }}" class="text-sm">← {{ 'project.index.title'|trans }}</twig:Link>
+
+    <div class="mt-3 mb-6 flex flex-wrap items-start justify-between gap-4">
+        <div>
+            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">{{ pole ? 'pole.label'|trans : '' }}</p>
+            <h1 class="text-2xl font-bold tracking-tight">{{ name }}</h1>
+            {% if not pole %}<p class="mt-1 text-sm text-slate-600 dark:text-slate-300">{{ 'pole.unfiled_help'|trans }}</p>{% endif %}
+        </div>
+        <twig:Button variant="secondary" href="{{ path('app_pole_index') }}">{{ 'pole.manage'|trans }}</twig:Button>
+    </div>
+
+    {% if group.sections is not empty %}
+        <section class="mb-6 max-w-xl" aria-labelledby="pole-progress-title">
+            <h2 id="pole-progress-title" class="mb-1 text-sm font-medium text-slate-600 dark:text-slate-300">{{ 'progress.overall'|trans }}</h2>
+            <twig:ProgressBar :progress="group.overall()" :label="'progress.overall_of'|trans({'%name%': name})" />
+        </section>
+        <ul class="mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-label="{{ 'pole.projects_in'|trans({'%name%': name}) }}">
+            {% for section in group.sections %}
+                <li><twig:ProgramCard :section="section" :poles="poles" :currentPole="pole" /></li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="mb-10 rounded-lg border-2 border-dashed border-slate-300 p-6 text-sm text-slate-600 dark:border-slate-700 dark:text-slate-300">
+            {{ (pole ? 'pole.empty' : 'pole.unfiled_empty')|trans }}
+        </p>
+    {% endif %}
+
+    {% if pole and candidates is not empty %}
+        <section class="max-w-2xl rounded-lg bg-white p-6 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800" aria-labelledby="add-programs-title">
+            <h2 id="add-programs-title" class="mb-1 text-lg font-semibold">{{ 'pole.add_programs'|trans({'%name%': name}) }}</h2>
+            <p class="mb-4 text-sm text-slate-600 dark:text-slate-300">{{ 'pole.add_programs_help'|trans }}</p>
+            <form method="post" action="{{ path('app_pole_add_programs', {id: pole.id}) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('poles') }}">
+                <ul class="mb-4 divide-y divide-slate-200 rounded-md ring-1 ring-slate-200 dark:divide-slate-800 dark:ring-slate-800">
+                    {% for section in candidates %}
+                        {% set current = poleOfCandidate[section.program.id] ?? null %}
+                        <li>
+                            <label class="flex cursor-pointer items-center gap-3 px-3 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-800">
+                                <input type="checkbox" name="programIds[]" value="{{ section.program.id }}" class="size-4 rounded border-slate-400 accent-indigo-600">
+                                <twig:ProjectColorSwatch :color="section.program.color.value" size="sm" />
+                                <span class="flex-1 font-medium">{{ section.program.name }}</span>
+                                <span class="text-xs text-slate-500 dark:text-slate-400">{{ current ? 'pole.currently_in'|trans({'%name%': current.name}) : 'pole.unfiled'|trans }}</span>
+                            </label>
+                        </li>
+                    {% endfor %}
+                </ul>
+                <twig:Button type="submit">{{ 'pole.add_selected'|trans }}</twig:Button>
+            </form>
+        </section>
+    {% endif %}
+{% endblock %}

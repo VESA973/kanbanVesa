@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Entity\Pole;
 use App\Entity\Program;
 use App\Entity\Project;
 use App\Entity\User;
@@ -80,6 +81,32 @@ final readonly class ProjectDirectory
         }
 
         return $groups;
+    }
+
+    /**
+     * A pole page (or "Sans pôle" when $pole is null): its programs, and the user's other
+     * programs that can be added to it.
+     *
+     * @return array{group: PoleGroup, candidates: list<ProgramSection>, poleOfCandidate: array<int, ?Pole>}
+     */
+    public function poleView(User $user, ?Pole $pole): array
+    {
+        $groups = $this->groupByPole($this->sectionsFor($user), $user);
+        $group = new PoleGroup($pole, []);
+        $candidates = [];
+        $poleOfCandidate = [];
+        foreach ($groups as $candidateGroup) {
+            if ($candidateGroup->pole === $pole) {
+                $group = $candidateGroup;
+                continue;
+            }
+            foreach ($candidateGroup->sections as $section) {
+                $candidates[] = $section;
+                $poleOfCandidate[(int) $section->program->getId()] = $candidateGroup->pole;
+            }
+        }
+
+        return ['group' => $group, 'candidates' => $candidates, 'poleOfCandidate' => $poleOfCandidate];
     }
 
     /**
