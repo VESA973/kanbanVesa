@@ -3,6 +3,7 @@
     {{ form_row(form.name) }}
     {{ form_row(form.description) }}
     {{ form_row(form.color) }}
+    {% if form.pole is defined and form.pole.vars.choices is not empty %}{{ form_row(form.pole) }}{% elseif form.pole is defined %}{% do form.pole.setRendered %}{% endif %}
     {% if form.image is defined %}{{ form_row(form.image) }}{% endif %}
     {% if form.removeImage is defined %}{{ form_row(form.removeImage) }}{% endif %}
     <div class="flex flex-wrap items-center gap-3">

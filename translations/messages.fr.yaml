@@ -132,6 +132,29 @@ program:
     error:
         not_empty: Ce projet contient encore des chantiers ; supprimez-les ou archivez-les d'abord.
 
+pole:
+    title: Mes pôles
+    intro: Les pôles servent à ranger vos projets sur « Mes projets » (ex. Évangélisation, Social). Ils sont personnels et ne donnent accès à rien.
+    label: Pôle
+    help: Classement personnel, modifiable ensuite depuis la page du projet.
+    none: Aucun pôle
+    none_yet: Vous n'avez pas encore de pôle.
+    create_first: Créer mes pôles
+    personal_hint: (visible par vous seul)
+    unfiled: Sans pôle
+    all: Tous
+    filter: Filtrer par pôle
+    manage: Mes pôles
+    new: Nom du nouveau pôle (ex. Évangélisation)
+    add: Ajouter le pôle
+    rename: Renommer le pôle %name%
+    move_up: Monter le pôle %name%
+    move_down: Descendre le pôle %name%
+    delete: Supprimer le pôle %name%
+    delete_confirm: Supprimer le pôle « %name% » ? Ses projets ne sont pas supprimés, ils passent dans « Sans pôle ».
+    count: "{0} aucun projet|{1} 1 projet|]1,Inf[ %count% projets"
+    empty: Aucun projet dans ce pôle. Ouvrez un projet pour le classer ici.
+
 progress:
     overall: Avancement global
     overall_of: Avancement de %name%
@@ -498,6 +521,9 @@ flash:
         resent: L'invitation a été renvoyée ; elle est valable 7 jours.
         accepted: Bienvenue, vous avez rejoint l'équipe !
         sent_for_task: L'invitation a été créée. Utilisez « Obtenir le lien » pour la partager par WhatsApp si l'e-mail n'est pas configuré.
+    pole:
+        deleted: Le pôle a été supprimé ; ses projets sont maintenant « Sans pôle ».
+        classified: Le classement du projet a été enregistré.
     program:
         created: Le projet a été créé.
         updated: Le projet a été modifié.

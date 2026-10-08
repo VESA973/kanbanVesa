@@ -72,6 +72,8 @@ Project : program, name, description, color, owner (User), archivedAt, createdAt
 ProjectMember : project, user, role (ProjectRole enum : OWNER, EDITOR, VIEWER), inherited (bool), joinedAt.
 BoardColumn : project, name, position (int).
 Program : name, description, color, imageFilename (nullable), owner (User), createdAt.
+Pole : owner (User), name, position, programs (ManyToMany pole_program). Classement PERSONNEL des programmes
+sur « Mes projets » (un programme dans au plus un pôle par utilisateur, PoleManager::classify) ; ne donne aucun accès.
 ProgramMember : program, user, role (ProjectRole), joinedAt.
 Task : column, title, description, assignee (User, nullable), dueDate, position, priority (enum), completedAt, createdBy.
 ChecklistItem : task, label, isDone, position.

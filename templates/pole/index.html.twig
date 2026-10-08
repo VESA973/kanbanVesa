@@ -1,0 +1,55 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'pole.title'|trans }} · {{ parent() }}{% endblock %}
+
+{% block body %}
+    {% set token = csrf_token('poles') %}
+    <div class="mx-auto max-w-2xl">
+        <twig:Link href="{{ path('app_project_index') }}" class="text-sm">← {{ 'project.index.title'|trans }}</twig:Link>
+        <h1 class="mt-2 mb-2 text-2xl font-bold tracking-tight">{{ 'pole.title'|trans }}</h1>
+        <p class="mb-6 text-sm text-slate-600 dark:text-slate-300">{{ 'pole.intro'|trans }}</p>
+
+        {% if poles is not empty %}
+            <ul class="mb-6 divide-y divide-slate-200 rounded-lg bg-white shadow-sm ring-1 ring-slate-200 dark:divide-slate-800 dark:bg-slate-900 dark:ring-slate-800">
+                {% for pole in poles %}
+                    <li class="flex flex-wrap items-center gap-2 p-3">
+                        <form method="post" action="{{ path('app_pole_rename', {id: pole.id}) }}" class="flex min-w-0 flex-1 gap-2">
+                            <input type="hidden" name="_token" value="{{ token }}">
+                            <label for="pole-{{ pole.id }}" class="sr-only">{{ 'pole.rename'|trans({'%name%': pole.name}) }}</label>
+                            <input id="pole-{{ pole.id }}" name="name" value="{{ pole.name }}" required maxlength="50"
+                                   class="block w-full min-w-0 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm focus:outline-2 focus:outline-indigo-500 dark:border-slate-700 dark:bg-slate-800">
+                            <twig:Button type="submit" variant="secondary">{{ 'action.save'|trans }}</twig:Button>
+                        </form>
+                        <span class="text-xs text-slate-500 dark:text-slate-400">{{ 'pole.count'|trans({'%count%': pole.programs|length}) }}</span>
+                        {% for step, label in {'-1': '↑', '1': '↓'} %}
+                            {% set disabled = (step == -1 and loop.parent.loop.first) or (step == 1 and loop.parent.loop.last) %}
+                            <form method="post" action="{{ path('app_pole_move', {id: pole.id}) }}">
+                                <input type="hidden" name="_token" value="{{ token }}">
+                                <input type="hidden" name="step" value="{{ step }}">
+                                <twig:Button type="submit" variant="ghost" :disabled="disabled">
+                                    <span aria-hidden="true">{{ label }}</span><span class="sr-only">{{ (step == -1 ? 'pole.move_up' : 'pole.move_down')|trans({'%name%': pole.name}) }}</span>
+                                </twig:Button>
+                            </form>
+                        {% endfor %}
+                        <form method="post" action="{{ path('app_pole_delete', {id: pole.id}) }}"
+                              data-controller="confirm" data-action="confirm#ask"
+                              data-confirm-message-value="{{ 'pole.delete_confirm'|trans({'%name%': pole.name}) }}">
+                            <input type="hidden" name="_token" value="{{ token }}">
+                            <twig:Button type="submit" variant="ghost">
+                                <span aria-hidden="true">✕</span><span class="sr-only">{{ 'pole.delete'|trans({'%name%': pole.name}) }}</span>
+                            </twig:Button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <form method="post" action="{{ path('app_pole_new') }}" class="flex gap-2">
+            <input type="hidden" name="_token" value="{{ token }}">
+            <label for="pole-new" class="sr-only">{{ 'pole.new'|trans }}</label>
+            <input id="pole-new" name="name" required maxlength="50" placeholder="{{ 'pole.new'|trans }}"
+                   class="block w-full rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm focus:outline-2 focus:outline-indigo-500 dark:border-slate-700 dark:bg-slate-800">
+            <twig:Button type="submit">{{ 'pole.add'|trans }}</twig:Button>
+        </form>
+    </div>
+{% endblock %}

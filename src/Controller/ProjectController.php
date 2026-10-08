@@ -10,6 +10,7 @@ use App\Entity\User;
 use App\Form\Data\ProjectData;
 use App\Form\ProjectFormType;
 use App\Model\BoardFilter;
+use App\Model\PoleGroup;
 use App\Repository\BoardColumnRepository;
 use App\Repository\ProgramRepository;
 use App\Repository\ProjectRepository;
@@ -43,11 +44,18 @@ final class ProjectController extends AbstractController
     ) {
     }
 
+    /**
+     * ?pole=ID shows a single pole, ?pole=none the programs filed in none.
+     */
     #[Route('', name: 'app_project_index', methods: ['GET'])]
-    public function index(ProjectDirectory $projectDirectory, #[CurrentUser] User $user): Response
+    public function index(ProjectDirectory $projectDirectory, #[CurrentUser] User $user, #[MapQueryParameter] ?string $pole = null): Response
     {
+        $groups = $projectDirectory->groupByPole($projectDirectory->sectionsFor($user), $user);
+
         return $this->render('project/index.html.twig', [
-            'sections' => $projectDirectory->sectionsFor($user),
+            'groups' => $groups,
+            'shownGroups' => array_values(array_filter($groups, static fn (PoleGroup $group): bool => null === $pole || $pole === (string) ($group->pole?->getId() ?? 'none'))),
+            'currentPole' => $pole,
             'archivedProjects' => $this->projectRepository->findArchivedForMember($user),
         ]);
     }

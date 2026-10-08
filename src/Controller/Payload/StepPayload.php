@@ -6,10 +6,10 @@ namespace App\Controller\Payload;
 
 use Symfony\Component\Validator\Constraints as Assert;
 
-final readonly class ColumnStepPayload
+final readonly class StepPayload
 {
     /**
-     * @param -1|1 $step -1: one place to the left, 1: to the right (enforced by the Choice constraint)
+     * @param -1|1 $step -1: one place before (left, up), 1: one place after (enforced by the Choice constraint)
      */
     public function __construct(
         #[Assert\Choice(choices: [-1, 1])]

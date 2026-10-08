@@ -9,7 +9,9 @@ use App\Entity\User;
 use App\Exception\ProgramException;
 use App\Form\Data\ProgramData;
 use App\Form\ProjectFormType;
+use App\Repository\PoleRepository;
 use App\Security\Voter\ProgramVoter;
+use App\Service\PoleManager;
 use App\Service\ProgramImageStorage;
 use App\Service\ProgramManager;
 use App\Service\ProjectDirectory;
@@ -35,15 +37,16 @@ final class ProgramController extends AbstractController
     }
 
     #[Route('/new', name: 'app_program_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, #[CurrentUser] User $user): Response
+    public function new(Request $request, PoleManager $poleManager, #[CurrentUser] User $user): Response
     {
         $data = new ProgramData();
-        $form = $this->createForm(ProjectFormType::class, $data, $this->formOptions())->handleRequest($request);
+        $form = $this->createForm(ProjectFormType::class, $data, $this->formOptions() + ['pole_choices_for' => $user])->handleRequest($request);
         if (!$form->isSubmitted() || !$form->isValid()) {
             return $this->render('program/new.html.twig', ['form' => $form]);
         }
 
         $program = $this->programManager->create($data, $user);
+        $poleManager->classify($program, $user, $data->pole);
         $this->addFlash('success', 'flash.program.created');
 
         return $this->redirectToRoute('app_program_show', ['id' => $program->getId()]);
@@ -51,9 +54,13 @@ final class ProgramController extends AbstractController
 
     #[Route('/{id}', name: 'app_program_show', requirements: ['id' => '\d+'], methods: ['GET'])]
     #[IsGranted(ProgramVoter::VIEW, 'program', statusCode: 404)]
-    public function show(Program $program, ProjectDirectory $projectDirectory, #[CurrentUser] User $user): Response
+    public function show(Program $program, ProjectDirectory $projectDirectory, PoleManager $poleManager, PoleRepository $poleRepository, #[CurrentUser] User $user): Response
     {
-        return $this->render('program/show.html.twig', ['section' => $projectDirectory->projectsOf($program, $user)]);
+        return $this->render('program/show.html.twig', [
+            'section' => $projectDirectory->projectsOf($program, $user),
+            'poles' => $poleRepository->findForUser($user),
+            'currentPole' => $poleManager->poleOf($program, $user),
+        ]);
     }
 
     /**

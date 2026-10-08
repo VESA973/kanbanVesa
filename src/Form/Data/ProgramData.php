@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Form\Data;
 
+use App\Entity\Pole;
 use App\Entity\Program;
 use App\Enum\ProjectColor;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -24,6 +25,9 @@ final class ProgramData
     public ?UploadedFile $image = null;
 
     public bool $removeImage = false;
+
+    /** Personal filing at creation (restricted to the creator's poles by ProjectFormType). */
+    public ?Pole $pole = null;
 
     public static function fromProgram(Program $program): self
     {

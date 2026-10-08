@@ -7,8 +7,10 @@ namespace App\Service;
 use App\Entity\Program;
 use App\Entity\Project;
 use App\Entity\User;
+use App\Model\PoleGroup;
 use App\Model\ProgramSection;
 use App\Model\ProjectsProgress;
+use App\Repository\PoleRepository;
 use App\Repository\ProgramRepository;
 use App\Repository\ProjectRepository;
 use App\Repository\TaskRepository;
@@ -22,6 +24,7 @@ final readonly class ProjectDirectory
         private ProjectRepository $projectRepository,
         private ProgramRepository $programRepository,
         private TaskRepository $taskRepository,
+        private PoleRepository $poleRepository,
     ) {
     }
 
@@ -51,6 +54,32 @@ final readonly class ProjectDirectory
         usort($sections, static fn (ProgramSection $a, ProgramSection $b): int => strcasecmp($a->program->getName(), $b->program->getName()));
 
         return $sections;
+    }
+
+    /**
+     * The sections of the user grouped by their poles (in their order), then "Sans pôle".
+     * Empty poles are kept so the user sees where to file programs.
+     *
+     * @param list<ProgramSection> $sections
+     *
+     * @return list<PoleGroup>
+     */
+    public function groupByPole(array $sections, User $user): array
+    {
+        $groups = [];
+        $filed = [];
+        foreach ($this->poleRepository->findForUser($user) as $pole) {
+            $inPole = array_values(array_filter($sections, static fn (ProgramSection $section): bool => $pole->contains($section->program)));
+            array_push($filed, ...$inPole);
+            $groups[] = new PoleGroup($pole, $inPole);
+        }
+
+        $unfiled = array_values(array_filter($sections, static fn (ProgramSection $section): bool => !\in_array($section, $filed, true)));
+        if ([] !== $unfiled || [] === $groups) {
+            $groups[] = new PoleGroup(null, $unfiled);
+        }
+
+        return $groups;
     }
 
     /**

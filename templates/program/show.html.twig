@@ -36,6 +36,25 @@
         </div>
     </div>
 
+    <form method="post" action="{{ path('app_program_classify', {id: program.id}) }}" class="mb-6 flex flex-wrap items-center gap-2 text-sm" data-controller="autosubmit">
+        <input type="hidden" name="_token" value="{{ csrf_token('classify-program-' ~ program.id) }}">
+        <label for="program-pole" class="font-medium text-slate-600 dark:text-slate-300">{{ 'pole.label'|trans }}</label>
+        {% if poles is empty %}
+            <span class="text-slate-500 dark:text-slate-400">{{ 'pole.none_yet'|trans }}</span>
+            <twig:Link href="{{ path('app_pole_index') }}">{{ 'pole.create_first'|trans }}</twig:Link>
+        {% else %}
+            <select id="program-pole" name="poleId" data-action="autosubmit#submit"
+                    class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm focus:outline-2 focus:outline-indigo-500 dark:border-slate-700 dark:bg-slate-800">
+                <option value="">{{ 'pole.none'|trans }}</option>
+                {% for pole in poles %}
+                    <option value="{{ pole.id }}" {{ currentPole and currentPole.id == pole.id ? 'selected' }}>{{ pole.name }}</option>
+                {% endfor %}
+            </select>
+            <noscript><twig:Button type="submit" variant="secondary">{{ 'action.save'|trans }}</twig:Button></noscript>
+            <span class="text-xs text-slate-500 dark:text-slate-400">{{ 'pole.personal_hint'|trans }}</span>
+        {% endif %}
+    </form>
+
     <section class="mb-8 max-w-xl" aria-labelledby="overall-progress-title">
         <h2 id="overall-progress-title" class="mb-1 text-sm font-medium text-slate-600 dark:text-slate-300">{{ 'progress.overall'|trans }}</h2>
         <twig:ProgressBar :progress="section.overall()" :label="'progress.overall_of'|trans({'%name%': program.name})" />

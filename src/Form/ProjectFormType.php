@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Form;
 
+use App\Entity\Pole;
 use App\Entity\Program;
 use App\Entity\User;
 use App\Enum\ProjectColor;
 use App\Form\Data\ProgramData;
 use App\Form\Data\ProjectData;
+use App\Repository\PoleRepository;
 use App\Repository\ProgramRepository;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
@@ -62,6 +64,19 @@ final class ProjectFormType extends AbstractType
                 'block_prefix' => 'project_color',
             ]);
 
+        $poleOwner = $options['pole_choices_for'];
+        if ($poleOwner instanceof User) {
+            $builder->add('pole', EntityType::class, [
+                'label' => 'pole.label',
+                'help' => 'pole.help',
+                'class' => Pole::class,
+                'choice_label' => 'name',
+                'required' => false,
+                'placeholder' => 'pole.none',
+                'query_builder' => static fn (PoleRepository $repository): QueryBuilder => $repository->queryForUser($poleOwner),
+            ]);
+        }
+
         if ($options['with_image']) {
             $builder->add('image', FileType::class, [
                 'label' => 'program.image',
@@ -85,7 +100,10 @@ final class ProjectFormType extends AbstractType
             // Programs only: an illustration, and whether one is already stored.
             'with_image' => false,
             'has_image' => false,
+            // Programs only: the creator files it in one of their poles.
+            'pole_choices_for' => null,
         ]);
+        $resolver->setAllowedTypes('pole_choices_for', ['null', User::class]);
         $resolver->setAllowedTypes('with_image', 'bool');
         $resolver->setAllowedTypes('has_image', 'bool');
         $resolver->setAllowedTypes('name_label', 'string');

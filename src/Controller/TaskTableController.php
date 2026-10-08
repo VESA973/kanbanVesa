@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Controller\Payload\CellPayload;
-use App\Controller\Payload\ColumnStepPayload;
+use App\Controller\Payload\StepPayload;
 use App\Controller\Payload\TableColumnPayload;
 use App\Controller\Payload\TaskTablePayload;
 use App\Entity\Task;
@@ -101,7 +101,7 @@ final class TaskTableController extends AbstractController
     #[IsGranted(TaskVoter::VIEW, new Expression('args["column"].getTable().getTask()'), statusCode: 404)]
     #[IsGranted(TaskVoter::EDIT, new Expression('args["column"].getTable().getTask()'))]
     #[IsCsrfTokenValid(new Expression('"task-" ~ args["column"].getTable().getTask().getId()'))]
-    public function moveColumn(TaskTableColumn $column, #[MapRequestPayload] ColumnStepPayload $payload): Response
+    public function moveColumn(TaskTableColumn $column, #[MapRequestPayload] StepPayload $payload): Response
     {
         $this->tableManager->moveColumn($column, $payload->step);
 

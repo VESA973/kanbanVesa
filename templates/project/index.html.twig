@@ -5,21 +5,57 @@
 {% block body %}
     <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
         <h1 class="text-2xl font-bold tracking-tight">{{ 'project.index.title'|trans }}</h1>
-        <twig:Button href="{{ path('app_program_new') }}">
-            <span aria-hidden="true">+</span> {{ 'program.new.title'|trans }}
-        </twig:Button>
+        <div class="flex flex-wrap gap-3">
+            <twig:Button variant="secondary" href="{{ path('app_pole_index') }}">{{ 'pole.manage'|trans }}</twig:Button>
+            <twig:Button href="{{ path('app_program_new') }}">
+                <span aria-hidden="true">+</span> {{ 'program.new.title'|trans }}
+            </twig:Button>
+        </div>
     </div>
 
-    {% if sections is empty %}
+    {% set has_poles = groups|filter(group => group.pole)|length > 0 %}
+    {% if has_poles %}
+        <nav aria-label="{{ 'pole.filter'|trans }}" class="mb-6 flex flex-wrap gap-2 text-sm">
+            {% set chip = 'rounded-full px-3 py-1 font-medium ring-1 focus-visible:outline-2 focus-visible:outline-indigo-600 ' %}
+            {% set chip_on = chip ~ 'bg-indigo-600 text-white ring-indigo-600' %}
+            {% set chip_off = chip ~ 'bg-white text-slate-700 ring-slate-300 hover:bg-slate-50 dark:bg-slate-900 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-800' %}
+            <a href="{{ path('app_project_index') }}" class="{{ currentPole is null ? chip_on : chip_off }}" {{ currentPole is null ? 'aria-current="page"' }}>{{ 'pole.all'|trans }}</a>
+            {% for group in groups %}
+                {% set key = group.pole ? group.pole.id ~ '' : 'none' %}
+                <a href="{{ path('app_project_index', {pole: key}) }}" class="{{ currentPole == key ? chip_on : chip_off }}" {{ currentPole == key ? 'aria-current="page"' }}>
+                    {{ group.pole ? group.pole.name : 'pole.unfiled'|trans }} <span class="opacity-70">({{ group.sections|length }})</span>
+                </a>
+            {% endfor %}
+        </nav>
+    {% endif %}
+
+    {% if groups|reduce((count, group) => count + group.sections|length, 0) == 0 and not has_poles %}
         <div class="rounded-lg border-2 border-dashed border-slate-300 p-10 text-center dark:border-slate-700">
             <p class="text-slate-600 dark:text-slate-300">{{ 'project.index.empty'|trans }}</p>
         </div>
     {% else %}
-        <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {% for section in sections %}
-                <li><twig:ProgramCard :section="section" /></li>
-            {% endfor %}
-        </ul>
+        {% for group in shownGroups %}
+            {% set title_id = 'pole-' ~ (group.pole ? group.pole.id : 'none') ~ '-title' %}
+            <section class="mb-10" aria-labelledby="{{ title_id }}">
+                {% if has_poles %}
+                    <header class="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+                        <h2 id="{{ title_id }}" class="text-lg font-semibold">{{ group.pole ? group.pole.name : 'pole.unfiled'|trans }}</h2>
+                        <twig:ProgressBar :progress="group.overall()" :label="'progress.overall_of'|trans({'%name%': group.pole ? group.pole.name : 'pole.unfiled'|trans})" class="min-w-48 flex-1 sm:max-w-sm" />
+                    </header>
+                {% else %}
+                    <h2 id="{{ title_id }}" class="sr-only">{{ 'project.index.title'|trans }}</h2>
+                {% endif %}
+                {% if group.sections is empty %}
+                    <p class="rounded-lg border-2 border-dashed border-slate-300 p-6 text-sm text-slate-600 dark:border-slate-700 dark:text-slate-300">{{ 'pole.empty'|trans }}</p>
+                {% else %}
+                    <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        {% for section in group.sections %}
+                            <li><twig:ProgramCard :section="section" /></li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </section>
+        {% endfor %}
     {% endif %}
 
     {% if archivedProjects is not empty %}
