@@ -138,6 +138,65 @@ progress:
     done_of: "%completed%/%total%"
     value_text: "%percent% % (%completed% tâche(s) terminée(s) sur %total%)"
 
+task_table:
+    title: Tableaux
+    new: Titre du nouveau tableau (ex. Équipe, Outils…)
+    create: Créer le tableau
+    template_label: Modèle du tableau
+    template:
+        empty: Tableau vide
+        team: Équipe
+        tools: Liste d'outils
+    type:
+        text: Texte
+        number: Nombre
+        date: Date
+        checkbox: Case à cocher
+        member: Membre du chantier
+    column:
+        default: Colonne 1
+        name: Nom
+        role: Rôle
+        phone: Téléphone
+        email: E-mail
+        available: Disponible
+        tool: Outil
+        quantity: Quantité
+        condition: État
+        ready: Prêt
+    actions: Actions du tableau %title%
+    rename: Renommer le tableau
+    delete: Supprimer le tableau
+    delete_confirm: Supprimer le tableau « %title% » et toutes ses lignes ?
+    export: CSV
+    add_row: Ajouter une ligne
+    delete_row: Supprimer la ligne %number%
+    row_actions: Actions de la ligne
+    new_column: Nouvelle colonne
+    column_name: Nom de la nouvelle colonne
+    column_type: Type
+    add_column: Ajouter la colonne
+    column_actions: Actions de la colonne %name%
+    rename_column: Renommer la colonne
+    move_left: ← Gauche
+    move_right: Droite →
+    delete_column: Supprimer la colonne
+    delete_column_confirm: Supprimer la colonne « %name% » et toutes ses valeurs ?
+    cell_label: "%column%, ligne %number%"
+    total: Total
+    total_of: Total de %name%
+    saved: Enregistré
+    yes: Oui
+    no: Non
+    former_member: ancien membre
+    error:
+        invalid_value: Cette valeur ne correspond pas au type de la colonne.
+        too_long: Ce texte est trop long (500 caractères maximum).
+        not_a_member: Cette personne n'est pas membre du chantier.
+        too_many_columns: Un tableau peut avoir au maximum 20 colonnes.
+        too_many_rows: Un tableau peut avoir au maximum 500 lignes.
+        last_column: Un tableau garde au moins une colonne.
+
 checklist:
     title: Checklist
     progress: "%done% sur %total% fait(s)"

@@ -67,6 +67,13 @@ class Task implements Positionable
     #[ORM\InverseJoinColumn(onDelete: 'CASCADE')]
     private Collection $labels;
 
+    /**
+     * @var Collection<int, TaskTable>
+     */
+    #[ORM\OneToMany(targetEntity: TaskTable::class, mappedBy: 'task', cascade: ['persist'], orphanRemoval: true)]
+    #[ORM\OrderBy(['position' => 'ASC'])]
+    private Collection $tables;
+
     public function __construct(
         #[ORM\ManyToOne(inversedBy: 'tasks')]
         #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
@@ -84,6 +91,7 @@ class Task implements Positionable
         $this->comments = new ArrayCollection();
         $this->checklistItems = new ArrayCollection();
         $this->labels = new ArrayCollection();
+        $this->tables = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -260,6 +268,22 @@ class Task implements Positionable
     public function getLabels(): Collection
     {
         return $this->labels;
+    }
+
+    /**
+     * @return Collection<int, TaskTable>
+     */
+    public function getTables(): Collection
+    {
+        return $this->tables;
+    }
+
+    public function addTable(string $title): TaskTable
+    {
+        $table = new TaskTable($this, $title, $this->tables->count());
+        $this->tables->add($table);
+
+        return $table;
     }
 
     /**

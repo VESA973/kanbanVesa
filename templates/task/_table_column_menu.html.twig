@@ -1,0 +1,36 @@
+{# Rename, move or delete a column; expects `column`, `table` and `task_token`. #}
+<details class="relative font-normal">
+    <summary class="cursor-pointer list-none rounded px-1 text-slate-400 hover:bg-slate-200 focus-visible:outline-2 focus-visible:outline-indigo-600 dark:hover:bg-slate-700">
+        <span aria-hidden="true">▾</span><span class="sr-only">{{ 'task_table.column_actions'|trans({'%name%': column.name}) }}</span>
+    </summary>
+    <div class="absolute left-0 z-20 mt-1 w-64 space-y-3 rounded-md bg-white p-3 text-slate-900 normal-case shadow-lg ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:ring-slate-700">
+        <p class="text-xs text-slate-500 dark:text-slate-400">{{ 'task_table.column_type'|trans }} : {{ column.type.translationKey|trans }}</p>
+        <form method="post" action="{{ path('app_task_table_column_rename', {id: column.id}) }}">
+            <input type="hidden" name="_token" value="{{ task_token }}">
+            <label for="column-rename-{{ column.id }}" class="mb-1 block text-xs font-medium">{{ 'task_table.rename_column'|trans }}</label>
+            <div class="flex gap-2">
+                <input id="column-rename-{{ column.id }}" name="name" value="{{ column.name }}" required maxlength="50"
+                       class="block w-full rounded-md border border-slate-300 bg-white px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-900">
+                <twig:Button type="submit" variant="secondary">{{ 'action.save'|trans }}</twig:Button>
+            </div>
+        </form>
+        <div class="flex gap-2">
+            {% for step, label in {'-1': 'task_table.move_left', '1': 'task_table.move_right'} %}
+                {% set disabled = (step == -1 and column.position == 0) or (step == 1 and column.position == table.columns|length - 1) %}
+                <form method="post" action="{{ path('app_task_table_column_move', {id: column.id}) }}" class="flex-1">
+                    <input type="hidden" name="_token" value="{{ task_token }}">
+                    <input type="hidden" name="step" value="{{ step }}">
+                    <twig:Button type="submit" variant="secondary" fullWidth :disabled="disabled">{{ label|trans }}</twig:Button>
+                </form>
+            {% endfor %}
+        </div>
+        {% if table.columns|length > 1 %}
+            <form method="post" action="{{ path('app_task_table_column_delete', {id: column.id}) }}"
+                  data-controller="confirm" data-action="confirm#ask"
+                  data-confirm-message-value="{{ 'task_table.delete_column_confirm'|trans({'%name%': column.name}) }}">
+                <input type="hidden" name="_token" value="{{ task_token }}">
+                <twig:Button type="submit" variant="danger" fullWidth>{{ 'task_table.delete_column'|trans }}</twig:Button>
+            </form>
+        {% endif %}
+    </div>
+</details>

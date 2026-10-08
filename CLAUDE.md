@@ -49,6 +49,7 @@ User ──< ProgramMember >── Program ──< Project
 User ──< ProjectMember >── Project ──< BoardColumn ──< Task
                               │                         ├──< Comment
                               │                         ├──< ChecklistItem
+                              │                         ├──< TaskTable ──< TaskTableColumn, TaskTableRow
                               │                         └──>< Label
                               ├──< Invitation
                               └──< ActivityLog
@@ -74,6 +75,9 @@ Program : name, description, color, imageFilename (nullable), owner (User), crea
 ProgramMember : program, user, role (ProjectRole), joinedAt.
 Task : column, title, description, assignee (User, nullable), dueDate, position, priority (enum), completedAt, createdBy.
 ChecklistItem : task, label, isDone, position.
+TaskTable : task, title, position (tableaux de données d'une tâche : équipe, outils…).
+TaskTableColumn : table, name, type (TableColumnType : TEXT, NUMBER, DATE, CHECKBOX, MEMBER, fixé à la création), position.
+TaskTableRow : table, position, cells (json, clé = id de colonne ; valeurs validées par TableCellNormalizer, jamais requêtées).
 Comment : task, author, content, createdAt.
 Label : project, name, color.
 Invitation : project OU program (l'un des deux), email, role, tokenHash, expiresAt (+7 jours), acceptedAt, task (nullable) ; statut calculé (InvitationStatus : PENDING, ACCEPTED, EXPIRED).

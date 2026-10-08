@@ -1,0 +1,26 @@
+{# Editable cell; expects `row`, `column`, `value`, `row_number`, `task_token` and `input_class`. #}
+{% set cell_attributes %}
+    aria-label="{{ 'task_table.cell_label'|trans({'%column%': column.name, '%number%': row_number}) }}"
+    data-controller="table-cell"
+    data-action="change->table-cell#save"
+    data-table-cell-url-value="{{ path('app_task_table_cell', {id: row.id, column: column.id}) }}"
+    data-table-cell-csrf-token-value="{{ task_token }}"
+    data-table-cell-total-id-value="{{ column.type.value == 'number' ? 'table-total-' ~ column.id }}"
+    data-table-cell-saved-message-value="{{ 'task_table.saved'|trans }}"
+{% endset %}
+{% if column.type.value == 'checkbox' %}
+    <input type="checkbox" {{ value ? 'checked' }} {{ cell_attributes }} class="mx-2 size-4 rounded border-slate-400 accent-emerald-600">
+{% elseif column.type.value == 'member' %}
+    <select {{ cell_attributes }} class="{{ input_class }}">
+        <option value=""></option>
+        {% for member in task.project.members %}
+            <option value="{{ member.user.id }}" {{ value == member.user.id ? 'selected' }}>{{ member.user.fullName }}</option>
+        {% endfor %}
+    </select>
+{% elseif column.type.value == 'date' %}
+    <input type="date" value="{{ table_cell_input(column, value) }}" {{ cell_attributes }} class="{{ input_class }}">
+{% elseif column.type.value == 'number' %}
+    <input type="text" inputmode="decimal" value="{{ table_cell_input(column, value) }}" {{ cell_attributes }} class="{{ input_class }} text-right tabular-nums">
+{% else %}
+    <input type="text" maxlength="500" value="{{ table_cell_input(column, value) }}" {{ cell_attributes }} class="{{ input_class }}">
+{% endif %}

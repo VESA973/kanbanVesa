@@ -1,0 +1,152 @@
+{# Data tables of a task (a team, a list of tools…). Cells of editors save themselves (table_cell_controller.js). #}
+{% set can_edit = is_granted('TASK_EDIT', task) %}
+{% set task_token = csrf_token('task-' ~ task.id) %}
+{% set input_class = 'block w-full min-w-28 rounded border border-transparent bg-transparent px-2 py-1 text-sm hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:outline-2 focus:outline-indigo-500 aria-[invalid=true]:border-rose-500 dark:hover:border-slate-700 dark:focus:bg-slate-800' %}
+{% if can_edit or task.tables is not empty %}
+    <section class="mt-6 border-t border-slate-200 pt-4 dark:border-slate-800" aria-labelledby="tables-title">
+        <h3 id="tables-title" class="mb-2 text-sm font-semibold">{{ 'task_table.title'|trans }}</h3>
+        <p id="tables-status" class="sr-only" role="status" aria-live="polite"></p>
+
+        {% for table in task.tables %}
+            {% set numbers = table.columns|filter(column => column.type.value == 'number') %}
+            <div class="mb-6">
+                <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+                    <h4 id="table-{{ table.id }}-title" class="font-medium">{{ table.title }}</h4>
+                    <div class="flex items-center gap-1">
+                        <twig:Link href="{{ path('app_task_table_export', {id: table.id}) }}" class="text-xs" data-turbo="false">
+                            ⤓ {{ 'task_table.export'|trans }}<span class="sr-only"> {{ table.title }}</span>
+                        </twig:Link>
+                        {% if can_edit %}
+                            <details class="relative">
+                                <summary class="cursor-pointer list-none rounded px-2 py-1 text-slate-500 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-indigo-600 dark:hover:bg-slate-800">
+                                    <span aria-hidden="true">⋯</span><span class="sr-only">{{ 'task_table.actions'|trans({'%title%': table.title}) }}</span>
+                                </summary>
+                                <div class="absolute right-0 z-20 mt-1 w-72 space-y-3 rounded-md bg-white p-3 shadow-lg ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
+                                    <form method="post" action="{{ path('app_task_table_rename', {id: table.id}) }}">
+                                        <input type="hidden" name="_token" value="{{ task_token }}">
+                                        <label for="table-rename-{{ table.id }}" class="mb-1 block text-xs font-medium">{{ 'task_table.rename'|trans }}</label>
+                                        <div class="flex gap-2">
+                                            <input id="table-rename-{{ table.id }}" name="title" value="{{ table.title }}" required maxlength="100"
+                                                   class="block w-full rounded-md border border-slate-300 bg-white px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-900">
+                                            <twig:Button type="submit" variant="secondary">{{ 'action.save'|trans }}</twig:Button>
+                                        </div>
+                                    </form>
+                                    <form method="post" action="{{ path('app_task_table_delete', {id: table.id}) }}"
+                                          data-controller="confirm" data-action="confirm#ask"
+                                          data-confirm-message-value="{{ 'task_table.delete_confirm'|trans({'%title%': table.title}) }}">
+                                        <input type="hidden" name="_token" value="{{ task_token }}">
+                                        <twig:Button type="submit" variant="danger" fullWidth>{{ 'task_table.delete'|trans }}</twig:Button>
+                                    </form>
+                                </div>
+                            </details>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto rounded-md ring-1 ring-slate-200 dark:ring-slate-700">
+                    <table class="min-w-full divide-y divide-slate-200 text-left text-sm dark:divide-slate-700" aria-labelledby="table-{{ table.id }}-title">
+                        <thead class="bg-slate-50 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                            <tr>
+                                {% for column in table.columns %}
+                                    <th scope="col" class="px-2 py-2 whitespace-nowrap">
+                                        <div class="flex items-center gap-1">
+                                            <span>{{ column.name }}</span>
+                                            {% if can_edit %}
+                                                {{ include('task/_table_column_menu.html.twig') }}
+                                            {% endif %}
+                                        </div>
+                                    </th>
+                                {% endfor %}
+                                {% if can_edit %}<th scope="col" class="w-8"><span class="sr-only">{{ 'task_table.row_actions'|trans }}</span></th>{% endif %}
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
+                            {% for row in table.rows %}
+                                {% set row_number = loop.index %}
+                                <tr>
+                                    {% for column in table.columns %}
+                                        {% set value = row.value(column) %}
+                                        <td class="px-1 py-1 align-middle">
+                                            {% if can_edit %}
+                                                {{ include('task/_table_cell_input.html.twig') }}
+                                            {% else %}
+                                                <span class="block px-2 py-1">{{ table_cell_display(column, value) }}</span>
+                                            {% endif %}
+                                        </td>
+                                    {% endfor %}
+                                    {% if can_edit %}
+                                        <td class="px-1 text-right">
+                                            <form method="post" action="{{ path('app_task_table_row_delete', {id: row.id}) }}">
+                                                <input type="hidden" name="_token" value="{{ task_token }}">
+                                                <button type="submit" class="rounded px-1 text-slate-400 hover:text-red-600 focus-visible:outline-2 focus-visible:outline-indigo-600">
+                                                    <span aria-hidden="true">✕</span><span class="sr-only">{{ 'task_table.delete_row'|trans({'%number%': row_number}) }}</span>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    {% endif %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                        {% if numbers is not empty and table.rows is not empty %}
+                            <tfoot class="bg-slate-50 text-xs font-semibold dark:bg-slate-800">
+                                <tr>
+                                    {% for column in table.columns %}
+                                        <td class="px-3 py-2">
+                                            {% if column.type.value == 'number' %}
+                                                <span class="sr-only">{{ 'task_table.total_of'|trans({'%name%': column.name}) }}</span>
+                                                <span id="table-total-{{ column.id }}">{{ table_number(table.totalOf(column)) }}</span>
+                                            {% elseif loop.first %}
+                                                {{ 'task_table.total'|trans }}
+                                            {% endif %}
+                                        </td>
+                                    {% endfor %}
+                                    {% if can_edit %}<td></td>{% endif %}
+                                </tr>
+                            </tfoot>
+                        {% endif %}
+                    </table>
+                </div>
+
+                {% if can_edit %}
+                    <div class="mt-2 flex flex-wrap items-start gap-3">
+                        <form method="post" action="{{ path('app_task_table_row_new', {id: table.id}) }}">
+                            <input type="hidden" name="_token" value="{{ task_token }}">
+                            <twig:Button type="submit" variant="secondary">+ {{ 'task_table.add_row'|trans }}</twig:Button>
+                        </form>
+                        <form method="post" action="{{ path('app_task_table_column_new', {id: table.id}) }}" class="flex flex-wrap gap-2">
+                            <input type="hidden" name="_token" value="{{ task_token }}">
+                            <label for="column-new-{{ table.id }}" class="sr-only">{{ 'task_table.column_name'|trans }}</label>
+                            <input id="column-new-{{ table.id }}" name="name" required maxlength="50" placeholder="{{ 'task_table.new_column'|trans }}"
+                                   class="block w-40 rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-800">
+                            <label for="column-type-{{ table.id }}" class="sr-only">{{ 'task_table.column_type'|trans }}</label>
+                            <select id="column-type-{{ table.id }}" name="type"
+                                    class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-800">
+                                {% for type in ['text', 'number', 'date', 'checkbox', 'member'] %}
+                                    <option value="{{ type }}">{{ ('task_table.type.' ~ type)|trans }}</option>
+                                {% endfor %}
+                            </select>
+                            <twig:Button type="submit" variant="secondary">{{ 'task_table.add_column'|trans }}</twig:Button>
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+
+        {% if can_edit %}
+            <form method="post" action="{{ path('app_task_table_new', {id: task.id}) }}" class="flex flex-wrap gap-2">
+                <input type="hidden" name="_token" value="{{ task_token }}">
+                <label for="table-new" class="sr-only">{{ 'task_table.new'|trans }}</label>
+                <input id="table-new" name="title" required maxlength="100" placeholder="{{ 'task_table.new'|trans }}"
+                       class="block min-w-40 flex-1 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-800">
+                <label for="table-template" class="sr-only">{{ 'task_table.template_label'|trans }}</label>
+                <select id="table-template" name="template"
+                        class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-800">
+                    {% for template in ['empty', 'team', 'tools'] %}
+                        <option value="{{ template }}">{{ ('task_table.template.' ~ template)|trans }}</option>
+                    {% endfor %}
+                </select>
+                <twig:Button type="submit" variant="secondary">{{ 'task_table.create'|trans }}</twig:Button>
+            </form>
+        {% endif %}
+    </section>
+{% endif %}
