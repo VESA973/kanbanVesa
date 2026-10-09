@@ -104,9 +104,10 @@ Ajouter des index sur les clés de tri et de filtre fréquentes (task.position, 
 Action	OWNER	EDITOR	VIEWER
 Voir le projet	✅	✅	✅
 Créer / déplacer / modifier une tâche	✅	✅	❌
+Assigner en masse les tâches restantes (ProjectVoter::ASSIGN_TASKS)	✅	✅	❌
 Cocher une tâche qui m'est assignée	✅	✅	✅
 Gérer les colonnes	✅	✅	❌
-Inviter / retirer des membres	✅	❌	❌
+Inviter / retirer des membres, nommer les responsables	✅	❌	❌
 Archiver / supprimer le projet	✅	❌	❌
 Programme : voir (et voir tous ses projets)	✅	✅	✅
 Programme : créer un projet dedans	✅	✅	❌

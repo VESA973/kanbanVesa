@@ -17,6 +17,7 @@ enum ActivityAction: string
     case TASK_MOVED = 'task_moved';
     case TASK_ASSIGNED = 'task_assigned';
     case TASK_UNASSIGNED = 'task_unassigned';
+    case TASKS_BULK_ASSIGNED = 'tasks_bulk_assigned';
     case TASK_COMPLETED = 'task_completed';
     case TASK_REOPENED = 'task_reopened';
     case TASK_DELETED = 'task_deleted';

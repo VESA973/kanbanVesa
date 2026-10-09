@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'bulk_assign.title'|trans }} · {{ project.name }} · {{ parent() }}{% endblock %}
+
+{% block body %}
+    <div class="mx-auto max-w-2xl">
+        <twig:Link href="{{ path('app_project_show', {id: project.id}) }}" class="text-sm">← {{ 'member.back_to_board'|trans({'%project%': project.name}) }}</twig:Link>
+        <h1 class="mt-2 mb-2 text-2xl font-bold tracking-tight">{{ 'bulk_assign.title'|trans }}</h1>
+        <p class="mb-6 text-sm text-slate-600 dark:text-slate-300">{{ 'bulk_assign.help'|trans }}</p>
+        <div class="rounded-lg bg-white p-6 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
+            {{ form_start(form, {attr: {novalidate: 'novalidate'}}) }}
+                {{ form_row(form.assignees) }}
+                {{ form_row(form.column) }}
+                <div class="flex flex-wrap items-center gap-3">
+                    <twig:Button type="submit">{{ 'bulk_assign.submit'|trans }}</twig:Button>
+                    <twig:Link href="{{ path('app_project_show', {id: project.id}) }}">{{ 'action.cancel'|trans }}</twig:Link>
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}

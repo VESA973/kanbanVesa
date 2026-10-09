@@ -32,6 +32,9 @@
             {% if is_granted('PROJECT_MANAGE_LABELS', project) %}
                 <twig:Button variant="secondary" href="{{ path('app_project_labels', {id: project.id}) }}">{{ 'label.title'|trans }}</twig:Button>
             {% endif %}
+            {% if is_granted('PROJECT_ASSIGN_TASKS', project) %}
+                <twig:Button variant="secondary" href="{{ path('app_project_bulk_assign', {id: project.id}) }}">{{ 'bulk_assign.button'|trans }}</twig:Button>
+            {% endif %}
             <twig:Button variant="secondary" href="{{ path('app_project_members', {id: project.id}) }}">{{ 'member.title'|trans }}</twig:Button>
             {% if is_granted('PROJECT_EDIT', project) %}
                 <twig:Button variant="secondary" href="{{ path('app_project_edit', {id: project.id}) }}">{{ 'project.edit.title'|trans }}</twig:Button>

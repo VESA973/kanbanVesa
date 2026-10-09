@@ -426,6 +426,7 @@ activity:
         task_moved: a déplacé « %subject% » de « %from% » vers « %to% »
         task_assigned: a assigné « %subject% » à %assignee%
         task_unassigned: a retiré %assignee% de « %subject% »
+        tasks_bulk_assigned: a assigné %count% tâche(s) restante(s) à %subject% (%scope%)
         task_completed: a terminé « %subject% »
         task_reopened: a rouvert « %subject% »
         task_deleted: a supprimé la tâche « %subject% » de « %column% »
@@ -447,6 +448,16 @@ member:
     leads: Responsables
     appoint_lead: Nommer responsable
     dismiss_lead: Retirer la responsabilité
+
+bulk_assign:
+    button: Assigner en masse
+    title: Assigner en masse
+    help: Les personnes choisies sont ajoutées à toutes les tâches restantes (non terminées) du chantier ou de la colonne choisie. Les assignations existantes sont conservées ; aucun e-mail n'est envoyé par tâche.
+    assignees:
+        label: Personnes à assigner
+    column: Tâches concernées
+    all_columns: Toutes les colonnes
+    submit: Assigner
 
 invitation:
     title: Inviter une personne
@@ -539,6 +550,9 @@ verify_email:
     resend: Renvoyer l'e-mail
 
 flash:
+    bulk_assign:
+        done: Les tâches restantes ont été assignées.
+        nothing: Aucune tâche à assigner (toutes déjà terminées ou déjà assignées à ces personnes).
     admin:
         verified: L'adresse e-mail a été marquée comme vérifiée.
         activated: Le compte a été réactivé.

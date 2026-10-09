@@ -15,3 +15,7 @@ program:
 account:
     password:
         wrong_current: Le mot de passe actuel est incorrect.
+
+bulk_assign:
+    assignees:
+        required: Choisissez au moins une personne.

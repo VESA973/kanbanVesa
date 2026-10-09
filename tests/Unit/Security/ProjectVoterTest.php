@@ -34,6 +34,7 @@ final class ProjectVoterTest extends TestCase
             ProjectVoter::TRACK => ['owner' => self::GRANTED, 'editor' => self::DENIED, 'viewer' => self::DENIED, 'none' => self::DENIED],
             ProjectVoter::MANAGE_LABELS => ['owner' => self::GRANTED, 'editor' => self::GRANTED, 'viewer' => self::DENIED, 'none' => self::DENIED],
             ProjectVoter::CREATE_TASK => ['owner' => self::GRANTED, 'editor' => self::GRANTED, 'viewer' => self::DENIED, 'none' => self::DENIED],
+            ProjectVoter::ASSIGN_TASKS => ['owner' => self::GRANTED, 'editor' => self::GRANTED, 'viewer' => self::DENIED, 'none' => self::DENIED],
         ];
 
         foreach ($expected as $attribute => $results) {
@@ -70,7 +71,7 @@ final class ProjectVoterTest extends TestCase
         foreach ([ProjectVoter::VIEW, ProjectVoter::TRACK, ProjectVoter::ARCHIVE, ProjectVoter::DELETE] as $allowed) {
             self::assertSame(self::GRANTED, $voter->vote($token, $project, [$allowed]), $allowed);
         }
-        foreach ([ProjectVoter::EDIT, ProjectVoter::MANAGE_COLUMNS, ProjectVoter::CREATE_TASK, ProjectVoter::MANAGE_MEMBERS, ProjectVoter::MANAGE_LABELS] as $denied) {
+        foreach ([ProjectVoter::EDIT, ProjectVoter::MANAGE_COLUMNS, ProjectVoter::CREATE_TASK, ProjectVoter::ASSIGN_TASKS, ProjectVoter::MANAGE_MEMBERS, ProjectVoter::MANAGE_LABELS] as $denied) {
             self::assertSame(self::DENIED, $voter->vote($token, $project, [$denied]), $denied);
         }
     }

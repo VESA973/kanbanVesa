@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use App\Entity\BoardColumn;
 use App\Entity\Project;
 use App\Entity\Task;
 use App\Entity\User;
@@ -98,6 +99,28 @@ class TaskRepository extends ServiceEntityRepository
             ->addOrderBy('t.id', 'ASC')
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * Open tasks of the project, or of one of its columns, with their assignees.
+     *
+     * @return list<Task>
+     */
+    public function findOpenInProject(Project $project, ?BoardColumn $column = null): array
+    {
+        $queryBuilder = $this->createQueryBuilder('t')
+            ->innerJoin('t.column', 'c')
+            ->leftJoin('t.assignees', 'a')
+            ->addSelect('a')
+            ->andWhere('c.project = :project')
+            ->andWhere('t.completedAt IS NULL')
+            ->setParameter('project', $project);
+        if (null !== $column) {
+            $queryBuilder->andWhere('t.column = :column')->setParameter('column', $column);
+        }
+
+        /** @var list<Task> */
+        return $queryBuilder->getQuery()->getResult();
     }
 
     /**
