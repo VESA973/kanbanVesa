@@ -19,22 +19,23 @@ final readonly class DueDateReminder
     }
 
     /**
-     * E-mails the assignee of every open task due tomorrow, once per due date.
+     * E-mails every assignee of each open task due tomorrow, once per due date.
      *
      * @return int the number of reminders sent
      */
     public function remindTasksDueTomorrow(): int
     {
-        $tasks = $this->taskRepository->findNeedingDueReminder($this->clock->now()->modify('+1 day'));
-
-        foreach ($tasks as $task) {
-            $assignee = $task->getAssignee() ?? throw new \LogicException('Only assigned tasks get a reminder.');
-            $this->notifier->notifyDueSoon($task, $assignee);
+        $sent = 0;
+        foreach ($this->taskRepository->findNeedingDueReminder($this->clock->now()->modify('+1 day')) as $task) {
+            foreach ($task->getAssignees() as $assignee) {
+                $this->notifier->notifyDueSoon($task, $assignee);
+                ++$sent;
+            }
             $task->markDueReminderAsSent();
         }
 
         $this->entityManager->flush();
 
-        return \count($tasks);
+        return $sent;
     }
 }

@@ -66,7 +66,7 @@ final class TaskVoterTest extends TestCase
 
         self::assertSame(self::DENIED, new TaskVoter()->vote($token, $task, [TaskVoter::COMPLETE]));
 
-        $task->assignTo($viewer);
+        $task->assign($viewer);
         self::assertSame(self::GRANTED, new TaskVoter()->vote($token, $task, [TaskVoter::COMPLETE]));
         self::assertSame(self::DENIED, new TaskVoter()->vote($token, $task, [TaskVoter::EDIT]), 'Being assigned does not allow editing.');
     }

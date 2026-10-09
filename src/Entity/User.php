@@ -61,6 +61,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->id;
     }
 
+    /**
+     * Compares ids as well as instances: the security token holds a copy of the user, not the managed entity.
+     */
+    public function isSameAs(self $other): bool
+    {
+        return $this === $other || (null !== $this->id && $this->id === $other->getId());
+    }
+
     public function getEmail(): string
     {
         return $this->email;

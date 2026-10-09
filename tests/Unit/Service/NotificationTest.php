@@ -36,7 +36,7 @@ final class NotificationTest extends TestCase
 
     public function testAssigneeIsNotifiedWhenSomeoneElseAssignsThem(): void
     {
-        $this->task->assignTo($this->alex);
+        $this->task->assign($this->alex);
         $mailer = $this->createMock(MailerInterface::class);
         $mailer->expects($this->once())->method('send')->with($this->callback(
             fn (TemplatedEmail $email): bool => 'alex@example.com' === $email->getTo()[0]->getAddress()
@@ -48,7 +48,7 @@ final class NotificationTest extends TestCase
 
     public function testNoNotificationWhenAssigningOneself(): void
     {
-        $this->task->assignTo($this->alex);
+        $this->task->assign($this->alex);
         $mailer = $this->createMock(MailerInterface::class);
         $mailer->expects($this->never())->method('send');
 
@@ -57,7 +57,7 @@ final class NotificationTest extends TestCase
 
     public function testOtherActivitiesSendNothing(): void
     {
-        $this->task->assignTo($this->alex);
+        $this->task->assign($this->alex);
         $mailer = $this->createMock(MailerInterface::class);
         $mailer->expects($this->never())->method('send');
 
@@ -66,7 +66,7 @@ final class NotificationTest extends TestCase
 
     public function testDueReminderIsSentOncePerDueDate(): void
     {
-        $this->task->assignTo($this->alex);
+        $this->task->assign($this->alex);
         $this->task->schedule(new \DateTimeImmutable('2026-10-08'));
         $clock = new MockClock('2026-10-07 07:00');
         $repository = $this->createMock(TaskRepository::class);
@@ -85,9 +85,23 @@ final class NotificationTest extends TestCase
         self::assertNull($this->task->getDueReminderSentAt(), 'A new due date gets a new reminder.');
     }
 
+    public function testDueReminderGoesToEveryAssignee(): void
+    {
+        $this->task->assign($this->alex);
+        $this->task->assign($this->owner);
+        $repository = $this->createStub(TaskRepository::class);
+        $repository->method('findNeedingDueReminder')->willReturn([$this->task]);
+        $mailer = $this->createMock(MailerInterface::class);
+        $mailer->expects($this->exactly(2))->method('send');
+
+        $sent = new DueDateReminder($repository, $this->notifier($mailer), $this->createStub(EntityManagerInterface::class), new MockClock())->remindTasksDueTomorrow();
+
+        self::assertSame(2, $sent);
+    }
+
     private function assigned(): ProjectActivityEvent
     {
-        return new ProjectActivityEvent($this->task->getProject(), ActivityAction::TASK_ASSIGNED, 'Tâche', ['assignee' => 'Alex Martin'], $this->task);
+        return new ProjectActivityEvent($this->task->getProject(), ActivityAction::TASK_ASSIGNED, 'Tâche', ['assignee' => 'Alex Martin'], $this->task, $this->alex);
     }
 
     private function subscriber(MailerInterface $mailer, User $actor): TaskAssignedSubscriber

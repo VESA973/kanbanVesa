@@ -75,7 +75,7 @@ Program : name, description, color, imageFilename (nullable), owner (User), crea
 Pole : owner (User), name, position, programs (ManyToMany pole_program). Classement PERSONNEL des programmes
 sur « Mes projets » (un programme dans au plus un pôle par utilisateur, PoleManager::classify) ; ne donne aucun accès.
 ProgramMember : program, user, role (ProjectRole), joinedAt.
-Task : column, title, description, assignee (User, nullable), dueDate, position, priority (enum), completedAt, createdBy.
+Task : column, title, description, assignees (ManyToMany User, table task_assignee), dueDate, position, priority (enum), completedAt, createdBy.
 ChecklistItem : task, label, isDone, position.
 TaskTable : task, title, position (tableaux de données d'une tâche : équipe, outils…).
 TaskTableColumn : table, name, type (TableColumnType : TEXT, NUMBER, DATE, CHECKBOX, MEMBER, fixé à la création), position.

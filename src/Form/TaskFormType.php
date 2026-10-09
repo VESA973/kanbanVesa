@@ -42,13 +42,15 @@ final class TaskFormType extends AbstractType
                 'required' => false,
                 'attr' => ['rows' => 6],
             ])
-            ->add('assignee', EntityType::class, [
-                'label' => 'task.assignee',
+            ->add('assignees', EntityType::class, [
+                'label' => 'task.assignees',
                 'class' => User::class,
                 'choices' => $project->getMembers()->map(static fn (ProjectMember $member): User => $member->getUser())->getValues(),
                 'choice_label' => 'fullName',
-                'placeholder' => 'task.unassigned',
+                'multiple' => true,
+                'expanded' => true,
                 'required' => false,
+                'block_prefix' => 'chip_choices',
             ])
             ->add('dueDate', DateType::class, [
                 'label' => 'task.due_date',
@@ -69,7 +71,7 @@ final class TaskFormType extends AbstractType
                 'multiple' => true,
                 'expanded' => true,
                 'required' => false,
-                'block_prefix' => 'task_labels',
+                'block_prefix' => 'chip_choices',
             ])
             // Keyboard-accessible alternative to drag & drop.
             ->add('column', EntityType::class, [

@@ -8,7 +8,6 @@ use App\Factory\ProjectFactory;
 use App\Factory\TaskFactory;
 use App\Factory\UserFactory;
 
-use function Zenstruck\Foundry\force;
 use function Zenstruck\Foundry\Persistence\refresh;
 
 final class ArchiveTest extends FunctionalTestCase
@@ -19,7 +18,7 @@ final class ArchiveTest extends FunctionalTestCase
         $owner = UserFactory::createOne();
         $project = ProjectFactory::new()->withColumns('À faire')->create(['name' => 'Ancien site', 'owner' => $owner]);
         $column = $project->getColumns()->first() ?: throw new \LogicException();
-        TaskFactory::new()->inColumn($column)->create(['title' => 'Tâche archivée', 'assignee' => force($owner)]);
+        TaskFactory::new()->inColumn($column)->assignedTo($owner)->create(['title' => 'Tâche archivée']);
         $client->loginUser($owner);
 
         $client->request('GET', '/projects/'.$project->getId().'/edit');

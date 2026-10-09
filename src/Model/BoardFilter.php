@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Model;
 
 use App\Entity\Task;
+use App\Entity\User;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -48,8 +49,8 @@ final readonly class BoardFilter
     {
         return match ($this->assignee) {
             null => true,
-            self::UNASSIGNED => null === $task->getAssignee(),
-            default => (string) $task->getAssignee()?->getId() === $this->assignee,
+            self::UNASSIGNED => $task->getAssignees()->isEmpty(),
+            default => $task->getAssignees()->exists(fn (int $key, User $user): bool => (string) $user->getId() === $this->assignee),
         };
     }
 

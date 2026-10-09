@@ -91,7 +91,7 @@ final class InvitationManagerTest extends TestCase
 
         $this->manager($this->repositoryFinding($invitation))->accept('secret', $alex);
 
-        self::assertSame($alex, $task->getAssignee());
+        self::assertSame([$alex], $task->getAssignees()->getValues());
         self::assertTrue($alex->isVerified(), 'A link received by e-mail proves the address.');
     }
 

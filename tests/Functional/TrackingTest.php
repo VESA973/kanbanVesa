@@ -13,6 +13,7 @@ use App\Factory\TaskFactory;
 use App\Factory\UserFactory;
 use App\Repository\ActivityLogRepository;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
+use Symfony\Component\DomCrawler\Crawler;
 
 use function Zenstruck\Foundry\force;
 use function Zenstruck\Foundry\Persistence\refresh;
@@ -27,18 +28,40 @@ final class TrackingTest extends FunctionalTestCase
         $editor = $this->member($project, ProjectRole::EDITOR);
         $task = TaskFactory::new()->inColumn($this->firstColumn($project))->create();
         $client->loginUser($editor);
-        $client->request('GET', '/tasks/'.$task->getId());
+        $crawler = $client->request('GET', '/tasks/'.$task->getId());
 
         $client->submitForm('Enregistrer', [
-            'task_form[assignee]' => (string) $editor->getId(),
+            $this->assigneeField($crawler, $editor) => (string) $editor->getId(),
             'task_form[dueDate]' => '2030-01-15',
             'task_form[priority]' => 'high',
         ]);
 
         $task = refresh($task);
-        self::assertSame($editor->getId(), $task->getAssignee()?->getId());
+        self::assertTrue($task->isAssignedTo($editor));
         self::assertSame('2030-01-15', $task->getDueDate()?->format('Y-m-d'));
         self::assertSame('high', $task->getPriority()->value);
+    }
+
+    public function testATaskCanBeAssignedToSeveralMembers(): void
+    {
+        $client = self::createClient();
+        [$owner, $project] = $this->project();
+        $alex = $this->member($project, ProjectRole::EDITOR);
+        $task = TaskFactory::new()->inColumn($this->firstColumn($project))->create(['title' => 'À deux']);
+        $client->loginUser($owner);
+        $crawler = $client->request('GET', '/tasks/'.$task->getId());
+
+        $client->submitForm('Enregistrer', [
+            $this->assigneeField($crawler, $owner) => (string) $owner->getId(),
+            $this->assigneeField($crawler, $alex) => (string) $alex->getId(),
+        ]);
+
+        self::assertCount(2, refresh($task)->getAssignees());
+        foreach ([$owner, $alex] as $user) {
+            $client->loginUser($user);
+            $client->request('GET', '/my-tasks');
+            self::assertSelectorTextContains('main', 'À deux');
+        }
     }
 
     public function testOnlyMembersCanBeAssigned(): void
@@ -51,11 +74,11 @@ final class TrackingTest extends FunctionalTestCase
         $crawler = $client->request('GET', '/tasks/'.$task->getId());
 
         $form = $crawler->selectButton('Enregistrer')->form();
-        $form->disableValidation()->setValues(['task_form[assignee]' => (string) $stranger->getId()]);
+        $form->disableValidation()->setValues(['task_form[assignees][0]' => (string) $stranger->getId()]);
         $client->submit($form);
 
         self::assertResponseStatusCodeSame(422);
-        self::assertNull(refresh($task)->getAssignee());
+        self::assertTrue(refresh($task)->getAssignees()->isEmpty());
     }
 
     public function testViewerCompletesATaskAssignedToThem(): void
@@ -63,7 +86,7 @@ final class TrackingTest extends FunctionalTestCase
         $client = self::createClient();
         [, $project] = $this->project();
         $viewer = $this->member($project, ProjectRole::VIEWER);
-        $mine = TaskFactory::new()->inColumn($this->firstColumn($project))->create(['title' => 'La mienne', 'assignee' => force($viewer)]);
+        $mine = TaskFactory::new()->inColumn($this->firstColumn($project))->assignedTo($viewer)->create(['title' => 'La mienne']);
         $other = TaskFactory::new()->inColumn($this->firstColumn($project))->create(['title' => 'Pas la mienne']);
         $client->loginUser($viewer);
 
@@ -82,7 +105,7 @@ final class TrackingTest extends FunctionalTestCase
     {
         $client = self::createClient();
         [$owner, $project] = $this->project();
-        TaskFactory::new()->inColumn($this->firstColumn($project))->create(['assignee' => force($owner)]);
+        TaskFactory::new()->inColumn($this->firstColumn($project))->assignedTo($owner)->create();
         $client->loginUser($owner);
         $crawler = $client->request('GET', '/my-tasks');
 
@@ -101,8 +124,8 @@ final class TrackingTest extends FunctionalTestCase
         $otherProject->addMember($me, ProjectRole::EDITOR);
         save($otherProject);
         $column = $this->firstColumn($project);
-        TaskFactory::new()->inColumn($column)->create(['title' => 'En retard', 'assignee' => force($me), 'dueDate' => force(new \DateTimeImmutable('-3 days midnight'))]);
-        TaskFactory::new()->inColumn($this->firstColumn($otherProject))->create(['title' => 'Plus tard', 'assignee' => force($me), 'dueDate' => force(new \DateTimeImmutable('+10 days midnight'))]);
+        TaskFactory::new()->inColumn($column)->assignedTo($me)->create(['title' => 'En retard', 'dueDate' => force(new \DateTimeImmutable('-3 days midnight'))]);
+        TaskFactory::new()->inColumn($this->firstColumn($otherProject))->assignedTo($me)->create(['title' => 'Plus tard', 'dueDate' => force(new \DateTimeImmutable('+10 days midnight'))]);
         TaskFactory::new()->inColumn($column)->create(['title' => 'Pas à moi']);
         $client->loginUser($me);
 
@@ -120,8 +143,8 @@ final class TrackingTest extends FunctionalTestCase
         [$owner, $project] = $this->project();
         $alex = $this->member($project, ProjectRole::EDITOR);
         $column = $this->firstColumn($project);
-        TaskFactory::new()->inColumn($column)->create(['assignee' => force($alex), 'completedAt' => force(new \DateTimeImmutable())]);
-        TaskFactory::new()->inColumn($column)->create(['title' => 'Oubliée', 'assignee' => force($alex), 'dueDate' => force(new \DateTimeImmutable('-1 day midnight'))]);
+        TaskFactory::new()->inColumn($column)->assignedTo($alex)->create(['completedAt' => force(new \DateTimeImmutable())]);
+        TaskFactory::new()->inColumn($column)->assignedTo($alex)->create(['title' => 'Oubliée', 'dueDate' => force(new \DateTimeImmutable('-1 day midnight'))]);
         $client->loginUser($owner);
 
         $crawler = $client->request('GET', '/projects/'.$project->getId().'/progress');
@@ -165,6 +188,16 @@ final class TrackingTest extends FunctionalTestCase
         $client->request('GET', '/projects/'.$project->getId().'/activity');
         self::assertSelectorTextContains('ol li:first-child', 'a terminé « Rédiger le cahier des charges »');
         self::assertSelectorTextContains('ol li:last-child', 'a créé la tâche « Rédiger le cahier des charges » dans « À faire »');
+    }
+
+    /**
+     * Name of the assignee checkbox of $user in the task form.
+     */
+    private function assigneeField(Crawler $crawler, User $user): string
+    {
+        $values = $crawler->filter('input[name="task_form[assignees][]"]')->extract(['value']);
+
+        return \sprintf('task_form[assignees][%d]', array_search((string) $user->getId(), $values, true));
     }
 
     /**

@@ -173,10 +173,13 @@ final readonly class InvitationManager
             return;
         }
 
-        $task->assignTo($user);
+        if (!$task->assign($user)) {
+            return;
+        }
+
         $this->dispatcher->dispatch(new ProjectActivityEvent($task->getProject(), ActivityAction::TASK_ASSIGNED, $task->getTitle(), [
             'assignee' => $user->getFullName(),
-        ], $task));
+        ], $task, $user));
     }
 
     private function isMember(Project|Program $target, string $email): bool

@@ -39,13 +39,13 @@ final class AppStory extends Story
             ->withMember($sam, ProjectRole::VIEWER)
             ->create(['name' => 'Refonte du site', 'owner' => $demo, 'color' => ProjectColor::INDIGO, 'description' => 'Nouvelle charte graphique et migration vers Symfony 7.4.']);
         [$todo, $doing, $done] = $website->getColumns()->toArray();
-        TaskFactory::new()->inColumn($todo)->create(['title' => 'Rédiger les mentions légales', 'assignee' => force($demo), 'dueDate' => force(new \DateTimeImmutable('-2 days midnight')), 'priority' => force(TaskPriority::HIGH)]);
-        TaskFactory::new()->inColumn($todo)->create(['title' => 'Préparer la démo client', 'assignee' => force($demo), 'dueDate' => force(new \DateTimeImmutable('today'))]);
-        TaskFactory::new()->inColumn($todo)->create(['title' => 'Optimiser les images', 'assignee' => force($alex), 'dueDate' => force(new \DateTimeImmutable('+5 days midnight'))]);
+        TaskFactory::new()->inColumn($todo)->assignedTo($demo)->create(['title' => 'Rédiger les mentions légales', 'dueDate' => force(new \DateTimeImmutable('-2 days midnight')), 'priority' => force(TaskPriority::HIGH)]);
+        TaskFactory::new()->inColumn($todo)->assignedTo($demo)->create(['title' => 'Préparer la démo client', 'dueDate' => force(new \DateTimeImmutable('today'))]);
+        TaskFactory::new()->inColumn($todo)->assignedTo($alex)->create(['title' => 'Optimiser les images', 'dueDate' => force(new \DateTimeImmutable('+5 days midnight'))]);
         TaskFactory::new()->inColumn($todo)->create(['title' => 'Vérifier l\'accessibilité', 'priority' => force(TaskPriority::URGENT)]);
-        TaskFactory::new()->inColumn($doing)->create(['title' => 'Intégrer la page d\'accueil', 'assignee' => force($alex), 'dueDate' => force(new \DateTimeImmutable('-1 day midnight'))]);
-        TaskFactory::new()->inColumn($doing)->create(['title' => 'Migrer le blog', 'assignee' => force($demo)]);
-        TaskFactory::new()->inColumn($done)->create(['title' => 'Choisir la nouvelle palette', 'assignee' => force($sam), 'completedAt' => force(new \DateTimeImmutable('-1 day'))]);
+        TaskFactory::new()->inColumn($doing)->assignedTo($alex)->create(['title' => 'Intégrer la page d\'accueil', 'dueDate' => force(new \DateTimeImmutable('-1 day midnight'))]);
+        TaskFactory::new()->inColumn($doing)->assignedTo($demo)->create(['title' => 'Migrer le blog']);
+        TaskFactory::new()->inColumn($done)->assignedTo($sam)->create(['title' => 'Choisir la nouvelle palette', 'completedAt' => force(new \DateTimeImmutable('-1 day'))]);
 
         $this->decorate($website, $demo, $alex);
 

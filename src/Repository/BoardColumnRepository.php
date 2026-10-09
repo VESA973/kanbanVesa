@@ -30,7 +30,7 @@ class BoardColumnRepository extends ServiceEntityRepository
         /** @var list<BoardColumn> */
         return $this->createQueryBuilder('c')
             ->leftJoin('c.tasks', 't')
-            ->leftJoin('t.assignee', 'a')
+            ->leftJoin('t.assignees', 'a')
             ->addSelect('t', 'a')
             ->andWhere('c.project = :project')
             ->setParameter('project', $project)

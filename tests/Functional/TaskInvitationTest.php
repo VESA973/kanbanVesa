@@ -55,7 +55,7 @@ final class TaskInvitationTest extends FunctionalTestCase
         self::assertSelectorTextContains('main', 'Distribuer les flyers');
 
         $volunteer = UserFactory::repository()->findOneBy(['email' => 'benevole@example.com']) ?? throw new \LogicException();
-        self::assertSame($volunteer->getId(), refresh($task)->getAssignee()?->getId());
+        self::assertTrue(refresh($task)->isAssignedTo($volunteer));
         self::assertSame(ProjectRole::VIEWER, refresh($project)->getRoleOf($volunteer));
         self::assertFalse($volunteer->isVerified(), 'A link shared by hand does not prove the address.');
     }

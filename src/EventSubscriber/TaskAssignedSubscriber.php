@@ -12,7 +12,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
- * Tells the assignee a task was given to them, unless they assigned it to themselves.
+ * Tells each new assignee a task was given to them, unless they assigned it to themselves.
  */
 final readonly class TaskAssignedSubscriber implements EventSubscriberInterface
 {
@@ -29,14 +29,14 @@ final readonly class TaskAssignedSubscriber implements EventSubscriberInterface
 
     public function onProjectActivity(ProjectActivityEvent $event): void
     {
-        $assignee = $event->task?->getAssignee();
+        $assignee = $event->assignee;
         if (ActivityAction::TASK_ASSIGNED !== $event->action || null === $event->task || null === $assignee) {
             return;
         }
 
         $actor = $this->security->getUser();
         $actor = $actor instanceof User ? $actor : null;
-        if (null !== $actor && $event->task->isAssignedTo($actor)) {
+        if (null !== $actor && $actor->isSameAs($assignee)) {
             return;
         }
 

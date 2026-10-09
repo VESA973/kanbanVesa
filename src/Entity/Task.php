@@ -24,10 +24,6 @@ class Task implements Positionable
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
-    #[ORM\ManyToOne]
-    #[ORM\JoinColumn(onDelete: 'SET NULL')]
-    private ?User $assignee = null;
-
     #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $dueDate = null;
 
@@ -68,6 +64,15 @@ class Task implements Positionable
     private Collection $labels;
 
     /**
+     * @var Collection<int, User>
+     */
+    #[ORM\ManyToMany(targetEntity: User::class)]
+    #[ORM\JoinTable(name: 'task_assignee')]
+    #[ORM\JoinColumn(onDelete: 'CASCADE')]
+    #[ORM\InverseJoinColumn(onDelete: 'CASCADE')]
+    private Collection $assignees;
+
+    /**
      * @var Collection<int, TaskTable>
      */
     #[ORM\OneToMany(targetEntity: TaskTable::class, mappedBy: 'task', cascade: ['persist'], orphanRemoval: true)]
@@ -91,6 +96,7 @@ class Task implements Positionable
         $this->comments = new ArrayCollection();
         $this->checklistItems = new ArrayCollection();
         $this->labels = new ArrayCollection();
+        $this->assignees = new ArrayCollection();
         $this->tables = new ArrayCollection();
     }
 
@@ -142,31 +148,40 @@ class Task implements Positionable
         $this->position = $position;
     }
 
-    public function getAssignee(): ?User
+    /**
+     * @return Collection<int, User>
+     */
+    public function getAssignees(): Collection
     {
-        return $this->assignee;
-    }
-
-    public function assignTo(?User $assignee): void
-    {
-        $this->assignee = $assignee;
-    }
-
-    public function unassign(): void
-    {
-        $this->assignee = null;
+        return $this->assignees;
     }
 
     /**
-     * Compares ids as well as instances, like ProjectMember::isFor().
+     * @return bool false when the user was already assigned
      */
-    public function isAssignedTo(User $user): bool
+    public function assign(User $user): bool
     {
-        if (null === $this->assignee) {
+        if ($this->isAssignedTo($user)) {
             return false;
         }
 
-        return $this->assignee === $user || (null !== $user->getId() && $this->assignee->getId() === $user->getId());
+        $this->assignees->add($user);
+
+        return true;
+    }
+
+    public function unassign(User $user): void
+    {
+        foreach ($this->assignees as $assignee) {
+            if ($assignee->isSameAs($user)) {
+                $this->assignees->removeElement($assignee);
+            }
+        }
+    }
+
+    public function isAssignedTo(User $user): bool
+    {
+        return $this->assignees->exists(static fn (int $key, User $assignee): bool => $assignee->isSameAs($user));
     }
 
     public function schedule(?\DateTimeImmutable $dueDate): void

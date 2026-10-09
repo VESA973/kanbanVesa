@@ -61,7 +61,7 @@ task:
     no_description: Aucune description.
     delete: Supprimer la tâche
     delete_confirm: Supprimer définitivement cette tâche ?
-    assignee: Assignée à
+    assignees: Assignée à
     unassigned: Non assignée
     due_date: Échéance
     overdue: en retard
@@ -420,7 +420,7 @@ activity:
         task_updated: a modifié la tâche « %subject% »
         task_moved: a déplacé « %subject% » de « %from% » vers « %to% »
         task_assigned: a assigné « %subject% » à %assignee%
-        task_unassigned: a retiré l'assignation de « %subject% »
+        task_unassigned: a retiré %assignee% de « %subject% »
         task_completed: a terminé « %subject% »
         task_reopened: a rouvert « %subject% »
         task_deleted: a supprimé la tâche « %subject% » de « %column% »

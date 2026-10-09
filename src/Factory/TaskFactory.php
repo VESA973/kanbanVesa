@@ -6,6 +6,7 @@ namespace App\Factory;
 
 use App\Entity\BoardColumn;
 use App\Entity\Task;
+use App\Entity\User;
 use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
@@ -28,6 +29,15 @@ final class TaskFactory extends PersistentObjectFactory
             ->with(['column' => $column, 'createdBy' => $column->getProject()->getOwner()])
             // Evaluated for each task, so many() produces positions 0, 1, 2…
             ->with(static fn (): array => ['position' => $column->getTasks()->count()]);
+    }
+
+    public function assignedTo(User ...$users): self
+    {
+        return $this->afterInstantiate(static function (Task $task) use ($users): void {
+            foreach ($users as $user) {
+                $task->assign($user);
+            }
+        });
     }
 
     /**

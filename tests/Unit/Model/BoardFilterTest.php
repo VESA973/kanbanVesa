@@ -37,12 +37,25 @@ final class BoardFilterTest extends TestCase
     public function testFiltersByAssignee(): void
     {
         $mine = $this->task();
-        $mine->assignTo($this->alex);
+        $mine->assign($this->alex);
         $nobodys = $this->task();
 
         self::assertTrue(new BoardFilter(assignee: '7')->matches($mine, $this->now));
         self::assertFalse(new BoardFilter(assignee: '7')->matches($nobodys, $this->now));
         self::assertTrue(new BoardFilter(assignee: 'none')->matches($nobodys, $this->now));
+    }
+
+    public function testATaskWithSeveralAssigneesMatchesEachOfThem(): void
+    {
+        $sam = new User('sam@example.com', 'Sam', 'Durand');
+        new \ReflectionProperty(User::class, 'id')->setValue($sam, 8);
+        $shared = $this->task();
+        $shared->assign($sam);
+        $shared->assign($this->alex);
+
+        self::assertTrue(new BoardFilter(assignee: '7')->matches($shared, $this->now));
+        self::assertTrue(new BoardFilter(assignee: '8')->matches($shared, $this->now));
+        self::assertFalse(new BoardFilter(assignee: 'none')->matches($shared, $this->now));
     }
 
     public function testFiltersByLabel(): void

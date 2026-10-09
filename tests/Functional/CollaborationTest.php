@@ -68,7 +68,7 @@ final class CollaborationTest extends FunctionalTestCase
         [, $project] = $this->project();
         $editor = $this->member($project, ProjectRole::EDITOR);
         $viewer = $this->member($project, ProjectRole::VIEWER);
-        $task = TaskFactory::new()->inColumn($this->column($project))->create(['assignee' => force($viewer)]);
+        $task = TaskFactory::new()->inColumn($this->column($project))->assignedTo($viewer)->create();
         $client->loginUser($editor);
         $client->request('GET', '/tasks/'.$task->getId());
         $client->submitForm('Ajouter', ['name' => 'Maquette']);
@@ -127,7 +127,7 @@ final class CollaborationTest extends FunctionalTestCase
         $client = self::createClient();
         [$owner, $project] = $this->project();
         $column = $this->column($project);
-        TaskFactory::new()->inColumn($column)->create(['title' => 'À moi en retard', 'assignee' => force($owner), 'dueDate' => force(new \DateTimeImmutable('-2 days midnight'))]);
+        TaskFactory::new()->inColumn($column)->assignedTo($owner)->create(['title' => 'À moi en retard', 'dueDate' => force(new \DateTimeImmutable('-2 days midnight'))]);
         TaskFactory::new()->inColumn($column)->create(['title' => 'À personne']);
         $client->loginUser($owner);
 
@@ -147,9 +147,10 @@ final class CollaborationTest extends FunctionalTestCase
         $alex = $this->member($project, ProjectRole::EDITOR);
         $task = TaskFactory::new()->inColumn($this->column($project))->create();
         $client->loginUser($owner);
-        $client->request('GET', '/tasks/'.$task->getId());
+        $crawler = $client->request('GET', '/tasks/'.$task->getId());
 
-        $client->submitForm('Enregistrer', ['task_form[assignee]' => (string) $alex->getId()]);
+        $index = array_search((string) $alex->getId(), $crawler->filter('input[name="task_form[assignees][]"]')->extract(['value']), true);
+        $client->submitForm('Enregistrer', [\sprintf('task_form[assignees][%d]', $index) => (string) $alex->getId()]);
 
         self::assertQueuedEmailCount(1);
         self::assertEmailAddressContains(self::getMailerMessage() ?? throw new \LogicException(), 'To', $alex->getEmail());
@@ -159,8 +160,8 @@ final class CollaborationTest extends FunctionalTestCase
     {
         self::bootKernel();
         [$owner, $project] = $this->project();
-        TaskFactory::new()->inColumn($this->column($project))->create(['assignee' => force($owner), 'dueDate' => force(new \DateTimeImmutable('tomorrow'))]);
-        TaskFactory::new()->inColumn($this->column($project))->create(['assignee' => force($owner), 'dueDate' => force(new \DateTimeImmutable('+5 days midnight'))]);
+        TaskFactory::new()->inColumn($this->column($project))->assignedTo($owner)->create(['dueDate' => force(new \DateTimeImmutable('tomorrow'))]);
+        TaskFactory::new()->inColumn($this->column($project))->assignedTo($owner)->create(['dueDate' => force(new \DateTimeImmutable('+5 days midnight'))]);
         $command = new CommandTester(new Application(self::$kernel ?? throw new \LogicException())->find('app:tasks:remind-due'));
 
         $command->execute([]);

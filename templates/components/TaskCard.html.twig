@@ -16,7 +16,7 @@
             {{ task.title }}
         </a>
     </div>
-    {% if task.priority.value in ['high', 'urgent'] or task.dueDate or task.assignee or task.description or commentCount > 0 or checklist_total > 0 %}
+    {% if task.priority.value in ['high', 'urgent'] or task.dueDate or task.assignees is not empty or task.description or commentCount > 0 or checklist_total > 0 %}
         <div class="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
             {% if task.priority.value in ['high', 'urgent'] %}
                 <twig:PriorityBadge :priority="task.priority" />
@@ -35,8 +35,8 @@
             {% if commentCount > 0 %}
                 <span><span aria-hidden="true">💬</span> {{ commentCount }}<span class="sr-only"> {{ 'comment.count'|trans({'%count%': commentCount}) }}</span></span>
             {% endif %}
-            {% if task.assignee %}
-                <twig:Avatar :user="task.assignee" class="ml-auto" />
+            {% if task.assignees is not empty %}
+                <twig:AvatarStack :users="task.assignees" class="ml-auto" />
             {% endif %}
         </div>
     {% endif %}

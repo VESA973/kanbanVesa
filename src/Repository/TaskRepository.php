@@ -42,14 +42,14 @@ class TaskRepository extends ServiceEntityRepository
         $tasks = $this->createQueryBuilder('t')
             ->innerJoin('t.column', 'c')
             ->andWhere('c.project = :project')
-            ->andWhere('t.assignee = :user')
+            ->andWhere(':user MEMBER OF t.assignees')
             ->setParameter('project', $project)
             ->setParameter('user', $user)
             ->getQuery()
             ->toIterable();
 
         foreach ($tasks as $task) {
-            $task->unassign();
+            $task->unassign($user);
         }
     }
 
@@ -91,7 +91,7 @@ class TaskRepository extends ServiceEntityRepository
             ->innerJoin('p.program', 'g')
             ->innerJoin('p.members', 'm', 'WITH', 'm.user = :user')
             ->addSelect('c', 'p', 'g')
-            ->andWhere('t.assignee = :user')
+            ->andWhere(':user MEMBER OF t.assignees')
             ->andWhere('p.archivedAt IS NULL')
             ->setParameter('user', $user)
             ->orderBy('t.dueDate', 'ASC')
@@ -102,6 +102,7 @@ class TaskRepository extends ServiceEntityRepository
 
     /**
      * Counters per assignee id (0 for unassigned tasks), computed in a single query.
+     * A task with several assignees counts for each of them.
      *
      * @return array<int, array{total: int, completed: int, overdue: int}>
      */
@@ -109,15 +110,16 @@ class TaskRepository extends ServiceEntityRepository
     {
         /** @var list<array{assigneeId: int|string|null, total: int|string, completed: int|string|null, overdue: int|string|null}> $rows */
         $rows = $this->createQueryBuilder('t')
-            ->select('IDENTITY(t.assignee) AS assigneeId')
+            ->select('a.id AS assigneeId')
             ->addSelect('COUNT(t.id) AS total')
             ->addSelect('SUM(CASE WHEN t.completedAt IS NOT NULL THEN 1 ELSE 0 END) AS completed')
             ->addSelect('SUM(CASE WHEN t.completedAt IS NULL AND t.dueDate < :today THEN 1 ELSE 0 END) AS overdue')
             ->innerJoin('t.column', 'c')
+            ->leftJoin('t.assignees', 'a')
             ->andWhere('c.project = :project')
             ->setParameter('project', $project)
             ->setParameter('today', $now->setTime(0, 0), 'date_immutable')
-            ->groupBy('t.assignee')
+            ->groupBy('a.id')
             ->getQuery()
             ->getArrayResult();
 
@@ -174,7 +176,7 @@ class TaskRepository extends ServiceEntityRepository
         /** @var list<Task> */
         return $this->createQueryBuilder('t')
             ->innerJoin('t.column', 'c')
-            ->leftJoin('t.assignee', 'a')
+            ->leftJoin('t.assignees', 'a')
             ->addSelect('c', 'a')
             ->andWhere('c.project = :project')
             ->andWhere('t.completedAt IS NULL')
@@ -193,7 +195,7 @@ class TaskRepository extends ServiceEntityRepository
     {
         /** @var list<Task> */
         return $this->createQueryBuilder('t')
-            ->innerJoin('t.assignee', 'a')
+            ->innerJoin('t.assignees', 'a')
             ->innerJoin('t.column', 'c')
             ->innerJoin('c.project', 'p')
             ->addSelect('a', 'c', 'p')
@@ -254,14 +256,17 @@ class TaskRepository extends ServiceEntityRepository
     }
 
     /**
+     * One row per assignee of each completed task (a single row with a null id when unassigned).
+     *
      * @return list<array{assigneeId: ?int, completedAt: \DateTimeImmutable}>
      */
     public function findCompletionsSince(Project $project, \DateTimeImmutable $since): array
     {
         /** @var list<array{assigneeId: int|string|null, completedAt: \DateTimeImmutable}> $rows */
         $rows = $this->createQueryBuilder('t')
-            ->select('IDENTITY(t.assignee) AS assigneeId', 't.completedAt AS completedAt')
+            ->select('a.id AS assigneeId', 't.completedAt AS completedAt')
             ->innerJoin('t.column', 'c')
+            ->leftJoin('t.assignees', 'a')
             ->andWhere('c.project = :project')
             ->andWhere('t.completedAt >= :since')
             ->setParameter('project', $project)

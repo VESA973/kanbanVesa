@@ -15,7 +15,6 @@ use App\Repository\InvitationRepository;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Component\Mime\Email;
 
-use function Zenstruck\Foundry\force;
 use function Zenstruck\Foundry\Persistence\refresh;
 use function Zenstruck\Foundry\Persistence\save;
 
@@ -168,7 +167,7 @@ final class InvitationTest extends FunctionalTestCase
         [$owner, $project] = $this->project();
         $alex = $this->member($project, ProjectRole::VIEWER);
         $column = $project->getColumns()->first() ?: throw new \LogicException();
-        $task = TaskFactory::new()->inColumn($column)->create(['assignee' => force($alex)]);
+        $task = TaskFactory::new()->inColumn($column)->assignedTo($alex)->create();
         $client->loginUser($owner);
 
         $crawler = $client->request('GET', '/projects/'.$project->getId().'/members');
@@ -179,7 +178,7 @@ final class InvitationTest extends FunctionalTestCase
         $client->submit($crawler->filter('form[action$="/remove"]')->form());
 
         self::assertNull(refresh($project)->getRoleOf($alex));
-        self::assertNull(refresh($task)->getAssignee(), 'A removed member keeps no assigned task.');
+        self::assertFalse(refresh($task)->isAssignedTo($alex), 'A removed member keeps no assigned task.');
     }
 
     /**

@@ -39,13 +39,30 @@ final class TaskUpdaterTest extends TestCase
         $alex = new User('alex@example.com', 'Alex', 'Martin');
         $this->project->addMember($alex, ProjectRole::EDITOR);
         $data = TaskData::fromTask($this->task);
-        $data->assignee = $alex;
+        $data->assignees = [$alex];
 
         $this->updater()->update($this->task, $data);
 
-        self::assertSame($alex, $this->task->getAssignee());
+        self::assertSame([$alex], $this->task->getAssignees()->getValues());
         self::assertSame([ActivityAction::TASK_ASSIGNED], $this->dispatcher->actions());
         self::assertSame(['assignee' => 'Alex Martin'], $this->dispatcher->last()->payload);
+        self::assertSame($alex, $this->dispatcher->last()->assignee);
+    }
+
+    public function testReassigningLogsEachAddedAndRemovedAssignee(): void
+    {
+        $alex = new User('alex@example.com', 'Alex', 'Martin');
+        $sam = new User('sam@example.com', 'Sam', 'Durand');
+        $this->task->assign($this->owner);
+        $this->task->assign($alex);
+        $data = TaskData::fromTask($this->task);
+        $data->assignees = [$alex, $sam];
+
+        $this->updater()->update($this->task, $data);
+
+        self::assertSame([$alex, $sam], $this->task->getAssignees()->getValues());
+        self::assertSame([ActivityAction::TASK_UNASSIGNED, ActivityAction::TASK_ASSIGNED], $this->dispatcher->actions());
+        self::assertSame($sam, $this->dispatcher->last()->assignee);
     }
 
     public function testChangingDetailsLogsAnUpdate(): void

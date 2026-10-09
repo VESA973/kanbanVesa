@@ -20,8 +20,8 @@ final class TaskData
     #[Assert\Length(max: 10000)]
     public ?string $description = null;
 
-    /** Restricted to the project members by TaskFormType. */
-    public ?User $assignee = null;
+    /** @var list<User> restricted to the project members by TaskFormType */
+    public array $assignees = [];
 
     public ?\DateTimeImmutable $dueDate = null;
 
@@ -41,7 +41,7 @@ final class TaskData
         $data = new self($task->getColumn());
         $data->title = $task->getTitle();
         $data->description = $task->getDescription();
-        $data->assignee = $task->getAssignee();
+        $data->assignees = $task->getAssignees()->getValues();
         $data->dueDate = $task->getDueDate();
         $data->priority = $task->getPriority();
         $data->labels = $task->getLabels()->getValues();

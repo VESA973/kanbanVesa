@@ -78,7 +78,7 @@
     {{- parent() -}}
 {%- endblock choice_widget_collapsed -%}
 
-{%- block task_labels_widget -%}
+{%- block chip_choices_widget -%}
     <div {{ block('widget_container_attributes') }} role="group" aria-labelledby="{{ id }}_label" class="flex flex-wrap gap-2">
         {%- for child in form -%}
             <label class="flex cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1 text-sm ring-1 ring-slate-300 has-checked:ring-2 has-checked:ring-indigo-600 dark:ring-slate-700 dark:has-checked:ring-indigo-400">
@@ -88,8 +88,8 @@
             </label>
         {%- endfor -%}
     </div>
-{%- endblock task_labels_widget -%}
+{%- endblock chip_choices_widget -%}
 
-{%- block task_labels_label -%}
+{%- block chip_choices_label -%}
     <span id="{{ id }}_label" class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200">{{ label|trans(label_translation_parameters, translation_domain) }}</span>
-{%- endblock task_labels_label -%}
+{%- endblock chip_choices_label -%}
