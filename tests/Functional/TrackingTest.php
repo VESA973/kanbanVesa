@@ -111,6 +111,7 @@ final class TrackingTest extends FunctionalTestCase
         self::assertSelectorTextContains('#group-overdue + ul', 'En retard');
         self::assertSelectorTextContains('#group-upcoming + ul', 'Plus tard');
         self::assertSelectorTextNotContains('main', 'Pas à moi');
+        self::assertSelectorTextContains('#group-overdue + ul', $project->getProgram()->getName().' › '.$project->getName());
     }
 
     public function testOwnerSeesProgressPerMember(): void
