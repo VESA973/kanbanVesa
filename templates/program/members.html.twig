@@ -18,9 +18,12 @@
                     <li class="flex flex-wrap items-center gap-3 p-4">
                         <twig:Avatar :user="member.user" />
                         <div class="min-w-0 flex-1">
-                            <p class="truncate font-medium">{{ member.user.fullName }}</p>
+                            <p class="flex min-w-0 items-center gap-2 font-medium"><span class="truncate">{{ member.user.fullName }}</span>{% if member.lead %}<twig:LeadBadge />{% endif %}</p>
                             <p class="truncate text-sm text-slate-500 dark:text-slate-400">{{ member.user.email }}</p>
                         </div>
+                        {% if can_manage %}
+                            <twig:LeadToggle action="{{ path('app_program_member_lead', {id: member.id}) }}" :token="members_token" :lead="member.lead" :name="member.user.fullName" />
+                        {% endif %}
                         {% if can_manage and member.role.value != 'owner' %}
                             <form method="post" action="{{ path('app_program_member_role', {id: member.id}) }}" class="flex items-center gap-2">
                                 <input type="hidden" name="_token" value="{{ members_token }}">

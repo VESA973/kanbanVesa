@@ -1,0 +1,8 @@
+{% props action, token, lead, name %}{# lead: whether the member is already responsable #}
+<form method="post" action="{{ action }}" {{ attributes }}>
+    <input type="hidden" name="_token" value="{{ token }}">
+    <twig:Button type="submit" variant="ghost" aria-pressed="{{ lead ? 'true' : 'false' }}">
+        <span aria-hidden="true">{{ lead ? '★' : '☆' }}</span>
+        {{ (lead ? 'member.dismiss_lead' : 'member.appoint_lead')|trans }}<span class="sr-only"> {{ name }}</span>
+    </twig:Button>
+</form>

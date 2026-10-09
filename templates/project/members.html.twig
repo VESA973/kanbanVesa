@@ -17,9 +17,12 @@
                     <li class="flex flex-wrap items-center gap-3 p-4">
                         <twig:Avatar :user="member.user" />
                         <div class="min-w-0 flex-1">
-                            <p class="truncate font-medium">{{ member.user.fullName }}</p>
+                            <p class="flex min-w-0 items-center gap-2 font-medium"><span class="truncate">{{ member.user.fullName }}</span>{% if member.lead %}<twig:LeadBadge />{% endif %}</p>
                             <p class="truncate text-sm text-slate-500 dark:text-slate-400">{{ member.user.email }}</p>
                         </div>
+                        {% if can_manage %}
+                            <twig:LeadToggle action="{{ path('app_member_lead', {id: member.id}) }}" :token="members_token" :lead="member.lead" :name="member.user.fullName" />
+                        {% endif %}
                         {% if member.inherited %}
                             <span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-200"
                                   title="{{ 'member.inherited_help'|trans }}">{{ member.role.translationKey|trans }} · {{ 'member.inherited'|trans }}</span>

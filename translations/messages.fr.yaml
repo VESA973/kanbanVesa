@@ -374,6 +374,11 @@ search:
 my_tasks:
     title: Mes tâches
     empty: Aucune tâche ne vous est assignée pour le moment.
+    led:
+        title: Sous ma responsabilité
+        help: Les tâches restantes des chantiers dont vous êtes responsable (directement ou par leur projet).
+        remaining: "{1} 1 tâche restante|]1,Inf[ %count% tâches restantes"
+        open_board: Ouvrir le tableau
     group:
         overdue: En retard
         today: Aujourd'hui
@@ -438,6 +443,10 @@ member:
     remove_confirm: Retirer %name% du chantier ? Ses tâches ne lui seront plus assignées.
     inherited: via le projet
     inherited_help: Accès donné par le projet ; il se gère depuis la page des membres du projet.
+    lead: Responsable
+    leads: Responsables
+    appoint_lead: Nommer responsable
+    dismiss_lead: Retirer la responsabilité
 
 invitation:
     title: Inviter une personne
@@ -564,6 +573,8 @@ flash:
     member:
         role_changed: Le rôle a été modifié.
         removed: Le membre a été retiré du chantier.
+        lead_appointed: Cette personne est maintenant responsable.
+        lead_dismissed: Cette personne n'est plus responsable.
     column:
         deleted: La colonne a été supprimée.
     task:

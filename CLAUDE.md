@@ -69,12 +69,13 @@ Une adhésion directe à un projet n'est jamais modifiée par le programme ; une
 ne se gère que depuis le programme.
 User : email (unique), password, firstName, lastName, isVerified, createdAt.
 Project : program, name, description, color, owner (User), archivedAt, createdAt.
-ProjectMember : project, user, role (ProjectRole enum : OWNER, EDITOR, VIEWER), inherited (bool), joinedAt.
+ProjectMember : project, user, role (ProjectRole enum : OWNER, EDITOR, VIEWER), inherited (bool), lead (bool, colonne is_lead : « responsable », aucun droit en plus), joinedAt.
 BoardColumn : project, name, position (int).
 Program : name, description, color, imageFilename (nullable), owner (User), createdAt.
 Pole : owner (User), name, position, programs (ManyToMany pole_program). Classement PERSONNEL des programmes
 sur « Mes projets » (un programme dans au plus un pôle par utilisateur, PoleManager::classify) ; ne donne aucun accès.
-ProgramMember : program, user, role (ProjectRole), joinedAt.
+ProgramMember : program, user, role (ProjectRole), lead (bool, colonne is_lead : responsable de tous les chantiers du programme), joinedAt.
+Responsables : désignés par le propriétaire (MANAGE_MEMBERS) ; « Mes tâches » leur liste les tâches restantes de leurs chantiers (TaskRepository::findOpenLedBy).
 Task : column, title, description, assignees (ManyToMany User, table task_assignee), dueDate, position, priority (enum), completedAt, createdBy.
 ChecklistItem : task, label, isDone, position.
 TaskTable : task, title, position (tableaux de données d'une tâche : équipe, outils…).

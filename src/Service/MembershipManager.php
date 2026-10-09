@@ -32,6 +32,12 @@ final readonly class MembershipManager
         $this->entityManager->flush();
     }
 
+    public function toggleLead(ProjectMember $member): void
+    {
+        $member->toggleLead();
+        $this->entityManager->flush();
+    }
+
     /**
      * A removed member keeps no task assigned in the project.
      */

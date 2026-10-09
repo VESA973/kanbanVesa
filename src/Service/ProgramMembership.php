@@ -40,6 +40,12 @@ final readonly class ProgramMembership
         $this->entityManager->flush();
     }
 
+    public function toggleLead(ProgramMember $member): void
+    {
+        $member->toggleLead();
+        $this->entityManager->flush();
+    }
+
     public function remove(ProgramMember $member): void
     {
         $program = $member->getProgram();

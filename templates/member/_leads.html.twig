@@ -1,0 +1,8 @@
+{# members: ProjectMember or ProgramMember collection; shows the « responsables » among them #}
+{% set leads = members|filter(member => member.lead) %}
+{% if leads is not empty %}
+    <p class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-600 dark:text-slate-300">
+        <span class="font-medium text-amber-800 dark:text-amber-300"><span aria-hidden="true">★</span> {{ (leads|length > 1 ? 'member.leads' : 'member.lead')|trans }} :</span>
+        {{ leads|map(member => member.user.fullName)|join(', ') }}
+    </p>
+{% endif %}

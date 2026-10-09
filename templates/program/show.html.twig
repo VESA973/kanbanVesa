@@ -18,6 +18,9 @@
             <div>
                 <p class="text-sm font-medium text-slate-500 dark:text-slate-400">{{ 'program.label'|trans }}</p>
                 <h1 class="text-2xl font-bold tracking-tight">{{ program.name }}</h1>
+                {% if is_granted('PROGRAM_VIEW_MEMBERS', program) %}
+                    {{ include('member/_leads.html.twig', {members: program.members}) }}
+                {% endif %}
                 {% if program.description %}
                     <p class="mt-1 max-w-3xl whitespace-pre-line text-slate-600 dark:text-slate-300">{{ program.description }}</p>
                 {% endif %}

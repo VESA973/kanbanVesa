@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Entity\Project;
 use App\Entity\Task;
 
 /**
- * Groups the tasks of the "Mes tâches" page by urgency.
+ * Groups the tasks of the "Mes tâches" page: by urgency, and by chantier for the ones under the user's responsibility.
  */
 final class TaskAgenda
 {
@@ -34,6 +35,25 @@ final class TaskAgenda
         }
 
         return $groups;
+    }
+
+    /**
+     * Keeps the order of the tasks, and of the projects as they first appear.
+     *
+     * @param iterable<Task> $tasks
+     *
+     * @return list<array{project: Project, tasks: list<Task>}>
+     */
+    public static function byProject(iterable $tasks): array
+    {
+        $groups = [];
+        foreach ($tasks as $task) {
+            $project = $task->getProject();
+            $groups[spl_object_id($project)]['project'] = $project;
+            $groups[spl_object_id($project)]['tasks'][] = $task;
+        }
+
+        return array_values($groups);
     }
 
     /**

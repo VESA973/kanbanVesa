@@ -48,5 +48,47 @@
                 </ul>
             </section>
         {% endfor %}
+
+        {% if ledProjects is not empty %}
+            <section class="mt-10" aria-labelledby="led-heading">
+                <h2 id="led-heading" class="mb-1 text-lg font-semibold"><span aria-hidden="true" class="text-amber-600 dark:text-amber-400">★</span> {{ 'my_tasks.led.title'|trans }}</h2>
+                <p class="mb-4 text-sm text-slate-600 dark:text-slate-300">{{ 'my_tasks.led.help'|trans }}</p>
+                <div class="space-y-3">
+                    {% for group in ledProjects %}
+                        {% set project = group.project %}
+                        <details class="group rounded-lg bg-white shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
+                            <summary class="flex cursor-pointer list-none items-center gap-2 rounded-lg p-4 text-sm focus-visible:outline-2 focus-visible:outline-indigo-600">
+                                <span aria-hidden="true" class="text-slate-400 transition group-open:rotate-90">▸</span>
+                                <twig:ProjectColorSwatch :color="project.color.value" size="sm" />
+                                <span class="min-w-0 flex-1 break-words">
+                                    <span class="font-medium text-slate-700 dark:text-slate-300">{{ project.program.name }}</span>
+                                    <span aria-hidden="true" class="text-slate-500 dark:text-slate-400">›</span>
+                                    <span class="font-semibold">{{ project.name }}</span>
+                                </span>
+                                <span class="rounded-full bg-slate-200 px-2 text-xs text-slate-700 dark:bg-slate-800 dark:text-slate-200">{{ 'my_tasks.led.remaining'|trans({'%count%': group.tasks|length}) }}</span>
+                            </summary>
+                            <ul class="divide-y divide-slate-200 border-t border-slate-200 dark:divide-slate-800 dark:border-slate-800">
+                                {% for task in group.tasks %}
+                                    <li class="relative flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3 text-sm">
+                                        <a href="{{ path('app_task_show', {id: task.id}) }}" data-turbo-frame="modal"
+                                           class="min-w-0 flex-1 font-medium break-words after:absolute after:inset-0 focus-visible:outline-none">{{ task.title }}</a>
+                                        <span class="text-xs text-slate-500 dark:text-slate-400">{{ task.column.name }}</span>
+                                        <twig:DueDate :task="task" />
+                                        {% if task.assignees is empty %}
+                                            <span class="text-xs text-slate-500 italic dark:text-slate-400">{{ 'task.unassigned'|trans }}</span>
+                                        {% else %}
+                                            <twig:AvatarStack :users="task.assignees" />
+                                        {% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                            <div class="border-t border-slate-200 px-4 py-2 text-right text-sm dark:border-slate-800">
+                                <twig:Link href="{{ path('app_project_show', {id: project.id}) }}">{{ 'my_tasks.led.open_board'|trans }} →</twig:Link>
+                            </div>
+                        </details>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
     </div>
 {% endblock %}

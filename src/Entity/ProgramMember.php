@@ -21,6 +21,10 @@ class ProgramMember
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private \DateTimeImmutable $joinedAt;
 
+    /** « Responsable »: a designation shown to everyone, it gives no extra right. */
+    #[ORM\Column(name: 'is_lead', options: ['default' => false])]
+    private bool $lead = false;
+
     public function __construct(
         #[ORM\ManyToOne(inversedBy: 'members')]
         #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
@@ -74,5 +78,15 @@ class ProgramMember
     public function getJoinedAt(): \DateTimeImmutable
     {
         return $this->joinedAt;
+    }
+
+    public function isLead(): bool
+    {
+        return $this->lead;
+    }
+
+    public function toggleLead(): void
+    {
+        $this->lead = !$this->lead;
     }
 }

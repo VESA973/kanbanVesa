@@ -94,6 +94,21 @@ final class MemberController extends AbstractController
     }
 
     /**
+     * Any member can be made responsable, the owner and members coming from the program included.
+     */
+    #[Route('/members/{id}/lead', name: 'app_member_lead', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[IsGranted(ProjectVoter::VIEW, new Expression('args["member"].getProject()'), statusCode: 404)]
+    #[IsGranted(ProjectVoter::MANAGE_MEMBERS, new Expression('args["member"].getProject()'))]
+    #[IsCsrfTokenValid(new Expression('"members-" ~ args["member"].getProject().getId()'))]
+    public function toggleLead(ProjectMember $member, MembershipManager $membershipManager): Response
+    {
+        $membershipManager->toggleLead($member);
+        $this->addFlash('success', $member->isLead() ? 'flash.member.lead_appointed' : 'flash.member.lead_dismissed');
+
+        return $this->redirectToRoute('app_project_members', ['id' => $member->getProject()->getId()]);
+    }
+
+    /**
      * @param FormInterface<InvitationData> $form
      */
     private function renderMembers(Project $project, FormInterface $form): Response

@@ -39,6 +39,21 @@ final class TaskAgendaTest extends TestCase
         self::assertFalse($task->isOverdue(new \DateTimeImmutable('2026-10-06')));
     }
 
+    public function testByProjectKeepsTheOrderOfProjectsAndTasks(): void
+    {
+        $owner = new User('owner@example.com', 'Olivia', 'Owner');
+        $voirie = new Project('Voirie', $owner)->addColumn('À faire');
+        $ecole = new Project('École', $owner)->addColumn('À faire');
+        $a = new Task($voirie, 'A', 0, $owner);
+        $b = new Task($ecole, 'B', 0, $owner);
+        $c = new Task($voirie, 'C', 1, $owner);
+
+        $groups = TaskAgenda::byProject([$a, $b, $c]);
+
+        self::assertSame([$voirie->getProject(), $ecole->getProject()], array_column($groups, 'project'));
+        self::assertSame([[$a, $c], [$b]], array_column($groups, 'tasks'));
+    }
+
     private function task(?string $dueDate, ?string $completedAt = null): Task
     {
         $owner = new User('owner@example.com', 'Olivia', 'Owner');

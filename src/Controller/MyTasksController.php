@@ -20,6 +20,7 @@ final class MyTasksController extends AbstractController
     {
         return $this->render('my_tasks/index.html.twig', [
             'groups' => TaskAgenda::group($taskRepository->findAssignedTo($user), $clock->now()),
+            'ledProjects' => TaskAgenda::byProject($taskRepository->findOpenLedBy($user)),
         ]);
     }
 }

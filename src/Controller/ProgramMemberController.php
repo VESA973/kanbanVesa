@@ -97,6 +97,18 @@ final class ProgramMemberController extends AbstractController
         return $this->redirectToRoute('app_program_members', ['id' => $programId]);
     }
 
+    #[Route('/program-members/{id}/lead', name: 'app_program_member_lead', requirements: ['id' => '\d+'], methods: ['POST'])]
+    #[IsGranted(ProgramVoter::VIEW_MEMBERS, new Expression('args["member"].getProgram()'), statusCode: 404)]
+    #[IsGranted(ProgramVoter::MANAGE_MEMBERS, new Expression('args["member"].getProgram()'))]
+    #[IsCsrfTokenValid(new Expression('"program-members-" ~ args["member"].getProgram().getId()'))]
+    public function toggleLead(ProgramMember $member): Response
+    {
+        $this->programMembership->toggleLead($member);
+        $this->addFlash('success', $member->isLead() ? 'flash.member.lead_appointed' : 'flash.member.lead_dismissed');
+
+        return $this->redirectToRoute('app_program_members', ['id' => $member->getProgram()->getId()]);
+    }
+
     /**
      * @param FormInterface<InvitationData> $form
      */

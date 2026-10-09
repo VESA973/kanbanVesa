@@ -101,6 +101,34 @@ class TaskRepository extends ServiceEntityRepository
     }
 
     /**
+     * Open tasks of the active chantiers the user is responsable for, directly or through their program.
+     *
+     * @return list<Task>
+     */
+    public function findOpenLedBy(User $user): array
+    {
+        /** @var list<Task> */
+        return $this->createQueryBuilder('t')
+            ->innerJoin('t.column', 'c')
+            ->innerJoin('c.project', 'p')
+            ->innerJoin('p.program', 'g')
+            ->innerJoin('p.members', 'm', 'WITH', 'm.user = :user')
+            ->leftJoin('g.members', 'gm', 'WITH', 'gm.user = :user')
+            ->leftJoin('t.assignees', 'a')
+            ->addSelect('c', 'p', 'g', 'a')
+            ->andWhere('m.lead = true OR gm.lead = true')
+            ->andWhere('t.completedAt IS NULL')
+            ->andWhere('p.archivedAt IS NULL')
+            ->setParameter('user', $user)
+            ->orderBy('g.name', 'ASC')
+            ->addOrderBy('p.name', 'ASC')
+            ->addOrderBy('c.position', 'ASC')
+            ->addOrderBy('t.position', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * Counters per assignee id (0 for unassigned tasks), computed in a single query.
      * A task with several assignees counts for each of them.
      *
